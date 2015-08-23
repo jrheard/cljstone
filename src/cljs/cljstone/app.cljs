@@ -1,6 +1,8 @@
 (ns cljstone.app
   (:require [schema.core :as s]))
 
+; types
+
 (def Hero
   {:name s/Str
    :class s/Keyword
@@ -16,28 +18,52 @@
    :hero Hero
    :minions [Minion]})
 
-(s/defn make-hero :- Hero
-  [name :- s/Str
-   class :- s/Keyword]
-  {:name name :class class :health 30})
+(s/defn make-hero :- Hero [name hero-class]
+  {:name name :class hero-class :health 30})
 
 (def jaina (make-hero "Jaina" :mage))
 (def thrall (make-hero "Thrall" :shaman))
 
-(defn get-nodes-by-selector [selector]
-  (.querySelectorAll js/document selector))
+(def chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5})
+(def goldshire-footman {:name "Goldshire Footman" :attack 1 :health 2})
+(def magma-rager {:name "Magma Rager" :attack 5 :health 1})
+
+(def p1 {:index 0 :hero jaina :minions [chillwind-yeti goldshire-footman]})
+(def p2 {:index 1 :hero thrall :minions [magma-rager]})
+
+; html utils
+
+(defn get-nodes-by-selector
+  ([selector] (get-nodes-by-selector selector js/document))
+  ([selector node] (.querySelectorAll node selector)))
 
 (defn set-text! [node content]
   (set! (. node -textContent) content))
 
+; draw functions
+
+(s/defn render-hero [hero :- Hero] (:name hero))
+
+(s/defn render-minion
+  [minion :- Minion]
+  (str
+    "<div class='minion'>"
+    "<div class='name'>"
+    (:name minion)
+    "</div>"
+    "<div class='attack'>"
+    (:attack minion)
+    "</div>"
+    "<div class='health'>"
+    (:health minion)
+    "</div>"
+    "</div>"))
+
 (s/defn draw-board-half
   [board-half :- BoardHalf]
-  (js/console.log (:index board-half))
-  (let [div (aget (get-nodes-by-selector ".board-half") (:index board-half))]
-    (set-text! div (:name (:hero board-half)))))
-
-(def p1 {:index 0 :hero jaina :minions []})
-(def p2 {:index 1 :hero thrall :minions []})
+  (let [board-half-div (aget (get-nodes-by-selector ".board-half") (:index board-half))
+        hero-div (aget (get-nodes-by-selector ".hero" board-half-div) 0)]
+    (set-text! hero-div (render-hero (:hero board-half)))))
 
 (draw-board-half p1)
 (draw-board-half p2)

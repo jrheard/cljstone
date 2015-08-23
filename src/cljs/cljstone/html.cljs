@@ -1,33 +1,31 @@
 (ns cljstone.html
-  (:require [cljstone.board :as board]
-            [cljstone.hero :as hero]
-            [cljstone.minion :as minion]
-            [dommy.core :as dommy]
-            [schema.core :as s]))
+  (:require [enfocus.core :as ef]
+            [schema.core :as s])
+  (:require-macros [enfocus.macros :as em])
+  (:use [cljstone.minion :only [Minion]]
+        [cljstone.hero :only [Hero]]
+        [cljstone.board :only [BoardHalf]]))
 
-(s/defn render-hero [a-hero :- hero/Hero] (:name a-hero))
+(def root-template "resources/public/index.html")
 
-(s/defn render-minion
-  [a-minion :- minion/Minion]
-  (str
-    "<div class='minion'>"
-    "<div class='name'>"
-    (:name a-minion)
-    "</div>"
-    "<div class='attack'>"
-    (:attack a-minion)
-    "</div>"
-    "<div class='health'>"
-    (:health a-minion)
-    "</div>"
-    "</div>"))
+(em/defsnippet hero-snippet :compiled "resources/public/index.html" ".hero div"
+  [hero]
+  ".name" (ef/content (:name hero)))
 
-(s/defn draw-board-half
-  [board-half :- board/BoardHalf]
-  (let [board-half-div (nth (dommy/sel [".board-half"]) (:index board-half))
-        hero-div (dommy/sel1 board-half-div ".hero")
-        minions-div (dommy/sel1 board-half-div ".minion-container")]
-    (dommy/set-html! hero-div (render-hero (:hero board-half)))
-    (dommy/set-html!
-      minions-div
-      (apply str (map render-minion (:minions board-half))))))
+(em/defsnippet minion-snippet :compiled "resources/public/index.html" ".minion"
+  [minion]
+  ".name" (ef/content (:name minion))
+  ".attack" (ef/content (str (:attack minion)))
+  ".health" (ef/content (str (:health minion))))
+
+(em/defsnippet board-half-snippet :compiled "resources/public/index.html" ".board-half"
+  [board-half]
+  ".hero" (ef/content (hero-snippet (:hero board-half)))
+  ".minion-container" (ef/content
+                        (map minion-snippet (:minions board-half))))
+
+(em/deftemplate board-template :compiled "resources/public/index.html" [board-halves]
+  ".board" (ef/content (map board-half-snippet board-halves)))
+
+(defn draw-board [board-halves]
+  (ef/at "body" (ef/content (board-template board-halves))))

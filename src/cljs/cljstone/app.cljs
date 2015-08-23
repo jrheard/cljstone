@@ -65,8 +65,6 @@
         hero-div (aget (get-nodes-by-selector ".hero" board-half-div) 0)
         minions-div (aget (get-nodes-by-selector ".minion-container" board-half-div) 0)]
     (set-html! hero-div (render-hero (:hero board-half)))
-    (js/console.log hero-div)
-    (js/console.log minions-div)
     (set-html!
       minions-div
       (apply str (map render-minion (:minions board-half))))))

@@ -37,8 +37,8 @@
   ([selector] (get-nodes-by-selector selector js/document))
   ([selector node] (.querySelectorAll node selector)))
 
-(defn set-text! [node content]
-  (set! (. node -textContent) content))
+(defn set-html! [node content]
+  (set! (. node -innerHTML) content))
 
 ; draw functions
 
@@ -62,8 +62,14 @@
 (s/defn draw-board-half
   [board-half :- BoardHalf]
   (let [board-half-div (aget (get-nodes-by-selector ".board-half") (:index board-half))
-        hero-div (aget (get-nodes-by-selector ".hero" board-half-div) 0)]
-    (set-text! hero-div (render-hero (:hero board-half)))))
+        hero-div (aget (get-nodes-by-selector ".hero" board-half-div) 0)
+        minions-div (aget (get-nodes-by-selector ".minion-container" board-half-div) 0)]
+    (set-html! hero-div (render-hero (:hero board-half)))
+    (js/console.log hero-div)
+    (js/console.log minions-div)
+    (set-html!
+      minions-div
+      (apply str (map render-minion (:minions board-half))))))
 
 (draw-board-half p1)
 (draw-board-half p2)

@@ -1,0 +1,123 @@
+body {
+	font-family: Helvetica, sans-serif;
+}
+
+.board {
+	width: 1800px;
+	margin: 0 auto;
+}
+
+.board-half {
+	position: relative;
+}
+
+.board-half .hand {
+	position: absolute;
+	overflow: hidden;
+	width: 200px;
+	padding: 0 3px;
+}
+
+.board-half:nth-of-type(2) .hand {
+	right: 0;
+	top: -500px;
+}
+
+.board-half .hand .minion {
+	float: left;
+}
+
+.board-half .body {
+	background-color: #EEE;
+	border: solid 2px #AAA;
+	height: 500px;
+	position: relative;
+	margin: 0 auto;
+	width: 1200px;
+}
+
+.board-half:nth-of-type(1) .body {
+	border-top: none;
+}
+
+.hero {
+	border: solid 1px #AAA;
+	margin: 0 auto;
+	position: absolute;
+	left: 0;
+	right: 0;
+	width: 20%;
+	height: 200px;
+
+	color: #666;
+	line-height: 200px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 30px;
+	text-transform: uppercase;
+}
+
+.board-half:nth-of-type(1) .hero {
+	border-top: none;
+}
+
+.board-half:nth-of-type(2) .hero {
+	bottom: 0;
+	border-bottom: 0;
+}
+
+.minion-container {
+	position: relative;
+	top: 200px;
+	height: 300px;
+	width: 100%;
+	overflow: hidden;
+	padding: 50px;
+}
+
+.board-half:nth-of-type(2) .body .minion-container {
+	top: 0px;
+}
+
+.minion {
+	border: solid 1px #AAA;
+	float: left;
+	width: 200px;
+	height: 200px;
+	position: relative;
+}
+
+.minion .name {
+	color: #666;
+	line-height: 200px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 15px;
+	text-transform: uppercase;
+}
+
+.minion .attack {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	color: red;
+	font-size: 25px;
+	font-weight: bold;
+	border: solid 1px red;
+	border-bottom: none;
+	border-left: none;
+	padding: 5px 10px;
+}
+
+.minion .health {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	color: green;
+	font-size: 25px;
+	font-weight: bold;
+	border: solid 1px green;
+	border-bottom: none;
+	border-right: none;
+	padding: 5px 10px;
+}

@@ -6,7 +6,7 @@
 (def BoardHalf
   {:index s/Int
    :hero hero/Hero
-   :minions [minion/Minion]})
+   :minions [s/Str]})
 
 (def Character
   {:id s/Str

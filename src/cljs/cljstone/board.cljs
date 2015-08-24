@@ -17,6 +17,9 @@
 (def Board
   {:half-1 BoardHalf
    :half-2 BoardHalf
+   ; hm - if we made this next field an atom, we could attach watchers to it
+   ; might be an interesting way of powering events
+   ; doesn't cover everything though (blessing of wisdom)
    :characters-by-id {s/Str Character}})
 
 (s/defn make-board :- Board
@@ -31,13 +34,7 @@
    ; TODO validate it's one of :half-1, :half-2
    which-board-half :- s/Keyword
    schematic :- MinionSchematic]
-  (let [minion (make-minion schematic)
-        new-characters-by-id (assoc (:characters-by-id board)
-                                    (:id minion)
-                                    minion)
-        new-minions (conj (:minions (which-board-half board))
-                             (:id minion))]
-    (assoc board
-           :characters-by-id new-characters-by-id
-           which-board-half (assoc (which-board-half board)
-                                   :minions new-minions))))
+  (let [minion (make-minion schematic)]
+    (-> board
+        (assoc-in [:characters-by-id (:id minion)] minion)
+        (update-in [which-board-half :minions] conj (:id minion)))))

@@ -87,6 +87,11 @@ body {
 	position: relative;
 }
 
+.minion:hover {
+	background-color: #CCC;
+	cursor: pointer;
+}
+
 .minion .name {
 	color: #666;
 	line-height: 200px;

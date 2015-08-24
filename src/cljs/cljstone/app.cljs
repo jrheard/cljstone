@@ -5,7 +5,7 @@
             [cljstone.minion :as minion]
             [cljstone.hero :as hero]
             [cljstone.html :as html])
-  (:use [cljstone.board :only [make-board summon-minion]]))
+  (:use [cljstone.board :only [attack make-board summon-minion]]))
 
 (def board (-> (make-board hero/jaina hero/thrall)
                (summon-minion :half-1 minion/chillwind-yeti)
@@ -24,7 +24,6 @@
       .-currentTarget
       .-dataset))
 
-; TODO: record the id of the dragged minion and also use the one of the dropped minion
 (ef/at ".minion" (ev/listen :dragstart
                             (fn [e]
                               (let [minion-id (.-minionId (get-target-dataset e))
@@ -42,4 +41,5 @@
                                     destination-minion-id (.-minionId (get-target-dataset e))]
                                 (js/console.log origin-minion-id)
                                 (js/console.log destination-minion-id)
+                                (attack origin-minion-id destination-minion-id board)
                                 (.preventDefault e)))))

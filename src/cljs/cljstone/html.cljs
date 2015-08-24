@@ -2,7 +2,7 @@
   (:require [enfocus.core :as ef]
             [schema.core :as s])
   (:require-macros [enfocus.macros :as em])
-  (:use [cljstone.minion :only [Minion]]
+  (:use [cljstone.minion :only [Minion get-attack get-health]]
         [cljstone.hero :only [Hero]]
         [cljstone.board :only [BoardHalf]]))
 
@@ -16,8 +16,8 @@
   [minion]
   ".minion" (ef/set-attr :data-minion-id (:id minion))
   ".name" (ef/content (:name minion))
-  ".attack" (ef/content (str (:attack minion)))
-  ".health" (ef/content (str (:health minion))))
+  ".attack" (ef/content (str (get-attack minion)))
+  ".health" (ef/content (str (get-health minion))))
 
 (em/defsnippet board-half-snippet :compiled "resources/public/index.html" ".board-half"
   [board-half characters-by-id]

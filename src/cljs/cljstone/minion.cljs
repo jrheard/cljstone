@@ -1,11 +1,13 @@
 (ns cljstone.minion
   (:require [cljs-uuid-utils.core :as uuid]
-            [schema.core :as s]))
+            [schema.core :as s])
+  (:use [clojure.set :only [rename-keys]])
+  )
 
 (def MinionSchematic
   {:name s/Str
-   :attack s/Int
-   :health s/Int})
+   :base-attack s/Int
+   :base-health s/Int})
 
 (def Modifier
   {:type s/Keyword
@@ -21,21 +23,31 @@
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
 ; or what about if something's taken damage, had its HP buffed by stormwind champ, and the champ dies?
 (def Minion
-  (assoc MinionSchematic
-         :id s/Str
-         :modifiers [Modifier]))
+  {:name s/Str
+   :base-attack s/Int
+   :base-health s/Int
+   :id s/Str
+   :modifiers [Modifier]})
 
 ; Schematics
 
-(def chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5})
-(def goldshire-footman {:name "Goldshire Footman" :attack 1 :health 2})
-(def magma-rager {:name "Magma Rager" :attack 5 :health 1})
+(def chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5})
+(def goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2})
+(def magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1})
 
 (s/defn make-minion :- Minion
   [schematic :- MinionSchematic]
-  (assoc schematic
-         :id (uuid/uuid-string (uuid/make-random-uuid))
-         :modifiers []))
+  (-> schematic
+      (assoc :id (uuid/uuid-string (uuid/make-random-uuid)))
+      (assoc :modifiers [])))
 
 ; todo jesus how do you implement dire wolf alpha
 ; i guess you just add a +1 attack modifier to each of the two adjacent minions, and add a -1 when the wolf dies
+
+(s/defn get-health :- s/Int
+  [minion :- Minion]
+  (:base-health minion))
+
+(s/defn get-attack :- s/Int
+  [minion :- Minion]
+  (:base-attack minion))

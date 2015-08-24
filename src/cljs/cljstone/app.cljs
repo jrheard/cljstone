@@ -1,17 +1,18 @@
 (ns cljstone.app
-  (:require [cljs-uuid-utils.core :as uuid]
-            [enfocus.core :as ef]
+  (:require [enfocus.core :as ef]
             [enfocus.events :as ev]
             [schema.core :as s]
-            [cljstone.board :as board]
             [cljstone.minion :as minion]
             [cljstone.hero :as hero]
-            [cljstone.html :as html]))
+            [cljstone.html :as html])
+  (:use [cljstone.board :only [make-board summon-minion]]))
 
-(html/draw-board (board/make-board hero/jaina hero/thrall))
+(def board (-> (make-board hero/jaina hero/thrall)
+               (summon-minion :half-1 minion/chillwind-yeti)
+               (summon-minion :half-2 minion/magma-rager)
+               (summon-minion :half-1 minion/goldshire-footman)))
 
-(js/console.log (uuid/make-random-uuid))
-(js/console.log (uuid/uuid-string (uuid/make-random-uuid)))
+(html/draw-board board)
 
 (ef/at ".minion" (ev/listen :dragstart
                             (fn [e]

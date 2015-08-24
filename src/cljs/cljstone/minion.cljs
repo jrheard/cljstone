@@ -19,8 +19,7 @@
 (s/defn make-minion :- Minion
   [schematic :- MinionSchematic]
   (assoc schematic
-         :id
-         (uuid/uuid-string (uuid/make-random-uuid))))
+         :id (uuid/uuid-string (uuid/make-random-uuid))))
 
 ; todo - a minion also has a list of modifier effects
 ; eg record that it's taken 4 damage, or that its health has been set to 1, or that its attack is buffed by 1, etc

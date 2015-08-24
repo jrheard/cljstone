@@ -15,6 +15,11 @@
    ; examples will include {:attack 4}, {:health -3}, etc - but what about stuff like blessing of wisdom?
    :effects {s/Any s/Any}})
 
+; TODO - add notion of "base attack", "base health"
+; for use in situations like eg stormwind champion, dire wolf + reversing switch, etc
+; they're distinct from "computed attack" and "computed health" - those concepts will have to become functions from minion -> Int
+; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
+; or what about if something's taken damage, had its HP buffed by stormwind champ, and the champ dies?
 (def Minion
   (assoc MinionSchematic
          :id s/Str
@@ -33,3 +38,4 @@
          :modifiers []))
 
 ; todo jesus how do you implement dire wolf alpha
+; i guess you just add a +1 attack modifier to each of the two adjacent minions, and add a -1 when the wolf dies

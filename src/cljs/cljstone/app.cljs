@@ -14,16 +14,32 @@
 
 (html/draw-board board)
 
+(defn get-data-transfer [goog-event]
+  (-> goog-event
+      .getBrowserEvent
+      .-dataTransfer))
+
+(defn get-target-dataset [goog-event]
+  (-> goog-event
+      .-currentTarget
+      .-dataset))
+
 ; TODO: record the id of the dragged minion and also use the one of the dropped minion
 (ef/at ".minion" (ev/listen :dragstart
                             (fn [e]
-                              (js/console.log e)
-                              (.setData (.-dataTransfer (.-event_ e))
-                                        "source-thing"
-                                        (.-target e)))))
+                              (let [minion-id (.-minionId (get-target-dataset e))
+                                    data-transfer (get-data-transfer e)]
+                                (.setData data-transfer "text/plain" minion-id)))))
+
+(ef/at ".minion"
+  (ev/listen :dragover
+             (fn [e]
+               (.preventDefault e))))
 
 (ef/at ".minion" (ev/listen :drop
                             (fn [e]
-                              (.preventDefault e)
-                              (.stopPropagation e)
-                              (js/console.log (.getData (.-dataTransfer e) "source-thng")))))
+                              (let [origin-minion-id (.getData (get-data-transfer e) "text/plain")
+                                    destination-minion-id (.-minionId (get-target-dataset e))]
+                                (js/console.log origin-minion-id)
+                                (js/console.log destination-minion-id)
+                                (.preventDefault e)))))

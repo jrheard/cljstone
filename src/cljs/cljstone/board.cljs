@@ -35,5 +35,5 @@
    schematic :- MinionSchematic]
   (let [minion (make-minion schematic)]
     (-> board
-        (assoc-in [:characters-by-id (:id minion)] minion)
+        (update-in [:characters-by-id] assoc (:id minion) minion)
         (update-in [which-board-half :minion-ids] conj (:id minion)))))

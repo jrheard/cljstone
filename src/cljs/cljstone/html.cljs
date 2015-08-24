@@ -14,6 +14,7 @@
 
 (em/defsnippet minion-snippet :compiled "resources/public/index.html" ".minion"
   [minion]
+  ".minion" (ef/set-attr :data-minion-id (:id minion))
   ".name" (ef/content (:name minion))
   ".attack" (ef/content (str (:attack minion)))
   ".health" (ef/content (str (:health minion))))

@@ -14,6 +14,7 @@
 
 (html/draw-board board)
 
+; TODO: record the id of the dragged minion and also use the one of the dropped minion
 (ef/at ".minion" (ev/listen :dragstart
                             (fn [e]
                               (js/console.log e)

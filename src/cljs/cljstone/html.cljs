@@ -27,5 +27,5 @@
 (em/deftemplate board-template :compiled "resources/public/index.html" [board-halves]
   ".board" (ef/content (map board-half-snippet board-halves)))
 
-(defn draw-board [board-halves]
-  (ef/at "body" (ef/content (board-template board-halves))))
+(defn draw-board [board]
+  (ef/at "body" (ef/content (board-template [(:half-1 board) (:half-2 board)]))))

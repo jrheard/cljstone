@@ -1,5 +1,6 @@
 (ns cljstone.app
-  (:require [enfocus.core :as ef]
+  (:require [cljs-uuid-utils.core :as uuid]
+            [enfocus.core :as ef]
             [enfocus.events :as ev]
             [schema.core :as s]
             [cljstone.board :as board]
@@ -7,13 +8,10 @@
             [cljstone.hero :as hero]
             [cljstone.html :as html]))
 
-(def p1 {:index 0 :hero hero/jaina :minions [minion/chillwind-yeti minion/goldshire-footman]})
-(def p2 {:index 1 :hero hero/thrall :minions [minion/magma-rager]})
+(html/draw-board (board/make-board hero/jaina hero/thrall))
 
-(html/draw-board [p1 p2])
-
-; hm - do all characters need their own unique id, which we can use to look them up based on an event?
-; main question is - how do we get from a drop event to a (origin-character, destination-character) tuple?
+(js/console.log (uuid/make-random-uuid))
+(js/console.log (uuid/uuid-string (uuid/make-random-uuid)))
 
 (ef/at ".minion" (ev/listen :dragstart
                             (fn [e]

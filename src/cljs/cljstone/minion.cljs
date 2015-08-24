@@ -3,6 +3,7 @@
 
 (def Minion
   {:name s/Str
+   :id s/Str
    :attack s/Int
    :health s/Int})
 

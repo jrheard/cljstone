@@ -24,7 +24,7 @@
   ".hero" (ef/content (hero-snippet (:hero board-half)))
   ".minion-container" (ef/content
                         (map #(minion-snippet (characters-by-id %))
-                             (:minions board-half))))
+                             (:minion-ids board-half))))
 
 (em/deftemplate board-template :compiled "resources/public/index.html" [board]
   ".board" (ef/content [(board-half-snippet (:half-1 board) (:characters-by-id board))

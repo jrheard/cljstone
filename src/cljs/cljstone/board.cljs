@@ -6,7 +6,7 @@
 (def BoardHalf
   {:index s/Int
    :hero hero/Hero
-   :minions [s/Str]})
+   :minion-ids [s/Str]})
 
 (def Character
   {:id s/Str
@@ -25,16 +25,15 @@
 (s/defn make-board :- Board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
-  {:half-1 {:index 0 :hero hero-1 :minions []}
-   :half-2 {:index 1 :hero hero-2 :minions []}
+  {:half-1 {:index 0 :hero hero-1 :minion-ids []}
+   :half-2 {:index 1 :hero hero-2 :minion-ids []}
    :characters-by-id {}})
 
 (s/defn summon-minion :- Board
   [board :- Board
-   ; TODO validate it's one of :half-1, :half-2
-   which-board-half :- s/Keyword
+   which-board-half :- (s/enum :half-1 :half-2)
    schematic :- MinionSchematic]
   (let [minion (make-minion schematic)]
     (-> board
         (assoc-in [:characters-by-id (:id minion)] minion)
-        (update-in [which-board-half :minions] conj (:id minion)))))
+        (update-in [which-board-half :minion-ids] conj (:id minion)))))

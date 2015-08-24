@@ -2,7 +2,7 @@
   (:require [enfocus.core :as ef]
             [schema.core :as s])
   (:require-macros [enfocus.macros :as em])
-  (:use [cljstone.minion :only [Minion]]
+  (:use [cljstone.minion :only [Minion get-attack get-health]]
         [cljstone.hero :only [Hero]]
         [cljstone.board :only [BoardHalf]]))
 
@@ -14,18 +14,21 @@
 
 (em/defsnippet minion-snippet :compiled "resources/public/index.html" ".minion"
   [minion]
+  ".minion" (ef/set-attr :data-minion-id (:id minion))
   ".name" (ef/content (:name minion))
-  ".attack" (ef/content (str (:attack minion)))
-  ".health" (ef/content (str (:health minion))))
+  ".attack" (ef/content (str (get-attack minion)))
+  ".health" (ef/content (str (get-health minion))))
 
 (em/defsnippet board-half-snippet :compiled "resources/public/index.html" ".board-half"
-  [board-half]
+  [board-half characters-by-id]
   ".hero" (ef/content (hero-snippet (:hero board-half)))
   ".minion-container" (ef/content
-                        (map minion-snippet (:minions board-half))))
+                        (map #(minion-snippet (characters-by-id %))
+                             (:minion-ids board-half))))
 
-(em/deftemplate board-template :compiled "resources/public/index.html" [board-halves]
-  ".board" (ef/content (map board-half-snippet board-halves)))
+(em/deftemplate board-template :compiled "resources/public/index.html" [board]
+  ".board" (ef/content [(board-half-snippet (:half-1 board) (:characters-by-id board))
+                        (board-half-snippet (:half-2 board) (:characters-by-id board))]))
 
-(defn draw-board [board-halves]
-  (ef/at "body" (ef/content (board-template board-halves))))
+(defn draw-board [board]
+  (ef/at "body" (ef/content (board-template board))))

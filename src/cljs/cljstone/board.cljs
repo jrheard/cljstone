@@ -12,7 +12,7 @@
   {:id s/Str
    :base-health s/Int
    :base-attack s/Int
-   ; TODO - modifiers?
+   :modifiers [Modifier]
    s/Any s/Any})
 
 (def Board
@@ -39,24 +39,12 @@
         (update-in [:characters-by-id] assoc (:id minion) minion)
         (update-in [which-board-half :minion-ids] conj (:id minion)))))
 
-(s/defn print-character [character :- Character]
-  (js/console.log (clj->js (select-keys character [:id :base-health :base-attack]))))
-
-(s/defn create-attack-modifier :- Modifier
-  [character :- Character]
-  {:type :attack
-   :name nil
-   :effects {:health (- (get-attack character))}})
-
-(s/defn attack :- Board
-  [character-id-1 :- s/Str
-   character-id-2 :- s/Str
-   board :- Board]
-    (let [character-1 ((board :characters-by-id) character-id-1)
-          character-2 ((board :characters-by-id) character-id-2)]
-      (print-character character-1)
-      (print-character character-2)
-      (js/console.log (clj->js (create-attack-modifier character-1)))
-      ; TODO: create attack modifiers, assoc them onto each minion's :modifiers list, return a board
-      )
-  )
+(s/defn attack :- [Character]
+  [character-1 :- Character
+   character-2 :- Character]
+  (let [create-attack-modifier (fn [c1 c2]
+                                 {:type attack
+                                  :name nil
+                                  :effects {:health (- (get-attack c1))}})]
+    [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
+     (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))

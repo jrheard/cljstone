@@ -12,9 +12,11 @@
   :cljsbuild
     {:builds
       [{:compiler
-        {:output-to "resources/public/core.js"
+        {:output-dir "resources/public"
+         :output-to "resources/public/core.js"
          :optimizations :whitespace
-         :pretty-print true}
+         :pretty-print true
+         :source-map "resources/public/core.js.map"}
        :source-paths ["src/cljs"]}]}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

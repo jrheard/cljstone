@@ -48,3 +48,16 @@
                                   :effects {:health (- (get-attack c1))}})]
     [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
      (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))
+
+
+; xxxxx fix function names
+(s/defn perform-attack :- Board
+  [board :- Board
+   character-id-1 :- s/Str
+   character-id-2 :- s/Str]
+  (let [character-1 ((board :characters-by-id) character-id-1)
+        character-2 ((board :characters-by-id) character-id-2)
+        [attacked-character-1 attacked-character-2] (attack character-1 character-2)]
+    (-> board
+        (assoc-in [:characters-by-id character-id-1] attacked-character-1)
+        (assoc-in [:characters-by-id character-id-2] attacked-character-2))))

@@ -9,8 +9,5 @@
 ; todo hero powers
 ; todo class enum - see how you can do a set of specific values in schema
 
-(s/defn make-hero :- Hero [name hero-class]
-  {:name name :class hero-class :health 30})
-
-(def jaina (make-hero "Jaina" :mage))
-(def thrall (make-hero "Thrall" :shaman))
+(s/defn make-hero :- Hero [hero-name hero-class hero-id]
+  {:name hero-name :class hero-class :health 30 :id hero-id})

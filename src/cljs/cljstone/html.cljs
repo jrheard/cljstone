@@ -49,9 +49,6 @@
       .-dataset))
 
 
-; ok in om we're gonna be storing actual Minions in BoardHalfs instead of minion ids, most likely
-; todo - look into om's drag and drop before making that decision
-
 #_(defn draw-board [board]
   (ef/at "body" (ef/content (board-template @board)))
 

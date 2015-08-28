@@ -42,9 +42,10 @@
 (def magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []})
 
 (s/defn make-minion :- Minion
-  [schematic :- MinionSchematic]
+  [schematic :- MinionSchematic
+   id :- s/Int]
   (-> schematic
-      (assoc :id (uuid/uuid-string (uuid/make-random-uuid)))
+      (assoc :id id)
       (assoc :modifiers [])))
 
 ; todo jesus how do you implement dire wolf alpha

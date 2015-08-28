@@ -23,14 +23,14 @@
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
   {:half-1 {:index 0 :hero hero-1 :minions []}
-   :half-2 {:index 1 :hero hero-2 :minions []}
-   :characters-by-id {}})
+   :half-2 {:index 1 :hero hero-2 :minions []}})
 
 (s/defn summon-minion :- Board
   [board :- Board
    which-board-half :- (s/enum :half-1 :half-2)
-   schematic :- MinionSchematic]
-  (let [minion (make-minion schematic)]
+   schematic :- MinionSchematic
+   id :- s/Int]
+  (let [minion (make-minion schematic id)]
     (-> board
         (update-in [which-board-half :minions] conj minion))))
 

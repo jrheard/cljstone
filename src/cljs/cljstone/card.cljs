@@ -7,3 +7,7 @@
 ; minions all have the same effect function - (summon-minion the-minion)
 
 ; todo - how will freezing trap / thaurissan work?
+
+; TODO - perhaps TargetingStrategies for battlecries/spells/attacking - minion attacking takes taunt into account, spells/battlecries don't
+
+; TODO - on-before-attack for ogre brute, on-after-attack for mistress of pain

@@ -1,35 +1,42 @@
 (ns cljstone.html
-  (:require [enfocus.core :as ef]
-            [enfocus.events :as ev]
+  (:require [reagent.core :as r]
             [schema.core :as s])
-  (:require-macros [enfocus.macros :as em])
   (:use [cljstone.minion :only [Minion get-attack get-health]]
         [cljstone.hero :only [Hero]]
         [cljstone.board :only [BoardHalf perform-attack]]))
 
-(def root-template "resources/public/index.html")
+(defn draw-hero [hero]
+  [:div.hero
+   [:div.name (:name hero)]])
 
-(em/defsnippet hero-snippet :compiled "resources/public/index.html" ".hero div"
-  [hero]
-  ".name" (ef/content (:name hero)))
+(defn draw-minion [minion]
+  [:div.minion {:data-minion-id (:id minion)
+                :draggable true
+                :on-drag-start #(js/console.log "dragstart")
+                :on-drag-over #(.preventDefault %)
+                :on-drop #(js/console.log "drop")}
+   [:div.name (:name minion)]
+   [:div.attack (get-attack minion)]
+   [:div.health (get-health minion)]])
 
-(em/defsnippet minion-snippet :compiled "resources/public/index.html" ".minion"
-  [minion]
-  ".minion" (ef/set-attr :data-minion-id (:id minion))
-  ".name" (ef/content (:name minion))
-  ".attack" (ef/content (str (get-attack minion)))
-  ".health" (ef/content (str (get-health minion))))
+(defn draw-board-half [board-half characters-by-id]
+  [:div.board-half
+   [:div.body
+     [draw-hero (:hero board-half)]
+     [:div.minion-container
+      (for [minion-id (:minion-ids board-half)]
+        [draw-minion (characters-by-id minion-id)])]]])
 
-(em/defsnippet board-half-snippet :compiled "resources/public/index.html" ".board-half"
-  [board-half characters-by-id]
-  ".hero" (ef/content (hero-snippet (:hero board-half)))
-  ".minion-container" (ef/content
-                        (map #(minion-snippet (characters-by-id %))
-                             (:minion-ids board-half))))
+(defn draw-board [board-atom]
+  (let [board @board-atom]
+    [:div.board
+     [draw-board-half (:half-1 board) (:characters-by-id board)]
+     [draw-board-half (:half-2 board) (:characters-by-id board)]]))
 
-(em/deftemplate board-template :compiled "resources/public/index.html" [board]
-  ".board" (ef/content [(board-half-snippet (:half-1 board) (:characters-by-id board))
-                        (board-half-snippet (:half-2 board) (:characters-by-id board))]))
+
+(defn mount-reagent [board-atom]
+  (r/render-component [draw-board board-atom]
+                      (js/document.getElementById "content")))
 
 (defn get-data-transfer [goog-event]
   (-> goog-event
@@ -41,7 +48,11 @@
       .-currentTarget
       .-dataset))
 
-(defn draw-board [board]
+
+; ok in om we're gonna be storing actual Minions in BoardHalfs instead of minion ids, most likely
+; todo - look into om's drag and drop before making that decision
+
+#_(defn draw-board [board]
   (ef/at "body" (ef/content (board-template @board)))
 
   (ef/at ".minion" (ev/listen :dragstart

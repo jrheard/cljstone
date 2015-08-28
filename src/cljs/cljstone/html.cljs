@@ -5,74 +5,48 @@
         [cljstone.hero :only [Hero]]
         [cljstone.board :only [BoardHalf perform-attack]]))
 
+(defn get-target-dataset [event]
+  (-> event
+      .-currentTarget
+      .-dataset))
+
 (defn draw-hero [hero]
   [:div.hero
    [:div.name (:name hero)]])
 
-(defn draw-minion [minion]
+(defn draw-minion [minion board-atom]
   [:div.minion {:data-minion-id (:id minion)
                 :draggable true
-                :on-drag-start #(js/console.log "dragstart")
+                :on-drag-start (fn [e]
+                                (let [minion-id (.-minionId (get-target-dataset e)) ]
+                                  (.setData (.-dataTransfer e) "text/plain" minion-id)))
                 :on-drag-over #(.preventDefault %)
-                :on-drop #(js/console.log "drop")}
+                :on-drop (fn [e]
+                          (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
+                                destination-minion-id (js/parseInt (.-minionId (get-target-dataset e)))]
+                            (js/console.log origin-minion-id)
+                            (js/console.log destination-minion-id)
+                            (perform-attack @board-atom origin-minion-id destination-minion-id)
+                            ; XXXX ok figure out path in board-atom to this minion
+                            (.preventDefault e)))}
    [:div.name (:name minion)]
    [:div.attack (get-attack minion)]
    [:div.health (get-health minion)]])
 
-(defn draw-board-half [board-half characters-by-id]
-  [:div.board-half
-   [:div.body
-     [draw-hero (:hero board-half)]
-     [:div.minion-container
-      (for [minion (:minions board-half)]
-        ^{:key (:id minion)} [draw-minion minion])]]])
+(defn draw-board-half [board-atom which-half]
+  (let [board-half (which-half @board-atom)]
+    [:div.board-half
+     [:div.body
+       [draw-hero (:hero board-half)]
+       [:div.minion-container
+        (for [minion (:minions board-half)]
+          ^{:key (:id minion)} [draw-minion minion board-atom])]]]))
 
 (defn draw-board [board-atom]
-  (let [board @board-atom]
-    [:div.board
-     [draw-board-half (:half-1 board) (:characters-by-id board)]
-     [draw-board-half (:half-2 board) (:characters-by-id board)]]))
-
+  [:div.board
+   [draw-board-half board-atom :half-1]
+   [draw-board-half board-atom :half-2]])
 
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]
                       (js/document.getElementById "content")))
-
-(defn get-data-transfer [goog-event]
-  (-> goog-event
-      .getBrowserEvent
-      .-dataTransfer))
-
-(defn get-target-dataset [goog-event]
-  (-> goog-event
-      .-currentTarget
-      .-dataset))
-
-
-#_(defn draw-board [board]
-  (ef/at "body" (ef/content (board-template @board)))
-
-  (ef/at ".minion" (ev/listen :dragstart
-                              (fn [e]
-                                (js/console.log "dragstart")
-                                (let [minion-id (.-minionId (get-target-dataset e))
-                                      data-transfer (get-data-transfer e)]
-                                  (.setData data-transfer "text/plain" minion-id)))))
-
-  (ef/at ".minion"
-    (ev/listen :dragover
-               (fn [e]
-                 (.preventDefault e))))
-
-  (ef/at ".minion" (ev/listen :drop
-                              (fn [e]
-                                (let [origin-minion-id (.getData (get-data-transfer e) "text/plain")
-                                      destination-minion-id (.-minionId (get-target-dataset e))]
-                                  (js/console.log origin-minion-id)
-                                  (js/console.log destination-minion-id)
-                                  (swap! board perform-attack origin-minion-id destination-minion-id)
-                                  (draw-board board)
-                                  (.preventDefault e))))))
-
-
-

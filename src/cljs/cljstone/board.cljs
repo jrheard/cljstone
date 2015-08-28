@@ -4,12 +4,12 @@
   (:use [cljstone.minion :only [Minion MinionSchematic Modifier get-attack make-minion]]))
 
 (def BoardHalf
-  {:index s/Int
+  {:index s/Int ; xxx is this used anywhere?
    :hero hero/Hero
-   :minion-ids [s/Str]})
+   :minions [Minion]})
 
 (def Character
-  {:id s/Str
+  {:id s/Int
    :base-health s/Int
    :base-attack s/Int
    :modifiers [Modifier]
@@ -17,17 +17,13 @@
 
 (def Board
   {:half-1 BoardHalf
-   :half-2 BoardHalf
-   ; hm - if we made this next field an atom, we could attach watchers to it
-   ; might be an interesting way of powering events
-   ; doesn't cover everything though (blessing of wisdom)
-   :characters-by-id {s/Str Character}})
+   :half-2 BoardHalf})
 
 (s/defn make-board :- Board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
-  {:half-1 {:index 0 :hero hero-1 :minion-ids []}
-   :half-2 {:index 1 :hero hero-2 :minion-ids []}
+  {:half-1 {:index 0 :hero hero-1 :minions []}
+   :half-2 {:index 1 :hero hero-2 :minions []}
    :characters-by-id {}})
 
 (s/defn summon-minion :- Board
@@ -36,8 +32,7 @@
    schematic :- MinionSchematic]
   (let [minion (make-minion schematic)]
     (-> board
-        (update-in [:characters-by-id] assoc (:id minion) minion)
-        (update-in [which-board-half :minion-ids] conj (:id minion)))))
+        (update-in [which-board-half :minions] conj minion))))
 
 (s/defn attack :- [Character]
   [character-1 :- Character

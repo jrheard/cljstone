@@ -25,7 +25,7 @@
      [draw-hero (:hero board-half)]
      [:div.minion-container
       (for [minion-id (:minion-ids board-half)]
-        [draw-minion (characters-by-id minion-id)])]]])
+        ^{:key minion-id} [draw-minion (characters-by-id minion-id)])]]])
 
 (defn draw-board [board-atom]
   (let [board @board-atom]

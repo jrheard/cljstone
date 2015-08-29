@@ -5,10 +5,12 @@
         [cljstone.hero :only [Hero]]
         [cljstone.board :only [BoardHalf perform-attack]]))
 
-(defn get-target-dataset [event]
+(defn- get-minion-id-from-event [event]
   (-> event
       .-currentTarget
-      .-dataset))
+      .-dataset
+      .-minionId
+      js/parseInt))
 
 (defn draw-hero [hero]
   [:div.hero
@@ -18,12 +20,12 @@
   [:div.minion {:data-minion-id (:id minion)
                 :draggable true
                 :on-drag-start (fn [e]
-                                (let [minion-id (.-minionId (get-target-dataset e)) ]
+                                (let [minion-id (get-minion-id-from-event e)]
                                   (.setData (.-dataTransfer e) "text/plain" minion-id)))
                 :on-drag-over #(.preventDefault %)
                 :on-drop (fn [e]
                           (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                                destination-minion-id (js/parseInt (.-minionId (get-target-dataset e)))]
+                                destination-minion-id (get-minion-id-from-event e)]
                             (swap! board-atom perform-attack origin-minion-id destination-minion-id)
                             (.preventDefault e)))}
    [:div.name (:name minion)]

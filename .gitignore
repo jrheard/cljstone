@@ -12,3 +12,4 @@ pom.xml.asc
 resources/public/
 *.swp
 *.swo
+.cljs_rhino_repl/

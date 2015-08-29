@@ -1,0 +1,20 @@
+minions dying - this will prob be the start of game-event handlers
+put minion death in :on-after-attack to start off; note that this won't handle explosive trap, knife juggler, etc; can deal with those later
+hm perhaps :on-taking-damage - yeah i like that
+
+
+
+cards
+hands
+decks
+turns
+mana crystals
+
+
+spells
+targeting
+taunt
+
+
+
+combat log

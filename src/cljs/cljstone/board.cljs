@@ -4,8 +4,7 @@
   (:use [cljstone.minion :only [Minion MinionSchematic Modifier get-attack make-minion]]))
 
 (def BoardHalf
-  {:index s/Int ; xxx is this used anywhere?
-   :hero hero/Hero
+  {:hero hero/Hero
    :minions [Minion]})
 
 (def Character
@@ -41,8 +40,8 @@
 (s/defn make-board :- Board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
-  {:half-1 {:index 0 :hero hero-1 :minions []}
-   :half-2 {:index 1 :hero hero-2 :minions []}})
+  {:half-1 {:hero hero-1 :minions []}
+   :half-2 {:hero hero-2 :minions []}})
 
 (s/defn summon-minion :- Board
   [board :- Board

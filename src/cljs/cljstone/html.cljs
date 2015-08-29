@@ -3,7 +3,7 @@
             [schema.core :as s])
   (:use [cljstone.minion :only [Minion get-attack get-health]]
         [cljstone.hero :only [Hero]]
-        [cljstone.board :only [BoardHalf perform-attack]]))
+        [cljstone.board :only [BoardHalf attack]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event
@@ -26,7 +26,7 @@
                 :on-drop (fn [e]
                           (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
                                 destination-minion-id (get-minion-id-from-event e)]
-                            (swap! board-atom perform-attack origin-minion-id destination-minion-id)
+                            (swap! board-atom attack origin-minion-id destination-minion-id)
                             (.preventDefault e)))}
    [:div.name (:name minion)]
    [:div.attack (get-attack minion)]

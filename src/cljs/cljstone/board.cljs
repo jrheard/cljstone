@@ -20,12 +20,16 @@
    :half-2 BoardHalf})
 
 (s/defn path-to-character :- [s/Any]
+  "Returns a vector like [:half-1 :minions 2] telling you where the given character is in the given board."
   [board :- Board
    character-id :- s/Int]
   (let [find-in-board-half (fn [board-half]
                              ; TODO support looking up heroes
-                             (let [minion-ids (to-array (map :id (:minions board-half)))
-                                   index (.indexOf minion-ids character-id)]
+                             (let [index (-> board-half
+                                             :minions
+                                             (#(map :id %))
+                                             to-array
+                                             (.indexOf character-id))]
                                (when (not= index -1)
                                  [:minions index])))
         half-1-path (find-in-board-half (:half-1 board))
@@ -59,20 +63,16 @@
     [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
      (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))
 
-
 ; xxxxx fix function names
 (s/defn perform-attack :- Board
   [board :- Board
    character-id-1 :- s/Int
    character-id-2 :- s/Int]
-  (js/console.log (clj->js (path-to-character board character-id-1)))
-  (js/console.log (clj->js (path-to-character board character-id-2)))
-
-  #_(let [character-1 ((board :characters-by-id) character-id-1)
-        character-2 ((board :characters-by-id) character-id-2)
+  (let [character-1-path (path-to-character board character-id-1)
+        character-1 (get-in board character-1-path)
+        character-2-path (path-to-character board character-id-2)
+        character-2 (get-in board character-2-path)
         [attacked-character-1 attacked-character-2] (attack character-1 character-2)]
     (-> board
-        (assoc-in [:characters-by-id character-id-1] attacked-character-1)
-        (assoc-in [:characters-by-id character-id-2] attacked-character-2)))
-
-  )
+        (assoc-in character-1-path attacked-character-1)
+        (assoc-in character-2-path attacked-character-2))))

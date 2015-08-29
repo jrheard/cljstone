@@ -24,10 +24,7 @@
                 :on-drop (fn [e]
                           (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
                                 destination-minion-id (js/parseInt (.-minionId (get-target-dataset e)))]
-                            (js/console.log origin-minion-id)
-                            (js/console.log destination-minion-id)
-                            (perform-attack @board-atom origin-minion-id destination-minion-id)
-                            ; XXXX ok figure out path in board-atom to this minion
+                            (swap! board-atom perform-attack origin-minion-id destination-minion-id)
                             (.preventDefault e)))}
    [:div.name (:name minion)]
    [:div.attack (get-attack minion)]

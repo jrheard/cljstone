@@ -1,6 +1,5 @@
 (ns cljstone.minion
-  (:require [cljs-uuid-utils.core :as uuid]
-            [schema.core :as s])
+  (:require [schema.core :as s])
   (:use [clojure.set :only [rename-keys]]))
 
 ; todo - what about aldor peacekeeper? it sets a new base attack

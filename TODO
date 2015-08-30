@@ -1,8 +1,4 @@
-minions dying - this will prob be the start of game-event handlers
-put minion death in :on-after-attack to start off; note that this won't handle explosive trap, knife juggler, etc; can deal with those later
-hm perhaps :on-taking-damage - yeah i like that
-
-
+knife juggler? really interested in looking into channels / core.async right now, less interested in going straight to cards/hands/etc
 
 cards
 hands

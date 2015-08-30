@@ -16,7 +16,6 @@
 (def jaina (hero/make-hero "Jaina" :mage (get-next-character-id)))
 (def thrall (hero/make-hero "Thrall" :shaman (get-next-character-id)))
 
-; TODO - hammer out boundaries between where this is an atom and where it's not
 (def board (let [board-atom (make-board jaina thrall)
                  the-board @board-atom]
              (reset! board-atom (-> the-board

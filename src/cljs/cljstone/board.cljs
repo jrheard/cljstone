@@ -46,18 +46,26 @@
       (concat [:half-1] half-1-path)
       (concat [:half-2] half-2-path))))
 
-; todo - clean up
+(s/defn trim-dead-minion
+  [board :- Board
+   minion :- Minion]
+  (let [minions-vec-path (take 2 (path-to-character board (:id minion)))
+        minions-vec-without-dead-minion (vec (remove #(= (:id %) (:id minion))
+                                                     (get-in board minions-vec-path)))]
+    [minions-vec-path minions-vec-without-dead-minion]))
+
 (s/defn make-board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
   (let [board (r/atom {:half-1 {:hero hero-1 :minions []}
                        :half-2 {:hero hero-2 :minions []}})]
-    (add-watch board :grim-reaper (fn [key board-atom old-val new-val]
-                                    (when-let [dead-minion (find-a-dead-character-in-board new-val)]
-                                      (let [minions-vec-path (take 2 (path-to-character new-val (:id dead-minion)))]
-                                      ; TODO fire deathrattle for dead minion
-                                        (swap! board-atom assoc-in minions-vec-path (vec (remove #(= (:id %) (:id dead-minion))
-                                                                                                  (get-in new-val minions-vec-path))))))))
+    (add-watch board
+               :grim-reaper
+               (fn [_ board-atom _ new-val]
+                 (when-let [dead-minion (find-a-dead-character-in-board new-val)]
+                   ; TODO fire deathrattle for dead minion
+                   (let [[minions-path minions-vec] (trim-dead-minion new-val dead-minion)]
+                     (swap! board-atom assoc-in minions-path minions-vec)))))
     board))
 
 (s/defn summon-minion :- Board
@@ -65,11 +73,14 @@
    which-board-half :- (s/enum :half-1 :half-2)
    schematic :- MinionSchematic
    id :- s/Int]
+  ; TODO - MinionSchematics will eventually have k/v pairs like :on-summon-minion a-fn
+  ; and minions will have k/v pairs like :on-summon-minion a-channel;
+  ; the machinery that sets up those channels and hooks them up to those functions will live here.
   (let [minion (make-minion schematic id)]
     (-> board
         (update-in [which-board-half :minions] conj minion))))
 
-(s/defn modify-characters-for-attack :- [Character]
+(s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]
   [character-1 :- Character
    character-2 :- Character]
   (let [create-attack-modifier (fn [c1 c2]
@@ -84,12 +95,10 @@
   [board :- Board
    character-id-1 :- s/Int
    character-id-2 :- s/Int]
-  (let [character-1-path (path-to-character board character-id-1)
-        character-1 (get-in board character-1-path)
-        character-2-path (path-to-character board character-id-2)
-        character-2 (get-in board character-2-path)
+  (let [[character-1-path character-2-path] (map #(path-to-character board %) [character-id-1 character-id-2])
+        [character-1 character-2] (map #(get-in board %) [character-1-path character-2-path])
         [attacked-character-1 attacked-character-2] (modify-characters-for-attack character-1 character-2)]
-    ; todo - this is currently a pure function but will eventually want to put messages in channels. how to reconcile?
+    ; todo - this is currently a pure function but will eventually want to put messages in channels, which is a side effect. how to reconcile?
     (-> board
         (assoc-in character-1-path attacked-character-1)
         (assoc-in character-2-path attacked-character-2))))

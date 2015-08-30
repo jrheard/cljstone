@@ -46,6 +46,7 @@
       (concat [:half-1] half-1-path)
       (concat [:half-2] half-2-path))))
 
+; todo - clean up
 (s/defn make-board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
@@ -55,8 +56,8 @@
                                     (when-let [dead-minion (find-a-dead-character-in-board new-val)]
                                       (let [minions-vec-path (take 2 (path-to-character new-val (:id dead-minion)))]
                                       ; TODO fire deathrattle for dead minion
-                                        (swap! board-atom assoc-in minions-vec-path (remove #(= (:id %) (:id dead-minion))
-                                                                                            (get-in new-val minions-vec-path)))))))
+                                        (swap! board-atom assoc-in minions-vec-path (vec (remove #(= (:id %) (:id dead-minion))
+                                                                                                  (get-in new-val minions-vec-path))))))))
     board))
 
 (s/defn summon-minion :- Board

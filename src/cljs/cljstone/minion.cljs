@@ -39,6 +39,7 @@
 (def chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :modifiers []})
 (def goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :modifiers []})
 (def magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []})
+(def bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :modifiers []})
 
 (s/defn make-minion :- Minion
   [schematic :- MinionSchematic

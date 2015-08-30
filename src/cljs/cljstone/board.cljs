@@ -24,6 +24,7 @@
   [board :- Board]
   (let [minions (concat (get-in board [:half-1 :minions])
                         (get-in board [:half-2 :minions]))]
+    ; TODO - why doesn't (some) work here? kills the entire board-half, not sure why
     (first (filter #(<= (get-health %) 0)
                    minions))))
 

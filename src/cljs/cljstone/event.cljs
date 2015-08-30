@@ -45,3 +45,14 @@
 
 ; worth googling: in core.async systems, where do your side effects live? in a bunch of tiny go-blocks?
 ; or should the go-blocks just return values and *not* perform side effects?
+
+; ok it looks like the way to have return values is to have input channels and output channels
+; so you could... have knife juggler have an :on-owner-summons-minion [input-chan output-chan] pair, perhaps? that could work. but in that case who's reading from output-chan?
+; if someone's gotta read from output-chan and do something with its value, then does core.async really buy us anything over just calling the function in the first place?
+; unlesss... what if knife juggler doesn't *return* an output channel, but instead *takes* one?
+; what if we have a go-block that constantly tries to pull from a board-updates channel, and whenever it gets a message it calls swap! on the baord with it?
+; might be dumb, might work. todo: figure out how that plays with the combat log / (cause-damage) function idea.
+; gonna have to standardize on a format/schema for messages to that output channel.
+; or perhaps could return functions + args, like [draw-card :half-1], or [cause-damage the-knife-juggler-minion another-character], etc. that could work.
+
+; TODO - look into async/merge

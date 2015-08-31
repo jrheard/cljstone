@@ -19,6 +19,7 @@
 (defn draw-minion [minion board-atom]
   [:div.minion {:data-minion-id (:id minion)
                 :draggable true
+                ; todo - any reason to use core.async here, or overengineering?
                 :on-drag-start (fn [e]
                                 (let [minion-id (get-minion-id-from-event e)]
                                   (.setData (.-dataTransfer e) "text/plain" minion-id)))

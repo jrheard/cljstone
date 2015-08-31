@@ -41,6 +41,15 @@
 (def magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []})
 (def bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :modifiers []})
 
+(def knife-juggler {:name "Knife Juggler"
+                    :base-attack 3
+                    :base-health 2
+                    :modifiers [{:on-owner-summons-minion (fn []
+                                                            ; TODO - what args?
+                                                            ; TODO - return a go block
+                                                            )}]
+                    })
+
 (s/defn make-minion :- Minion
   [schematic :- MinionSchematic
    id :- s/Int]

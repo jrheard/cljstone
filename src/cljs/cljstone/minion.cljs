@@ -36,19 +36,24 @@
 
 ; Schematics
 
-(def chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :modifiers []})
-(def goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :modifiers []})
-(def magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []})
-(def bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :modifiers []})
+; TODO - instead of having a neutral-minions map, add a :class (s/enum :neutral :warrior :shaman :etc) k/v pair to minion schemas
+(def neutral-minions
+  {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :modifiers []}
+   :shieldbearer {:name "Shieldbearer" :base-attack 0 :base-health 4 :modifiers []}
+   :goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :modifiers []}
+   :bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :modifiers []}
+   :river-crocilisk {:name "River Crocilisk" :base-attack 2 :base-health 3 :modifiers []}
+   :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []}
+   :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :modifiers []}
+   :oasis-snapjaw {:name "Oasis Snapjaw" :base-attack 2 :base-health 7 :modifiers []}
+   :boulderfist-ogre {:name "Boulderfist Ogre" :base-attack 6 :base-health 7 :modifiers []}
+   :war-golem {:name "War Golem" :base-attack 7 :base-health 7 :modifiers []}})
 
-(def knife-juggler {:name "Knife Juggler"
-                    :base-attack 3
-                    :base-health 2
-                    :modifiers [{:on-owner-summons-minion (fn []
-                                                            ; TODO - what args?
-                                                            ; TODO - return a go block
-                                                            )}]
-                    })
+
+; TODO - minion types like :beast, :dragon, :mech
+
+
+; TODO - on-before-attack for ogre brute, on-after-attack for mistress of pain
 
 (s/defn make-minion :- Minion
   [schematic :- MinionSchematic

@@ -2,10 +2,13 @@
   (:require [reagent.core :as r]
             [schema.core :as s]
             [cljstone.hero :as hero])
-  (:use [cljstone.minion :only [Minion MinionSchematic Modifier get-attack get-health make-minion]]))
+  (:use [cljstone.card :only [Card]]
+        [cljstone.minion :only [Minion MinionSchematic Modifier get-attack get-health make-minion]]))
 
 (def BoardHalf
   {:hero hero/Hero
+   :hand [Card]
+   :deck [Card]
    :minions [Minion]})
 
 (def Character

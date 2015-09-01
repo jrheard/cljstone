@@ -1,9 +1,9 @@
 (ns cljstone.html
-  (:require [reagent.core :as r]
+  (:require [goog.dom :as dom]
+            [reagent.core :as r]
             [schema.core :as s])
-  (:use [clojure.string :only [replace]]
-        [cljstone.minion :only [get-attack get-health]]
-        [cljstone.board :only [attack]]))
+  (:use [cljstone.minion :only [get-attack get-health]]
+        [cljstone.board :only [attack play-card]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event
@@ -12,14 +12,15 @@
       .-minionId
       js/parseInt))
 
-(defn draw-card [card]
-  ; TODO take board; support clicking on cards to play them
-  [:div.card.minion
+(defn draw-card [card index player board-atom]
+  [:div.card.minion {:data-card-index index
+                     :on-click (fn [e]
+                                 (let [card (-> e .-target (dom/getAncestorByClass "card"))]
+                                   (swap! board-atom play-card player index)))}
    [:div.name (:name card)]
    [:div.cost (:mana-cost card)]
-   [:div.minion-schematic
-    [:div.attack (:base-attack (:minion-schematic card))]
-    [:div.health (:base-health (:minion-schematic card))]]])
+   [:div.attack (:base-attack (:minion-schematic card))]
+   [:div.health (:base-health (:minion-schematic card))]])
 
 (defn draw-hero [hero]
   [:div.hero
@@ -46,9 +47,9 @@
   (let [board-half (player @board-atom)]
     [:div.board-half
      [:div.hand
-      [:h3 (replace (clj->js player) #"-" " ")]
-      (for [card (:hand board-half)]
-        ^{:key (:id card)} [draw-card card])]
+      [:h3 (:name (:hero board-half))]
+      (for [[index card] (map-indexed vector (:hand board-half))]
+        ^{:key (:id card)} [draw-card card index player board-atom])]
      [:div.body
        [draw-hero (:hero board-half)]
        [:div.minion-container

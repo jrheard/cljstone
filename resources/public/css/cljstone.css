@@ -6,6 +6,8 @@ h3 {
 	font-size: 20px;
 	font-weight: bold;
 	margin: 20px;
+	text-align: center;
+	text-transform: uppercase;
 }
 
 .board {

@@ -74,6 +74,8 @@
     board))
 
 ; XXXXXX maybe not all of these functions need to return new Boards, amirite? maybe just like new minions vectors, etc
+; actually nvm, swap! works just fine with functions that return a Board, i was totally insane to be worried about this at all.
+; functions that return Boards are a-ok.
 
 (s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]
   [character-1 :- Character

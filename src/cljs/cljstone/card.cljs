@@ -31,8 +31,7 @@
 (s/defn make-random-deck :- [Card]
   []
   (map minion-schematic->card
-       (take NUM-CARDS-IN-DECK
-             (repeatedly #(rand-nth (vals all-minions))))))
+       (repeatedly NUM-CARDS-IN-DECK #(rand-nth (vals all-minions)))))
 
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions

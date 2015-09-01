@@ -27,6 +27,9 @@
    [:div.name (:name hero)]])
 
 (defn draw-minion [minion board-atom]
+  ; TODO 0-attack minions can't attack
+  ; generalize this by adding a .can-attack class to minions that can attack
+  ; frozen minions, summoning sickness minions, etc can't attack - nor can minions that've already attacked their max number of times this turn
   [:div.minion {:data-minion-id (:id minion)
                 :draggable true
                 ; todo - any reason to use core.async here, or overengineering?

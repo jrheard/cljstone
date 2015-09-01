@@ -1,9 +1,8 @@
 (ns cljstone.html
   (:require [reagent.core :as r]
             [schema.core :as s])
-  (:use [cljstone.minion :only [Minion get-attack get-health]]
-        [cljstone.hero :only [Hero]]
-        [cljstone.board :only [BoardHalf attack]]))
+  (:use [cljstone.minion :only [get-attack get-health]]
+        [cljstone.board :only [attack]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event
@@ -44,8 +43,8 @@
 
 (defn draw-board [board-atom]
   [:div.board
-   [draw-board-half board-atom :half-1]
-   [draw-board-half board-atom :half-2]])
+   [draw-board-half board-atom :player-1]
+   [draw-board-half board-atom :player-2]])
 
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]

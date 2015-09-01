@@ -1,26 +1,17 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [clojure.set :only [rename-keys]]))
+  (:use [cljstone.character :only [CharacterModifier]]))
 
 ; todo - what about aldor peacekeeper? it sets a new base attack
 ; what about blessing of wisdom? a :buff with an :on-attack -> function k/v pair?
 
-(def Effect
-  {(s/optional-key :health) s/Int
-   (s/optional-key :attack) s/Int})
-
-(def Modifier
-  {:type (s/enum :attack :buff)
-   :name (s/maybe s/Str)
-   :effect Effect})
-
 (def MinionSchematic
   {:name s/Str
    ; TODO - charge? freeze? divine shield? taunt? stealth?
-   ; maybe schematics can come with a prebuilt :modifiers list.. i kinda like that
+   :class (s/enum :neutral :mage :shaman)
    :base-attack s/Int
    :base-health s/Int
-   :modifiers [Modifier]})
+   :modifiers [CharacterModifier]})
 
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
 ; or what about if something's taken damage, had its HP buffed by stormwind champ, and the champ dies?
@@ -36,18 +27,17 @@
 
 ; Schematics
 
-; TODO - instead of having a neutral-minions map, add a :class (s/enum :neutral :warrior :shaman :etc) k/v pair to minion schemas
-(def neutral-minions
-  {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :modifiers []}
-   :shieldbearer {:name "Shieldbearer" :base-attack 0 :base-health 4 :modifiers []}
-   :goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :modifiers []}
-   :bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :modifiers []}
-   :river-crocilisk {:name "River Crocilisk" :base-attack 2 :base-health 3 :modifiers []}
-   :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :modifiers []}
-   :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :modifiers []}
-   :oasis-snapjaw {:name "Oasis Snapjaw" :base-attack 2 :base-health 7 :modifiers []}
-   :boulderfist-ogre {:name "Boulderfist Ogre" :base-attack 6 :base-health 7 :modifiers []}
-   :war-golem {:name "War Golem" :base-attack 7 :base-health 7 :modifiers []}})
+(def all-minions
+  {:wisp {:name "Wisp" :class :neutral :base-attack 1 :base-health 1 :modifiers []}
+   :shieldbearer {:name "Shieldbearer" :class :neutral :base-attack 0 :base-health 4 :modifiers []}
+   :goldshire-footman {:name "Goldshire Footman" :class :neutral :base-attack 1 :base-health 2 :modifiers []}
+   :bloodfen-raptor {:name "Bloodfen Raptor" :class :neutral :base-attack 3 :base-health 2 :modifiers []}
+   :river-crocilisk {:name "River Crocilisk" :class :neutral :base-attack 2 :base-health 3 :modifiers []}
+   :magma-rager {:name "Magma Rager" :class :neutral :base-attack 5 :base-health 1 :modifiers []}
+   :chillwind-yeti {:name "Chillwind Yeti" :class :neutral :base-attack 4 :base-health 5 :modifiers []}
+   :oasis-snapjaw {:name "Oasis Snapjaw" :class :neutral :base-attack 2 :base-health 7 :modifiers []}
+   :boulderfist-ogre {:name "Boulderfist Ogre" :class :neutral :base-attack 6 :base-health 7 :modifiers []}
+   :war-golem {:name "War Golem" :class :neutral :base-attack 7 :base-health 7 :modifiers []}})
 
 
 ; TODO - minion types like :beast, :dragon, :mech
@@ -56,6 +46,9 @@
 ; TODO - on-before-attack for ogre brute, on-after-attack for mistress of pain
 
 (s/defn make-minion :- Minion
+  ; TODO - MinionSchematics will eventually have k/v pairs like :on-summon-minion a-fn
+  ; and minions will have k/v pairs like :on-summon-minion a-channel;
+  ; the machinery that sets up those channels and hooks them up to those functions will live here.
   [schematic :- MinionSchematic
    id :- s/Int]
   (-> schematic

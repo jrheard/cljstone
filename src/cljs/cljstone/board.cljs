@@ -2,8 +2,9 @@
   (:require [reagent.core :as r]
             [schema.core :as s]
             [cljstone.hero :as hero])
-  (:use [cljstone.card :only [Card]]
-        [cljstone.minion :only [Minion MinionSchematic Modifier get-attack get-health make-minion]]))
+  (:use [cljstone.card :only [Card make-random-deck]]
+        [cljstone.character :only [Character Player get-next-character-id]]
+        [cljstone.minion :only [Minion get-attack get-health make-minion]]))
 
 (def BoardHalf
   {:hero hero/Hero
@@ -11,28 +12,21 @@
    :deck [Card]
    :minions [Minion]})
 
-(def Character
-  {:id s/Int
-   :base-health s/Int
-   :base-attack s/Int
-   :modifiers [Modifier]
-   s/Any s/Any})
-
 (def Board
-  {:half-1 BoardHalf
-   :half-2 BoardHalf})
+  {:player-1 BoardHalf
+   :player-2 BoardHalf})
 
 ; TODO - eventually have this detect dead heroes and trigger the end of the game
 (s/defn find-a-dead-character-in-board :- (s/maybe Character)
   [board :- Board]
-  (let [minions (concat (get-in board [:half-1 :minions])
-                        (get-in board [:half-2 :minions]))]
+  (let [minions (concat (get-in board [:player-1 :minions])
+                        (get-in board [:player-2 :minions]))]
     ; TODO - why doesn't (some) work here? kills the entire board-half, not sure why
     (first (filter #(<= (get-health %) 0)
                    minions))))
 
 (s/defn path-to-character :- [s/Any]
-  "Returns a vector like [:half-1 :minions 2] telling you where the given character is in the given board."
+  "Returns a vector like [:player-1 :minions 2] telling you where the given character is in the given board."
   [board :- Board
    character-id :- s/Int]
   (let [find-in-board-half (fn [board-half]
@@ -44,11 +38,11 @@
                                              (.indexOf character-id))]
                                (when (not= index -1)
                                  [:minions index])))
-        half-1-path (find-in-board-half (:half-1 board))
-        half-2-path (find-in-board-half (:half-2 board))]
+        half-1-path (find-in-board-half (:player-1 board))
+        half-2-path (find-in-board-half (:player-2 board))]
     (if half-1-path
-      (concat [:half-1] half-1-path)
-      (concat [:half-2] half-2-path))))
+      (concat [:player-1] half-1-path)
+      (concat [:player-2] half-2-path))))
 
 (s/defn trim-dead-minion
   [board :- Board
@@ -61,8 +55,15 @@
 (s/defn make-board
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
-  (let [board (r/atom {:half-1 {:hero hero-1 :minions []}
-                       :half-2 {:hero hero-2 :minions []}})]
+  (let [hero-1-deck (make-random-deck)
+        hero-2-deck (make-random-deck)
+        make-board-half (fn [hero deck]
+                          {:hero hero
+                           :hand (vec (take 5 deck))
+                           :deck (vec (drop 5 deck))
+                           :minions []})
+        board (r/atom {:player-1 (make-board-half hero-1 hero-1-deck)
+                       :player-2 (make-board-half hero-2 hero-2-deck)})]
     (add-watch board
                :grim-reaper
                (fn [_ board-atom _ new-val]
@@ -72,17 +73,7 @@
                      (swap! board-atom assoc-in minions-path minions-vec)))))
     board))
 
-(s/defn summon-minion :- Board
-  [board :- Board
-   which-board-half :- (s/enum :half-1 :half-2)
-   schematic :- MinionSchematic
-   id :- s/Int]
-  ; TODO - MinionSchematics will eventually have k/v pairs like :on-summon-minion a-fn
-  ; and minions will have k/v pairs like :on-summon-minion a-channel;
-  ; the machinery that sets up those channels and hooks them up to those functions will live here.
-  (let [minion (make-minion schematic id)]
-    (-> board
-        (update-in [which-board-half :minions] conj minion))))
+; XXXXXX maybe not all of these functions need to return new Boards, amirite? maybe just like new minions vectors, etc
 
 (s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]
   [character-1 :- Character
@@ -106,3 +97,17 @@
     (-> board
         (assoc-in character-1-path attacked-character-1)
         (assoc-in character-2-path attacked-character-2))))
+
+(s/defn play-card :- Board
+  [board :- Board
+   player :- Player
+   card-index :- s/Int]
+  ; TODO support playing spells, weapons
+  (let [hand (:hand (player board))
+        card (nth hand card-index)
+        new-hand (vec (concat (subvec hand 0 card-index) (subvec hand (+ 1 card-index))))
+        new-minions-vec (conj (get-in board [player :minions])
+                              (make-minion (:minion-schematic card) (get-next-character-id)))]
+    (-> board
+        (assoc-in [player :hand] new-hand)
+        (assoc-in [player :minions] new-minions-vec))))

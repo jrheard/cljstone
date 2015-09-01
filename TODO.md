@@ -1,6 +1,3 @@
-cards
-hands
-decks
 turns
 mana crystals
 

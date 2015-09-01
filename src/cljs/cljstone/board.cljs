@@ -98,6 +98,13 @@
         (assoc-in character-1-path attacked-character-1)
         (assoc-in character-2-path attacked-character-2))))
 
+; ugh - what does this function end up actually looking like?
+; minions have to be played on a board-half's minions list, and can be positioned between any of the current elements in that list, or prepended/appended to it.
+; some spells can be just tossed into the ether (arcane missiles)
+; some have to be targeted (frostbolt)
+; and so for those guys (and for minion summoning!), there's the begin-play-card phase, then the targeting phase, then the commit-to-playing-card [args] phase
+; for now, though, we can just pretend that targeting doesn't exist, and that all cards are tossed into the ether a la flamecannon.
+; but eventually there'll be multiple phases to playing a card, which some cards can skip (eg flamecannon)
 (s/defn play-card :- Board
   ; TODO - use preconditions to assert that card-index is within the right bounds
   [board :- Board

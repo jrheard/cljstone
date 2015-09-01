@@ -10,6 +10,17 @@ h3 {
 	text-transform: uppercase;
 }
 
+.debug {
+	position: absolute;
+	top: 0;
+	padding: 20px;
+	left: 1200px;
+	width: 500px;
+	background-color: rgba(200, 200, 200, 0.8);
+	border: solid 1px purple;
+	display: none;
+}
+
 .board {
 	width: 1800px;
 	margin: 0 auto;

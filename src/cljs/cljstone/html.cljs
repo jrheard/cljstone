@@ -2,7 +2,8 @@
   (:require [goog.dom :as dom]
             [reagent.core :as r]
             [schema.core :as s])
-  (:use [cljstone.minion :only [get-attack get-health]]
+  (:use [cljs.pprint :only [pprint]]
+        [cljstone.minion :only [get-attack get-health]]
         [cljstone.board :only [attack play-card]]))
 
 (defn- get-minion-id-from-event [event]
@@ -62,7 +63,9 @@
 (defn draw-board [board-atom]
   [:div.board
    [draw-board-half board-atom :player-1]
-   [draw-board-half board-atom :player-2]])
+   [draw-board-half board-atom :player-2]
+   [:div.debug
+     [:pre (with-out-str (pprint @board-atom))]]])
 
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]

@@ -13,7 +13,8 @@
       js/parseInt))
 
 (defn draw-card [card]
-  [:div.card
+  ; TODO take board; support clicking on cards to play them
+  [:div.card.minion
    [:div.name (:name card)]
    [:div.cost (:mana-cost card)]
    [:div.minion-schematic

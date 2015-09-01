@@ -2,6 +2,12 @@ body {
 	font-family: Helvetica, sans-serif;
 }
 
+h3 {
+	font-size: 20px;
+	font-weight: bold;
+	margin: 20px;
+}
+
 .board {
 	width: 1800px;
 	margin: 0 auto;
@@ -23,8 +29,18 @@ body {
 	top: -500px;
 }
 
-.board-half .hand .minion {
+.board-half .hand .card {
 	float: left;
+	width: 200px;
+	height: 200px;
+	border: solid 1px #AAA;
+	background-color: #EEE;
+	font-size: 10px;
+}
+
+.board-half .hand .card:hover {
+	background-color: #CCC;
+	cursor: pointer;
 }
 
 .board-half .body {

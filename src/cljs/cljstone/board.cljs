@@ -99,6 +99,7 @@
         (assoc-in character-2-path attacked-character-2))))
 
 (s/defn play-card :- Board
+  ; TODO - use preconditions to assert that card-index is within the right bounds
   [board :- Board
    player :- Player
    card-index :- s/Int]

@@ -1,7 +1,8 @@
 (ns cljstone.html
   (:require [reagent.core :as r]
             [schema.core :as s])
-  (:use [cljstone.minion :only [get-attack get-health]]
+  (:use [clojure.string :only [replace]]
+        [cljstone.minion :only [get-attack get-health]]
         [cljstone.board :only [attack]]))
 
 (defn- get-minion-id-from-event [event]
@@ -10,6 +11,14 @@
       .-dataset
       .-minionId
       js/parseInt))
+
+(defn draw-card [card]
+  [:div.card
+   [:div.name (:name card)]
+   [:div.cost (:mana-cost card)]
+   [:div.minion-schematic
+    [:div.attack (:base-attack (:minion-schematic card))]
+    [:div.health (:base-health (:minion-schematic card))]]])
 
 (defn draw-hero [hero]
   [:div.hero
@@ -32,9 +41,13 @@
    [:div.attack (get-attack minion)]
    [:div.health (get-health minion)]])
 
-(defn draw-board-half [board-atom which-half]
-  (let [board-half (which-half @board-atom)]
+(defn draw-board-half [board-atom player]
+  (let [board-half (player @board-atom)]
     [:div.board-half
+     [:div.hand
+      [:h3 (replace (clj->js player) #"-" " ")]
+      (for [card (:hand board-half)]
+        ^{:key (:id card)} [draw-card card])]
      [:div.body
        [draw-hero (:hero board-half)]
        [:div.minion-container

@@ -4,10 +4,18 @@
 
 (def NUM-CARDS-IN-DECK 30)
 
+(def next-card-id (atom 0))
+
+(defn get-next-card-id []
+  (let [id-to-return @next-card-id]
+    (swap! next-card-id inc)
+    id-to-return))
+
 (def Card
   {:type (s/enum :minion :spell :weapon)
    :name s/Str
    :mana-cost s/Int
+   :id s/Int
    s/Any s/Any})
 
 (s/defn minion-schematic->card :- Card
@@ -15,6 +23,7 @@
   {:type :minion
    :name (:name schematic)
    :mana-cost (rand-int 10)
+   :id (get-next-card-id)
    :minion-schematic schematic})
 
 ; TODO also eventually a spell->card function

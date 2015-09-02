@@ -10,12 +10,18 @@
   :plugins [[lein-cljsbuild "1.0.6"]]
   :cljsbuild
     {:builds
-      [{:compiler
-        {:output-dir "resources/public"
-         :output-to "resources/public/core.js"
-         :optimizations :whitespace
-         :pretty-print true
-         :source-map "resources/public/core.js.map"}
-       :source-paths ["src/cljs"]}]}
+      {:dev {:compiler
+               {:output-dir "resources/public"
+                :output-to "resources/public/core.js"
+                :optimizations :whitespace
+                :pretty-print true
+                :source-map "resources/public/core.js.map"}
+             :source-paths ["src/cljs"]}
+       :test {:compiler
+              {:output-to "test_resources/test.js"
+               :optimizations :whitespace
+               :pretty-print true}
+              :source-paths ["src/cljs" "test/cljs"]}}
+     :test-commands {"test" ["phantomjs" "test_resources/es5-shim.js" "test_resources/es5-sham.js" "test_resources/test.js" "test_resources/index.html"]}}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

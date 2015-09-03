@@ -18,10 +18,12 @@
                 :source-map "resources/public/core.js.map"}
              :source-paths ["src/cljs"]}
        :test {:compiler
-              {:output-to "test_resources/test.js"
+              {:output-dir "test_resources"
+               :output-to "test_resources/test.js"
                :optimizations :whitespace
-               :pretty-print true}
+               :pretty-print true
+               :source-map "test_resources/test.js.map"}
               :source-paths ["src/cljs" "test/cljs"]}}
-     :test-commands {"test" ["phantomjs" "test_resources/es5-shim.js" "test_resources/es5-sham.js" "test_resources/test.js" "test_resources/index.html"]}}
+     :test-commands {"test" ["phantomjs" "test_resources/test.js" "test_resources/index.html"]}}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

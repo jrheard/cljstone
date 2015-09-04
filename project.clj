@@ -7,23 +7,24 @@
                  [org.clojure/clojurescript "1.7.48"]
                  [prismatic/schema "0.4.4"]
                  [reagent "0.5.1-rc"]]
-  :plugins [[lein-cljsbuild "1.0.6"]]
+  :plugins [[lein-cljsbuild "1.0.6"]
+            [lein-doo "0.1.5-SNAPSHOT"]]
   :cljsbuild
     {:builds
       {:dev {:compiler
                {:output-dir "resources/public"
+                ; XXXXXX i don't think i actually understand what :output-dir does. look into it.
                 :output-to "resources/public/core.js"
                 :optimizations :whitespace
                 :pretty-print true
                 :source-map "resources/public/core.js.map"}
              :source-paths ["src/cljs"]}
        :test {:compiler
-              {:output-dir "test_resources"
+              {:main 'cljstone.runner
                :output-to "test_resources/test.js"
                :optimizations :whitespace
-               :pretty-print true
-               :source-map "test_resources/test.js.map"}
+               :pretty-print true}
               :source-paths ["src/cljs" "test/cljs"]}}
-     :test-commands {"test" ["phantomjs" "test_resources/test.js" "test_resources/index.html"]}}
+     :test-commands {"test" ["doo" "phantom" "test" "once"]}}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

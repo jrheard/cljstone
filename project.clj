@@ -12,12 +12,11 @@
   :cljsbuild
     {:builds
       {:dev {:compiler
-               {:output-dir "resources/public"
-                ; XXXXXX i don't think i actually understand what :output-dir does. look into it.
-                :output-to "resources/public/core.js"
+               {:output-to "resources/public/core.js"
                 :optimizations :whitespace
                 :pretty-print true
-                :source-map "resources/public/core.js.map"}
+                ;:source-map "resources/public/core.js.map"
+                }
              :source-paths ["src/cljs"]}
        :test {:compiler
               {:main 'cljstone.runner

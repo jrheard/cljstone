@@ -24,4 +24,4 @@
 
 (js/console.log "ASS")
 ; xxx sure feels like this next line should be the problem, but commenting it out changes nothing
-;(html/mount-reagent board)
+(html/mount-reagent board)

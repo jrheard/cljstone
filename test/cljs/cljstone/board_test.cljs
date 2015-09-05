@@ -1,7 +1,8 @@
 (ns cljstone.board-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.hero :as hero])
-  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card remove-minion]]
+            [cljstone.hero :as hero]
+            [cljstone.minion :as m])
+  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card remove-minion attack]]
         [cljstone.character :only [get-next-character-id]]
         [schema.test :only [validate-schemas]]))
 
@@ -73,8 +74,6 @@
     (swap! board play-card :player-2 0)
 
     (testing "minion death"
-      ; TODO move this to find-dead-character-in-board tests - test return value and returned fn as opposed to testing side effects
-      ; also test side effects tho
       (let [test-minion (get-in @board [:player-1 :minions 1])]
         (is (not (= (path-to-character @board (:id test-minion))
                     nil)))
@@ -88,3 +87,19 @@
         ; TODO: test deathrattles.
         (is (= (path-to-character @board (:id test-minion))
                nil))))))
+
+(deftest attacking
+  (testing "two minions attacking each other"
+    (let [board {:player-1 {:hero hero-1
+                            :hand []
+                            :deck []
+                            :minions [(m/make-minion (:boulderfist-ogre m/all-minions) 123)]}
+                 :player-2 {:hero hero-2
+                            :hand []
+                            :deck []
+                            :minions [(m/make-minion (:war-golem m/all-minions) 234)]}}
+          post-attack-board (attack board 123 234)]
+      (is (= (m/get-health (get-in post-attack-board [:player-1 :minions 0]))
+             0))
+      (is (= (m/get-health (get-in post-attack-board [:player-2 :minions 0]))
+             1)))))

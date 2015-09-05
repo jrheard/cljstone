@@ -3,5 +3,5 @@
             [cljstone.card-test]))
 
 (js/console.log "RUNNER")
-(doo-tests 'cljstest.card-test)
+(doo-tests 'cljstone.card-test)
 (js/console.log "WHAT ABOUT HERE")

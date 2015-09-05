@@ -2,12 +2,13 @@
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.hero :as hero])
   (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card]]
+        [cljstone.character :only [get-next-character-id]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (hero/make-hero "Jaina" :mage 0))
-(def hero-2 (hero/make-hero "Thrall" :shaman 1))
+(def hero-1 (hero/make-hero "Jaina" :mage (get-next-character-id)))
+(def hero-2 (hero/make-hero "Thrall" :shaman (get-next-character-id)))
 (def board @(make-board hero-1 hero-2))
 
 (deftest find-dead-character
@@ -35,7 +36,16 @@
 
 (deftest finding-paths
   (testing "looking up heroes"
-    (is (= (path-to-character board 0)
+    (is (= (path-to-character board (:id hero-1))
            [:player-1 :hero])
-        (= (path-to-character board 1)
-           [:player-2 :hero]))))
+        (= (path-to-character board (:id hero-2))
+           [:player-2 :hero])))
+
+  (testing "looking up minions"
+   (let [board (-> board
+                   (play-card :player-1 0)
+                   (play-card :player-1 0)
+                   (play-card :player-2 0))
+         minion-to-find (get-in board [:player-1 :minions 1])]
+     (is (= (path-to-character board (:id minion-to-find))
+            [:player-1 :minions 1])))))

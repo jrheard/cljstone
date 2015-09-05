@@ -70,5 +70,3 @@
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]
                       (js/document.getElementById "content")))
-
-(js/console.log "HTML")

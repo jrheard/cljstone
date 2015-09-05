@@ -22,6 +22,5 @@
              board-atom))
 
 
-(js/console.log "ASS")
-; xxx sure feels like this next line should be the problem, but commenting it out changes nothing
+; xxx global side effect
 ;(html/mount-reagent board)

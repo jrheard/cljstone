@@ -121,5 +121,3 @@
     (-> board
         (assoc-in [player :hand] new-hand)
         (assoc-in [player :minions] new-minions-vec))))
-
-(js/console.log "BOARD")

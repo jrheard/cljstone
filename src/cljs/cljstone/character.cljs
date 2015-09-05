@@ -29,5 +29,3 @@
   (let [id-to-return @next-character-id]
     (swap! next-character-id inc)
     id-to-return))
-
-(js/console.log "CHARACTER")

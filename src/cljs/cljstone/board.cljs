@@ -41,10 +41,9 @@
 
 (s/defn find-a-dead-character-in-board :- (s/maybe {:character Character :minion-removal-fn s/Any})
   [board :- Board]
-  (let [minions (concat (get-in board [:player-1 :minions])
-                        (get-in board [:player-2 :minions]))
-        dead-minion (first (filter #(<= (get-health %) 0) minions))]
-    (when dead-minion
+  (let [all-minions (concat (get-in board [:player-1 :minions])
+                            (get-in board [:player-2 :minions]))]
+    (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
       {:character dead-minion
        :minion-removal-fn (s/fn :- Board
                             [board :- Board]

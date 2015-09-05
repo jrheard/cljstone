@@ -30,14 +30,15 @@
   [board :- Board
    character-id :- s/Int]
   (let [find-in-board-half (fn [board-half]
-                             ; TODO support looking up heroes
-                             (let [index (-> board-half
-                                             :minions
-                                             (#(map :id %))
-                                             to-array
-                                             (.indexOf character-id))]
-                               (when (not= index -1)
-                                 [:minions index])))
+                             (if (= character-id (:id (:hero board-half)))
+                               [:hero]
+                               (let [index (-> board-half
+                                               :minions
+                                               (#(map :id %))
+                                               to-array
+                                               (.indexOf character-id))]
+                                 (when (not= index -1)
+                                   [:minions index]))))
         half-1-path (find-in-board-half (:player-1 board))
         half-2-path (find-in-board-half (:player-2 board))]
     (if half-1-path

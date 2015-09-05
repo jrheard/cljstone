@@ -1,7 +1,7 @@
 (ns cljstone.board-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.hero :as hero])
-  (:use [cljstone.board :only [find-a-dead-character-in-board make-board play-card]]
+  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
@@ -32,3 +32,10 @@
       (is (= (get-in board [:player-1 :minions 1 :base-health]) 0))
       (is (= (:id (find-a-dead-character-in-board board))
              (:id first-minion)))))))
+
+(deftest finding-paths
+  (testing "looking up heroes"
+    (is (= (path-to-character board 0)
+           [:player-1 :hero])
+        (= (path-to-character board 1)
+           [:player-2 :hero]))))

@@ -16,12 +16,13 @@
   {:player-1 BoardHalf
    :player-2 BoardHalf})
 
+(def STARTING-HAND-SIZE 5)
+
 ; TODO - eventually have this detect dead heroes and trigger the end of the game
 (s/defn find-a-dead-character-in-board :- (s/maybe Character)
   [board :- Board]
   (let [minions (concat (get-in board [:player-1 :minions])
                         (get-in board [:player-2 :minions]))]
-    ; TODO - why doesn't (some) work here? kills the entire board-half, not sure why
     (first (filter #(<= (get-health %) 0)
                    minions))))
 
@@ -61,8 +62,8 @@
         hero-2-deck (make-random-deck)
         make-board-half (fn [hero deck]
                           {:hero hero
-                           :hand (vec (take 5 deck))
-                           :deck (vec (drop 5 deck))
+                           :hand (vec (take STARTING-HAND-SIZE deck))
+                           :deck (vec (drop STARTING-HAND-SIZE deck))
                            :minions []})
         board (r/atom {:player-1 (make-board-half hero-1 hero-1-deck)
                        :player-2 (make-board-half hero-2 hero-2-deck)})]
@@ -74,10 +75,6 @@
                    (let [[minions-path minions-vec] (trim-dead-minion new-val dead-minion)]
                      (swap! board-atom assoc-in minions-path minions-vec)))))
     board))
-
-; XXXXXX maybe not all of these functions need to return new Boards, amirite? maybe just like new minions vectors, etc
-; actually nvm, swap! works just fine with functions that return a Board, i was totally insane to be worried about this at all.
-; functions that return Boards are a-ok.
 
 (s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]
   [character-1 :- Character
@@ -110,10 +107,12 @@
 ; for now, though, we can just pretend that targeting doesn't exist, and that all cards are tossed into the ether a la flamecannon.
 ; but eventually there'll be multiple phases to playing a card, which some cards can skip (eg flamecannon)
 (s/defn play-card :- Board
-  ; TODO - use preconditions to assert that card-index is within the right bounds
   [board :- Board
    player :- Player
    card-index :- s/Int]
+  {:pre [(< -1
+            card-index
+            (count (get-in board [player :hand])))]}
   ; TODO support playing spells, weapons
   (let [hand (:hand (player board))
         card (nth hand card-index)

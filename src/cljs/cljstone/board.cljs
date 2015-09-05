@@ -1,5 +1,6 @@
 (ns cljstone.board
   (:require [reagent.core :as r]
+            [reagent.ratom :as ratom]
             [schema.core :as s]
             [cljstone.hero :as hero])
   (:use [cljstone.card :only [Card make-random-deck]]
@@ -52,7 +53,7 @@
                                                                        (get-in board minions-path)))]
                               (assoc-in board minions-path vec-without-dead-minion)))})))
 
-(s/defn make-board
+(s/defn make-board :- ratom/RAtom
   [hero-1 :- hero/Hero
    hero-2 :- hero/Hero]
   (let [hero-1-deck (make-random-deck)

@@ -4,7 +4,8 @@
 (def Hero
   {:name s/Str
    :class s/Keyword
-   :health s/Int})
+   :health s/Int
+   :id s/Int})
 
 ; todo hero powers
 ; todo class enum - see how you can do a set of specific values in schema

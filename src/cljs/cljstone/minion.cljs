@@ -23,7 +23,7 @@
 ; charge minions can be denoted in their schematics as (s/Maybe :charge) s/Bool
 (def Minion
   (assoc MinionSchematic
-   :id s/Str))
+   :id s/Int))
 
 ; Schematics
 

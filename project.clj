@@ -22,7 +22,6 @@
                :output-to "test_resources/test.js"
                :optimizations :whitespace
                :pretty-print true}
-              :source-paths ["src/cljs" "test/cljs"]}}
-     :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
+              :source-paths ["src/cljs" "test/cljs"]}}}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

@@ -21,6 +21,5 @@
                                     (play-card :player-2 0)))
              board-atom))
 
-
 (defn ^:export main []
   (html/mount-reagent board))

@@ -114,9 +114,9 @@
             card-index
             (count (get-in board [player :hand])))]}
   ; TODO support playing spells, weapons
-  (let [hand (:hand (player board))
+  (let [hand (-> board player :hand)
         card (nth hand card-index)
-        new-hand (vec (concat (subvec hand 0 card-index) (subvec hand (+ 1 card-index))))
+        new-hand (vec (remove #(= (:id %) (:id card)) hand))
         new-minions-vec (conj (get-in board [player :minions])
                               (make-minion (:minion-schematic card) (get-next-character-id)))]
     (-> board

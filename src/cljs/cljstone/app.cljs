@@ -22,5 +22,5 @@
              board-atom))
 
 
-; xxx global side effect
-;(html/mount-reagent board)
+(defn ^:export main []
+  (html/mount-reagent board))

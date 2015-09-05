@@ -15,8 +15,7 @@
                {:output-to "resources/public/core.js"
                 :optimizations :whitespace
                 :pretty-print true
-                ;:source-map "resources/public/core.js.map"
-                }
+                :source-map "resources/public/core.js.map"}
              :source-paths ["src/cljs"]}
        :test {:compiler
               {:main 'cljstone.runner
@@ -24,6 +23,6 @@
                :optimizations :whitespace
                :pretty-print true}
               :source-paths ["src/cljs" "test/cljs"]}}
-     :test-commands {"test" ["doo" "phantom" "test" "once"]}}
+     :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

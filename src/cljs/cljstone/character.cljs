@@ -16,8 +16,8 @@
 
 (def Character
   {:id s/Int
-   :base-health s/Int
-   :base-attack s/Int
+   :base-health (s/conditional #(>= % 0) s/Int)
+   :base-attack (s/conditional #(>= % 0) s/Int)
    :modifiers [CharacterModifier]
    s/Any s/Any})
 

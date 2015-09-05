@@ -1,7 +1,7 @@
 (ns cljstone.board-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.hero :as hero])
-  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card]]
+  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card remove-minion]]
         [cljstone.character :only [get-next-character-id]]
         [schema.test :only [validate-schemas]]))
 
@@ -18,28 +18,33 @@
   (let [card (first (get-in board [:player-1 :hand]))
         board (-> board
                   (play-card :player-1 0)
-                  (assoc-in [:player-1 :minions 0 :base-health] 0))
-        dead-character-info (find-a-dead-character-in-board board)]
+                  (assoc-in [:player-1 :minions 0 :base-health] 0))]
 
     (testing "one dead character"
       (is (= (:name card)
-             (:name (:character dead-character-info))))
-
-      (is (= (get-in ((:minion-removal-fn dead-character-info) board)
-                     [:player-1 :minions])
-             [])))
+             (:name (find-a-dead-character-in-board board)))))
 
     (let [board (-> board
                     (play-card :player-1 0)
                     (assoc-in [:player-1 :minions 1 :base-health] 0))
-          first-minion (get-in board [:player-1 :minions 0]) ]
+          first-minion (get-in board [:player-1 :minions 0])]
     ; xxx is left-to-right the correct order to seek dead minions? probably not, right?
     ; should be sorting by id, not board position - update this test when we implement deathrattles (and playing a minion at a position) and it starts mattering
     (testing "if there are two dead characters, we should get the first"
       (is (= (:base-health first-minion) 0))
       (is (= (get-in board [:player-1 :minions 1 :base-health]) 0))
-      (is (= (:id (:character (find-a-dead-character-in-board board)))
+      (is (= (:id (find-a-dead-character-in-board board))
              (:id first-minion)))))))
+
+(deftest removing-minions
+  (let [board (-> board
+                  (play-card :player-1 0)
+                  (play-card :player-2 0)
+                  (play-card :player-1 0))
+        player-1-minions (get-in board [:player-1 :minions])]
+  (is (= (get-in (remove-minion board (:id (nth player-1-minions 1)))
+                 [:player-1 :minions])
+         (subvec player-1-minions 0 1)))))
 
 (deftest finding-paths
   (testing "looking up heroes"

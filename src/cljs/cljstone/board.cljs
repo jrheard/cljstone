@@ -40,18 +40,20 @@
       half-2-path (concat [:player-2] half-2-path)
       :else nil)))
 
-(s/defn find-a-dead-character-in-board :- (s/maybe {:character Character :minion-removal-fn s/Any})
+(s/defn remove-minion :- Board
+  [board :- Board
+   minion-id :- s/Int]
+  (let [minions-path (take 2 (path-to-character board minion-id))
+        vec-without-minion (vec (remove #(= (:id %) minion-id)
+                                        (get-in board minions-path)))]
+    (assoc-in board minions-path vec-without-minion)))
+
+(s/defn find-a-dead-character-in-board :- (s/maybe Character)
   [board :- Board]
   (let [all-minions (concat (get-in board [:player-1 :minions])
                             (get-in board [:player-2 :minions]))]
     (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
-      {:character dead-minion
-       :minion-removal-fn (s/fn :- Board
-                            [board :- Board]
-                            (let [minions-path (take 2 (path-to-character board (:id dead-minion)))
-                                  vec-without-dead-minion (vec (remove #(= (:id %) (:id dead-minion))
-                                                                       (get-in board minions-path)))]
-                              (assoc-in board minions-path vec-without-dead-minion)))})))
+      dead-minion)))
 
 (s/defn make-board :- ratom/RAtom
   [hero-1 :- hero/Hero
@@ -68,12 +70,13 @@
     (add-watch board
                :grim-reaper
                (fn [_ board-atom _ new-val]
-                 (when-let [dead-character-info (find-a-dead-character-in-board new-val)]
+                 (when-let [dead-character (find-a-dead-character-in-board new-val)]
                    ; TODO if :character is a hero, end the game
                    ; TODO eventually program in draws if both heroes are dead
                    ; TODO if :character is a minion with a deathrattle, fire deathrattle
                    ; TODO also fire on-minion-death for flesheating ghoul, cult master, etc
-                   (swap! board-atom (:minion-removal-fn dead-character-info)))))
+                   ; anyway for right now dead-character is always a Minion
+                   (swap! board-atom remove-minion (:id dead-character)))))
     board))
 
 (s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]

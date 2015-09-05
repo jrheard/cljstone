@@ -120,7 +120,7 @@
   (let [hand (-> board player :hand)
         card (nth hand card-index)
         new-hand (vec (remove #(= (:id %) (:id card)) hand))
-        new-minions-vec (conj (get-in board [player :minions])
+        new-minions-vec (conj (vec (get-in board [player :minions]))
                               (make-minion (:minion-schematic card) (get-next-character-id)))]
     (-> board
         (assoc-in [player :hand] new-hand)

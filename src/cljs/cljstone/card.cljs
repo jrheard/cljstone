@@ -11,7 +11,7 @@
     (swap! next-card-id inc)
     id-to-return))
 
-(def Card
+(s/defschema Card
   {:type (s/enum :minion :spell :weapon)
    :name s/Str
    :mana-cost s/Int

@@ -7,13 +7,13 @@
         [cljstone.character :only [Character Player get-next-character-id]]
         [cljstone.minion :only [Minion get-attack get-health make-minion]]))
 
-(def BoardHalf
+(s/defschema BoardHalf
   {:hero hero/Hero
    :hand [Card]
    :deck [Card]
    :minions [Minion]})
 
-(def Board
+(s/defschema Board
   {:player-1 BoardHalf
    :player-2 BoardHalf})
 

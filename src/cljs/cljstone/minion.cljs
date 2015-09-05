@@ -5,7 +5,7 @@
 ; todo - what about aldor peacekeeper? it sets a new base attack
 ; what about blessing of wisdom? a :buff with an :on-attack -> function k/v pair?
 
-(def MinionSchematic
+(s/defschema MinionSchematic
   {:name s/Str
    ; TODO - charge? freeze? divine shield? taunt? stealth?
    :class (s/enum :neutral :mage :shaman)
@@ -21,7 +21,7 @@
 ; also: summoning sickness can be implemented as a one-turn modifier with effect :cant-attack true
 ; freezing will work similarly
 ; charge minions can be denoted in their schematics as (s/Maybe :charge) s/Bool
-(def Minion
+(s/defschema Minion
   (assoc MinionSchematic
    :id s/Int))
 

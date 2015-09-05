@@ -63,9 +63,7 @@
 (defn draw-board [board-atom]
   [:div.board
    [draw-board-half board-atom :player-1]
-   [draw-board-half board-atom :player-2]
-   [:div.debug
-     [:pre (with-out-str (pprint @board-atom))]]])
+   [draw-board-half board-atom :player-2]])
 
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]

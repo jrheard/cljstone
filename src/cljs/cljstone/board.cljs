@@ -41,11 +41,12 @@
                                    [:minions index]))))
         half-1-path (find-in-board-half (:player-1 board))
         half-2-path (find-in-board-half (:player-2 board))]
-    (if half-1-path
-      (concat [:player-1] half-1-path)
-      (concat [:player-2] half-2-path))))
+    (cond
+      half-1-path (concat [:player-1] half-1-path)
+      half-2-path (concat [:player-2] half-2-path)
+      :else nil)))
 
-(s/defn trim-dead-minion
+(s/defn ^:private trim-dead-minion
   [board :- Board
    minion :- Minion]
   (let [minions-vec-path (take 2 (path-to-character board (:id minion)))
@@ -84,7 +85,7 @@
   (let [create-attack-modifier (fn [c1 c2]
                                  {:type :attack
                                   :name nil
-                                  :effects {:health (- (get-attack c1))}})]
+                                  :effect {:health (- (get-attack c1))}})]
     [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
      (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))
 

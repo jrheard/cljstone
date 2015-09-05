@@ -69,7 +69,7 @@
   [minion :- Minion]
   (+ (:base-health minion)
      (apply + (map (fn [modifier]
-                     (:health (:effects modifier) 0))
+                     (:health (:effect modifier) 0))
                    (:modifiers minion)))))
 
 (s/defn get-attack :- s/Int

@@ -56,3 +56,5 @@
 ; or perhaps could return functions + args, like [draw-card :half-1], or [cause-damage the-knife-juggler-minion another-character], etc. that could work.
 
 ; TODO - look into async/merge
+
+(js/console.log "EVENT")

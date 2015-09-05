@@ -44,3 +44,5 @@
 ; that'll give it a final calculated mana cost value of 7. i like this system, i think it can work, neat.
 
 ; TODO - perhaps TargetingStrategies for battlecries/spells/attacking - minion attacking takes taunt into account, spells/battlecries don't
+
+(js/console.log "CARD")

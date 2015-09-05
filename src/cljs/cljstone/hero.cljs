@@ -11,3 +11,5 @@
 
 (s/defn make-hero :- Hero [hero-name hero-class hero-id]
   {:name hero-name :class hero-class :health 30 :id hero-id})
+
+(js/console.log "HERO")

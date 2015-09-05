@@ -13,3 +13,4 @@ resources/public/
 *.swp
 *.swo
 .cljs_rhino_repl/
+test_resources/

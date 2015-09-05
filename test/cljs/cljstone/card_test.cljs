@@ -5,5 +5,7 @@
 
   )
 
+(js/console.log "CARD TEST")
+
 (deftest test-numbers
-    (is (= 1 1)))
+   (is (= 1 1)))

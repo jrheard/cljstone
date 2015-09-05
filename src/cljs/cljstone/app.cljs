@@ -21,4 +21,7 @@
                                     (play-card :player-2 0)))
              board-atom))
 
-(html/mount-reagent board)
+
+(js/console.log "ASS")
+; xxx sure feels like this next line should be the problem, but commenting it out changes nothing
+;(html/mount-reagent board)

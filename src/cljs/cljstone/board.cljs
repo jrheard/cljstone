@@ -98,6 +98,12 @@
         [character-1 character-2] (map #(get-in board %) [character-1-path character-2-path])
         [attacked-character-1 attacked-character-2] (modify-characters-for-attack character-1 character-2)]
     ; todo - this is currently a pure function but will eventually want to put messages in channels, which is a side effect. how to reconcile?
+    ; i guess it won't be a pure function any more - planning on implementing a (cause-damage!) function, so this will become (attack!)
+    ; and will call (cause-damage!) once on the attacker, once on the attackee
+    ; TODO - when we get around to implementing secrets - what if get-down is up and bloodfen raptor attacks into something, and get-down kills it?
+    ; how do you prevent its original target from taking damage?
+    ; perhaps an on-before-attack event gets fired and switches the target around - that could work pretty well
+    ; on-before-attack could also work for eg explosive trap, lets you kill the minion before it actually causes any damage
     (-> board
         (assoc-in character-1-path attacked-character-1)
         (assoc-in character-2-path attacked-character-2))))

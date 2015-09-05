@@ -18,14 +18,6 @@
 
 (def STARTING-HAND-SIZE 5)
 
-; TODO - eventually have this detect dead heroes and trigger the end of the game
-(s/defn find-a-dead-character-in-board :- (s/maybe Character)
-  [board :- Board]
-  (let [minions (concat (get-in board [:player-1 :minions])
-                        (get-in board [:player-2 :minions]))]
-    (first (filter #(<= (get-health %) 0)
-                   minions))))
-
 (s/defn path-to-character :- [s/Any]
   "Returns a vector like [:player-1 :minions 2] telling you where the given character is in the given board."
   [board :- Board
@@ -47,13 +39,19 @@
       half-2-path (concat [:player-2] half-2-path)
       :else nil)))
 
-(s/defn ^:private trim-dead-minion
-  [board :- Board
-   minion :- Minion]
-  (let [minions-vec-path (take 2 (path-to-character board (:id minion)))
-        minions-vec-without-dead-minion (vec (remove #(= (:id %) (:id minion))
-                                                     (get-in board minions-vec-path)))]
-    [minions-vec-path minions-vec-without-dead-minion]))
+(s/defn find-a-dead-character-in-board :- (s/maybe {:character Character :minion-removal-fn s/Any})
+  [board :- Board]
+  (let [minions (concat (get-in board [:player-1 :minions])
+                        (get-in board [:player-2 :minions]))
+        dead-minion (first (filter #(<= (get-health %) 0) minions))]
+    (when dead-minion
+      {:character dead-minion
+       :minion-removal-fn (s/fn :- Board
+                            [board :- Board]
+                            (let [minions-path (take 2 (path-to-character board (:id dead-minion)))
+                                  vec-without-dead-minion (vec (remove #(= (:id %) (:id dead-minion))
+                                                                       (get-in board minions-path)))]
+                              (assoc-in board minions-path vec-without-dead-minion)))})))
 
 (s/defn make-board
   [hero-1 :- hero/Hero
@@ -70,10 +68,12 @@
     (add-watch board
                :grim-reaper
                (fn [_ board-atom _ new-val]
-                 (when-let [dead-minion (find-a-dead-character-in-board new-val)]
-                   ; TODO fire deathrattle for dead minion
-                   (let [[minions-path minions-vec] (trim-dead-minion new-val dead-minion)]
-                     (swap! board-atom assoc-in minions-path minions-vec)))))
+                 (when-let [dead-character-info (find-a-dead-character-in-board new-val)]
+                   ; TODO if :character is a hero, end the game
+                   ; TODO eventually program in draws if both heroes are dead
+                   ; TODO if :character is a minion with a deathrattle, fire deathrattle
+                   ; TODO also fire on-minion-death for flesheating ghoul, cult master, etc
+                   (swap! board-atom (:minion-removal-fn dead-character-info)))))
     board))
 
 (s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "attackee")]

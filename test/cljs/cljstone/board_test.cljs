@@ -15,12 +15,19 @@
   (testing "no dead characters"
     (is (= (find-a-dead-character-in-board board) nil)))
 
-  (let [board (-> board
+  (let [card (first (get-in board [:player-1 :hand]))
+        board (-> board
                   (play-card :player-1 0)
-                  (assoc-in [:player-1 :minions 0 :base-health] 0))]
+                  (assoc-in [:player-1 :minions 0 :base-health] 0))
+        dead-character-info (find-a-dead-character-in-board board)]
+
     (testing "one dead character"
-      (is (not (= (find-a-dead-character-in-board board)
-                  nil))))
+      (is (= (:name card)
+             (:name (:character dead-character-info))))
+
+      (is (= (get-in ((:minion-removal-fn dead-character-info) board)
+                     [:player-1 :minions])
+             [])))
 
     (let [board (-> board
                     (play-card :player-1 0)
@@ -31,7 +38,7 @@
     (testing "if there are two dead characters, we should get the first"
       (is (= (:base-health first-minion) 0))
       (is (= (get-in board [:player-1 :minions 1 :base-health]) 0))
-      (is (= (:id (find-a-dead-character-in-board board))
+      (is (= (:id (:character (find-a-dead-character-in-board board)))
              (:id first-minion)))))))
 
 (deftest finding-paths
@@ -61,6 +68,8 @@
     (swap! board play-card :player-2 0)
 
     (testing "minion death"
+      ; TODO move this to find-dead-character-in-board tests - test return value and returned fn as opposed to testing side effects
+      ; also test side effects tho
       (let [test-minion (get-in @board [:player-1 :minions 1])]
         (is (not (= (path-to-character @board (:id test-minion))
                     nil)))

@@ -143,7 +143,7 @@
   (-> board
       (update-in [(:whose-turn board) :minions]
                  (fn [minions]
-                   (map #(assoc % :attacks-this-turn 0) minions)))
+                   (mapv #(assoc % :attacks-this-turn 0) minions)))
       (assoc :turn (+ 1 (:turn board))
              :whose-turn (first (difference #{:player-1 :player-2}
                                             #{(:whose-turn board)})))))

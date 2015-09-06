@@ -3,7 +3,8 @@
             [reagent.ratom :as ratom]
             [schema.core :as s]
             [cljstone.hero :as hero])
-  (:use [cljstone.card :only [Card make-random-deck]]
+  (:use [clojure.set :only [difference]]
+        [cljstone.card :only [Card make-random-deck]]
         [cljstone.character :only [Character Player get-next-character-id]]
         [cljstone.minion :only [Minion get-attack get-health make-minion]]))
 
@@ -135,3 +136,10 @@
     (-> board
         (assoc-in [player :hand] new-hand)
         (assoc-in [player :minions] new-minions-vec))))
+
+(s/defn end-turn :- Board
+  [board :- Board]
+  (assoc board
+         :turn (+ 1 (:turn board))
+         :whose-turn (first (difference #{:player-1 :player-2}
+                                        #{(:whose-turn board)}))))

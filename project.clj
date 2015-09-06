@@ -15,8 +15,8 @@
                {:output-dir "resources/public/js"
                 :output-to "resources/public/js/core.js"
                 :optimizations :whitespace
-                :pretty-print true
-                :source-map "resources/public/js/core.js.map"}
+                ;:source-map "resources/public/js/core.js.map"
+                :pretty-print true}
              :source-paths ["src/cljs"]}
        :test {:compiler
               {:main 'cljstone.runner

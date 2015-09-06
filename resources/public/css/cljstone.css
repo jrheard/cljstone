@@ -95,6 +95,22 @@ h3 {
 	border-bottom: 0;
 }
 
+.end-turn {
+	position: absolute;
+	right: 359px;
+	top: 477px;
+	background-color: #EEE;
+	font-size: 25px;
+	padding: 10px;
+	border: solid 2px #AAA;
+	color: #666;
+}
+
+.end-turn:hover {
+	background-color: #CCC;
+	cursor: pointer;
+}
+
 .minion-container {
 	position: relative;
 	top: 200px;

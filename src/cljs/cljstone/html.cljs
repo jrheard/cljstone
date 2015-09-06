@@ -4,7 +4,7 @@
             [schema.core :as s])
   (:use [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
-        [cljstone.board :only [attack play-card]]))
+        [cljstone.board :only [attack end-turn play-card]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event
@@ -66,11 +66,17 @@
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board-atom is-owners-turn])]]]))
 
+(defn draw-end-turn-button [board board-atom]
+  [:div.end-turn {:on-click (fn [e]
+                              (swap! board-atom end-turn))}
+   "End Turn"])
+
 (defn draw-board [board-atom]
   (let [board @board-atom]
     [:div.board
      [draw-board-half board board-atom :player-1 (board :whose-turn)]
      [draw-board-half board board-atom :player-2 (board :whose-turn)]
+     [draw-end-turn-button board board-atom]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 (defn mount-reagent [board-atom]

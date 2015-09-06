@@ -64,12 +64,18 @@
          :class :neutral}
         (dissoc schematic :attack :health)))
 
+; TODO for later - the syntax for annotating that something is "a function taking args [x, y] and returning z is
+; s/=> z x y
+
+
 ; todo jesus how do you implement dire wolf alpha
 ; i guess you just add a +1 attack modifier to each of the two adjacent minions, and add a -1 when the wolf dies
 ; nah, i don't like that. what turn would the effect expire on? are there other effects that can be lost on the same turn that they're gained on?
 ; divine shield, i guess, but that's different calculated at attack time
 ; hm - silence can cause you to lose modifiers that you've gaind on this turn / aren't slated to expire yet
 ; i guess: in addition to having a :turn-expires, effects can have an :active
+; nah not so sure about that, silence will likely actually modify a minion's list of modifiers, removing some old ones instead of just appending to it
+; dire wolf alpha only needs to care about on-summon-friendly-minion, on-friendly-minion-death - no other situations cause a dire wolf alpha buff/debuff
 ; still need to figure out what happens when you silence something that's had its health buffed and has taken 1 damage, though.
 ; i guess silencing will involve recomputing base attack and health, and so you can figure it out at recompute-because-of-silence time.
 ; hm.

@@ -5,13 +5,15 @@
 ; todo - what about aldor peacekeeper? it sets a new base attack
 ; what about blessing of wisdom? a :buff with an :on-attack -> function k/v pair?
 
-(s/defschema MinionSchematic
+(def MinionSchematic
   {:name s/Str
-   ; TODO - charge? freeze? divine shield? taunt? stealth?
-   :class (s/enum :neutral :mage :shaman)
-   :base-attack s/Int
-   :base-health s/Int
-   :modifiers [CharacterModifier]})
+   (s/optional-key :class) (s/enum :neutral :mage :shaman)
+   :attack s/Int
+   :health s/Int
+   (s/optional-key :modifiers) [CharacterModifier]})
+
+; TODO - charge? freeze? divine shield? taunt? stealth?
+; nvm they'll just be modifiers
 
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
 ; or what about if something's taken damage, had its HP buffed by stormwind champ, and the champ dies?
@@ -21,23 +23,27 @@
 ; also: summoning sickness can be implemented as a one-turn modifier with effect :cant-attack true
 ; freezing will work similarly
 ; charge minions can be denoted in their schematics as (s/Maybe :charge) s/Bool
-(s/defschema Minion
-  (assoc MinionSchematic
-   :id s/Int))
+(def Minion
+  {:name s/Str
+   :class (s/enum :neutral :mage :shaman)
+   :base-attack s/Int
+   :base-health s/Int
+   :id s/Int
+   :modifiers [CharacterModifier]})
 
 ; Schematics
 
 (def all-minions
-  {:wisp {:name "Wisp" :class :neutral :base-attack 1 :base-health 1 :modifiers []}
-   :shieldbearer {:name "Shieldbearer" :class :neutral :base-attack 0 :base-health 4 :modifiers []}
-   :goldshire-footman {:name "Goldshire Footman" :class :neutral :base-attack 1 :base-health 2 :modifiers []}
-   :bloodfen-raptor {:name "Bloodfen Raptor" :class :neutral :base-attack 3 :base-health 2 :modifiers []}
-   :river-crocilisk {:name "River Crocilisk" :class :neutral :base-attack 2 :base-health 3 :modifiers []}
-   :magma-rager {:name "Magma Rager" :class :neutral :base-attack 5 :base-health 1 :modifiers []}
-   :chillwind-yeti {:name "Chillwind Yeti" :class :neutral :base-attack 4 :base-health 5 :modifiers []}
-   :oasis-snapjaw {:name "Oasis Snapjaw" :class :neutral :base-attack 2 :base-health 7 :modifiers []}
-   :boulderfist-ogre {:name "Boulderfist Ogre" :class :neutral :base-attack 6 :base-health 7 :modifiers []}
-   :war-golem {:name "War Golem" :class :neutral :base-attack 7 :base-health 7 :modifiers []}})
+  {:wisp {:name "Wisp" :attack 1 :health 1}
+   :shieldbearer {:name "Shieldbearer" :attack 0 :health 4}
+   :goldshire-footman {:name "Goldshire Footman" :attack 1 :health 2}
+   :bloodfen-raptor {:name "Bloodfen Raptor" :attack 3 :health 2}
+   :river-crocilisk {:name "River Crocilisk" :attack 2 :health 3}
+   :magma-rager {:name "Magma Rager" :attack 5 :health 1}
+   :chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5}
+   :oasis-snapjaw {:name "Oasis Snapjaw" :attack 2 :health 7}
+   :boulderfist-ogre {:name "Boulderfist Ogre" :attack 6 :health 7}
+   :war-golem {:name "War Golem" :attack 7 :health 7}})
 
 
 ; TODO - minion types like :beast, :dragon, :mech
@@ -51,9 +57,12 @@
   ; the machinery that sets up those channels and hooks them up to those functions will live here.
   [schematic :- MinionSchematic
    id :- s/Int]
-  (-> schematic
-      (assoc :id id)
-      (assoc :modifiers [])))
+  (into {:base-attack (:attack schematic)
+         :base-health (:health schematic)
+         :id id
+         :modifiers []
+         :class :neutral}
+        (dissoc schematic :attack :health)))
 
 ; todo jesus how do you implement dire wolf alpha
 ; i guess you just add a +1 attack modifier to each of the two adjacent minions, and add a -1 when the wolf dies
@@ -67,14 +76,14 @@
 
 (s/defn get-health :- s/Int
   [minion :- Minion]
-  (+ (:base-health minion)
+  (+ (minion :base-health)
      (apply + (map (fn [modifier]
                      (:health (modifier :effect) 0))
                    (minion :modifiers)))))
 
 (s/defn get-attack :- s/Int
   [minion :- Minion]
-  (:base-attack minion))
+  (minion :base-attack))
 
 ; these'll eventually actually do stuff - base attack / health can be modified by eg reversing switch, shattered sun cleric, etc
 (s/defn get-base-attack :- s/Int

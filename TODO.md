@@ -17,3 +17,5 @@ mana crystals
 combat log
 
 summoning sickness
+
+freezing

@@ -20,8 +20,8 @@
                                    (swap! board-atom play-card player index)))}
    [:div.name (:name card)]
    [:div.cost (:mana-cost card)]
-   [:div.attack (:base-attack (:minion-schematic card))]
-   [:div.health (:base-health (:minion-schematic card))]])
+   [:div.attack (:attack (:minion-schematic card))]
+   [:div.health (:health (:minion-schematic card))]])
 
 (defn draw-hero [hero]
   [:div.hero

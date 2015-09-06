@@ -1,5 +1,6 @@
 body {
 	font-family: Helvetica, sans-serif;
+	-webkit-user-select: none;
 }
 
 h3 {
@@ -130,6 +131,7 @@ h3 {
 	width: 200px;
 	height: 200px;
 	position: relative;
+	margin-right: 15px;
 }
 
 .minion.can-attack {

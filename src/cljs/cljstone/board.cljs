@@ -90,7 +90,8 @@
   (let [create-attack-modifier (fn [c1 c2]
                                  {:type :attack
                                   :name nil
-                                  :effect {:health (- (get-attack c1))}})]
+                                  :effect {:health (- (get-attack c1))}})
+        character-1 (update-in character-1 [:attacks-this-turn] inc)]
     [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
      (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))
 
@@ -139,7 +140,10 @@
 
 (s/defn end-turn :- Board
   [board :- Board]
-  (assoc board
-         :turn (+ 1 (:turn board))
-         :whose-turn (first (difference #{:player-1 :player-2}
-                                        #{(:whose-turn board)}))))
+  (-> board
+      (update-in [(:whose-turn board) :minions]
+                 (fn [minions]
+                   (map #(assoc % :attacks-this-turn 0) minions)))
+      (assoc :turn (+ 1 (:turn board))
+             :whose-turn (first (difference #{:player-1 :player-2}
+                                            #{(:whose-turn board)})))))

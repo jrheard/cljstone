@@ -28,6 +28,8 @@
    :class (s/enum :neutral :mage :shaman)
    :base-attack s/Int
    :base-health s/Int
+   :attacks-this-turn s/Int
+   :attacks-per-turn s/Int
    :id s/Int
    :modifiers [CharacterModifier]})
 
@@ -59,6 +61,8 @@
    id :- s/Int]
   (into {:base-attack (:attack schematic)
          :base-health (:health schematic)
+         :attacks-this-turn 0
+         :attacks-per-turn 1 ; TODO - turn into :base-attacks-per-turn, there'll be modifiers that can add 1 to this number (will freezing remove 1 from this number?)
          :id id
          :modifiers []
          :class :neutral}
@@ -93,7 +97,9 @@
 
 (s/defn can-attack :- s/Bool
   [minion :- Minion]
-  true)
+  (and (< (minion :attacks-this-turn)
+          (minion :attacks-per-turn))
+       (> (get-attack minion) 0)))
 
 ; these'll eventually actually do stuff - base attack / health can be modified by eg reversing switch, shattered sun cleric, etc
 (s/defn get-base-attack :- s/Int

@@ -34,7 +34,7 @@ h3 {
 .board-half .hand {
 	position: absolute;
 	overflow: hidden;
-	width: 200px;
+	width: 202px;
 	padding: 0 3px;
 }
 
@@ -50,11 +50,7 @@ h3 {
 	border: solid 1px #AAA;
 	background-color: #EEE;
 	font-size: 10px;
-}
-
-.board-half .hand .card:hover {
-	background-color: #CCC;
-	cursor: pointer;
+	margin-bottom: 15px;
 }
 
 .board-half .body {
@@ -134,11 +130,13 @@ h3 {
 	margin-right: 15px;
 }
 
-.minion.can-attack {
+.minion.can-attack,
+.board-half .hand .card.playable {
 	border: solid 3px #4CBB17;
 }
 
-.minion.can-attack:hover {
+.minion.can-attack:hover,
+.board-half .hand .card.playable:hover {
 	background-color: #CCC;
 	cursor: pointer;
 }

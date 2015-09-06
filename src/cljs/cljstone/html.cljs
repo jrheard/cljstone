@@ -14,15 +14,21 @@
       .-minionId
       js/parseInt))
 
-(defn draw-card [card index player board-atom whose-turn]
-  [:div.card.minion {:data-card-index index
-                     :on-click (fn [e]
-                                 (let [card (-> e .-target (dom/getAncestorByClass "card"))]
-                                   (swap! board-atom play-card player index)))}
-   [:div.name (:name card)]
-   [:div.cost (:mana-cost card)]
-   [:div.attack (:attack (:minion-schematic card))]
-   [:div.health (:health (:minion-schematic card))]])
+(defn draw-card [card index player board-atom is-owners-turn]
+  (let [playable is-owners-turn ; will become more complex later
+        classes (str
+                  "card "
+                  "minion "
+                  (when playable "playable"))]
+    [:div {:class classes
+           :data-card-index index
+           :on-click (fn [e]
+                       (when playable
+                         (swap! board-atom play-card player index)))}
+     [:div.name (:name card)]
+     ;[:div.cost (:mana-cost card)]
+     [:div.attack (:attack (:minion-schematic card))]
+     [:div.health (:health (:minion-schematic card))]]))
 
 (defn draw-hero [hero]
   [:div.hero

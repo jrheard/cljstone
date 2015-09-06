@@ -116,7 +116,11 @@ h3 {
 	position: relative;
 }
 
-.minion:hover {
+.minion.can-attack {
+	border: solid 3px #4CBB17;
+}
+
+.minion.can-attack:hover {
 	background-color: #CCC;
 	cursor: pointer;
 }

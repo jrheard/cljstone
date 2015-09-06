@@ -15,7 +15,9 @@
 
 (s/defschema Board
   {:player-1 BoardHalf
-   :player-2 BoardHalf})
+   :player-2 BoardHalf
+   :whose-turn Player
+   :turn s/Int})
 
 (def STARTING-HAND-SIZE 5)
 
@@ -66,7 +68,9 @@
                            :deck (vec (drop STARTING-HAND-SIZE deck))
                            :minions []})
         board (r/atom {:player-1 (make-board-half hero-1 hero-1-deck)
-                       :player-2 (make-board-half hero-2 hero-2-deck)})]
+                       :player-2 (make-board-half hero-2 hero-2-deck)
+                       :whose-turn (rand-nth [:player-1 :player-2])
+                       :turn 0})]
     (add-watch board
                :grim-reaper
                (fn [_ board-atom _ new-val]

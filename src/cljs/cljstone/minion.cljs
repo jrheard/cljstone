@@ -91,6 +91,10 @@
   [minion :- Minion]
   (minion :base-attack))
 
+(s/defn can-attack :- s/Bool
+  [minion :- Minion]
+  true)
+
 ; these'll eventually actually do stuff - base attack / health can be modified by eg reversing switch, shattered sun cleric, etc
 (s/defn get-base-attack :- s/Int
   [minion :- Minion]

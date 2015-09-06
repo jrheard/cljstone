@@ -97,7 +97,9 @@
 (deftest attacking
   (testing "two minions attacking each other"
     (let [board {:player-1 (make-test-board-half {:hero hero-1 :minions [(m/make-minion (:boulderfist-ogre m/all-minions) 123)]})
-                 :player-2 (make-test-board-half {:hero hero-2 :minions [(m/make-minion (:war-golem m/all-minions) 234)]})}
+                 :player-2 (make-test-board-half {:hero hero-2 :minions [(m/make-minion (:war-golem m/all-minions) 234)]})
+                 :whose-turn :player-1
+                 :turn 0}
           post-attack-board (attack board 123 234)]
       ; ogre dies, war golem survives with 1 health
       (is (= (m/get-health (get-in post-attack-board [:player-1 :minions 0]))
@@ -109,7 +111,9 @@
   (testing "playing a minion"
     (let [card (c/minion-schematic->card (:wisp m/all-minions))
           board {:player-1 (make-test-board-half {:hero hero-1 :hand [card]})
-                 :player-2 (make-test-board-half {:hero hero-2})}
+                 :player-2 (make-test-board-half {:hero hero-2})
+                 :whose-turn :player-1
+                 :turn 0}
           post-play-board (play-card board :player-1 0)]
       (is (= (get-in post-play-board [:player-1 :minions 0 :name])
              "Wisp")))))

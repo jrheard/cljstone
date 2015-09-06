@@ -4,7 +4,8 @@
             [schema.core :as s])
   (:use [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
-        [cljstone.board :only [attack end-turn play-card]]))
+        [cljstone.board :only [end-turn play-card]]
+        [cljstone.combat :only [attack]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event

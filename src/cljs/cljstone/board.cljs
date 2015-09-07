@@ -17,7 +17,7 @@
    :whose-turn Player
    :turn s/Int})
 
-(def STARTING-HAND-SIZE 5)
+(def STARTING-HAND-SIZE 7)
 
 (s/defn path-to-character :- [s/Any]
   "Returns a vector like [:player-1 :minions 2] telling you where the given character is in the given board."

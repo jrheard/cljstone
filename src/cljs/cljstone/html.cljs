@@ -4,7 +4,7 @@
             [schema.core :as s])
   (:use [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
-        [cljstone.board :only [end-turn play-card]]
+        [cljstone.board :only [end-turn play-card path-to-character]]
         [cljstone.combat :only [attack]]))
 
 (defn- get-minion-id-from-event [event]
@@ -44,7 +44,7 @@
   [:div.hero
    [:div.name (:name hero)]])
 
-(defn draw-minion [minion board-atom is-owners-turn]
+(defn draw-minion [minion board board-atom is-owners-turn]
   (let [minion-can-attack (and is-owners-turn (can-attack minion))
         classes (str
                   "minion "
@@ -55,7 +55,12 @@
            :on-drag-start (fn [e]
                            (let [minion-id (get-minion-id-from-event e)]
                              (.setData (.-dataTransfer e) "text/plain" minion-id)))
-           :on-drag-over #(.preventDefault %)
+           :on-drag-over (fn [e]
+                           (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
+                                 destination-minion-id (get-minion-id-from-event e)]
+                             (when (not= (first (path-to-character board origin-minion-id))
+                                         (first (path-to-character board destination-minion-id)))
+                               (.preventDefault e))))
            :on-drop (fn [e]
                      (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
                            destination-minion-id (get-minion-id-from-event e)]
@@ -77,7 +82,7 @@
        [draw-hero (:hero board-half)]
        [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board-atom is-owners-turn])]]]))
+          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn])]]]))
 
 (defn draw-end-turn-button [board board-atom]
   [:div.end-turn {:on-click (fn [e]

@@ -11,14 +11,13 @@
    :mana-cost s/Int
    :class (s/enum :neutral :mage :shaman)
    ; TODO - an optional :targeting-fn k/v pair?
-   }
-  )
+   })
 
 (def all-spells
   {:flamecannon {:name "Flamecannon"
                  :mana-cost 2
                  :class :mage
-                 :effect (s/fn [board caster]
+                 :effect (s/fn [board :- Board caster :- Player]
                            (when-let [minions (get-in board [(other-player caster) :minions])]
                              (cause-damage board
                                            (:id (rand-nth minions))

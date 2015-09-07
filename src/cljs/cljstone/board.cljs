@@ -99,7 +99,7 @@
   [board :- Board
    player :- Player
    card :- Card]
-  board)
+  ((card :effect) board player))
 
 (s/defn play-minion :- Board
   [board :- Board

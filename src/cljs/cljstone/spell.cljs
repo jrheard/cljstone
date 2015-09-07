@@ -1,12 +1,13 @@
 (ns cljstone.spell
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card get-next-card-id]]
-        [cljstone.character :only [other-player]]
+  (:use [cljstone.board :only [Board]]
+        [cljstone.card :only [Card get-next-card-id]]
+        [cljstone.character :only [Player other-player]]
         [cljstone.combat :only [cause-damage]]))
 
 (s/defschema Spell
   {:name s/Str
-   :effect s/Any ; (s/=> Board Board Player)
+   :effect (s/=> Board Board Player)
    :mana-cost s/Int
    :class (s/enum :neutral :mage :shaman)
    ; TODO - an optional :targeting-fn k/v pair?

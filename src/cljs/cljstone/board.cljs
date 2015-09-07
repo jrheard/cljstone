@@ -38,8 +38,8 @@
         half-1-path (find-in-board-half (:player-1 board))
         half-2-path (find-in-board-half (:player-2 board))]
     (cond
-      half-1-path (concat [:player-1] half-1-path)
-      half-2-path (concat [:player-2] half-2-path)
+      half-1-path (vec (concat [:player-1] half-1-path))
+      half-2-path (vec (concat [:player-2] half-2-path))
       :else nil)))
 
 (s/defn remove-minion :- Board
@@ -65,7 +65,7 @@
         make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
-                           :deck (vec (drop STARTING-HAND-SIZE deck))
+                           :deck []; (vec (drop STARTING-HAND-SIZE deck))
                            :minions []})
         board (r/atom {:player-1 (make-board-half hero-1 hero-1-deck)
                        :player-2 (make-board-half hero-2 hero-2-deck)

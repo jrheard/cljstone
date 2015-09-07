@@ -1,14 +1,12 @@
-shattered sun
-
-turns
-
-minions can only attack 1 time per turn
-
-knife juggler
-
 spells
 
 targeting
+
+try figwheel
+
+shattered sun
+
+knife juggler
 
 taunt
 

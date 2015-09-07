@@ -3,15 +3,17 @@
             [cljstone.hero :as h]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.board :only [play-card BoardHalf]]
+  (:use [cljstone.app :only [make-random-deck]]
+        [cljstone.board :only [make-board play-card BoardHalf]]
         [cljstone.character :only [get-next-character-id]]
-        [cljstone.combat :only [attack]]
+        [cljstone.combat :only [attack find-a-dead-character-in-board remove-minion]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
 (def hero-1 (h/make-hero "Jaina" :mage (get-next-character-id)))
 (def hero-2 (h/make-hero "Thrall" :shaman (get-next-character-id)))
+(def board (make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
 
 (s/defn make-test-board-half :- BoardHalf
   [{:keys [hero hand deck minions] :or {hand [] deck [] minions []}}]
@@ -40,3 +42,38 @@
           post-play-board (play-card board :player-1 0)]
       (is (= (get-in post-play-board [:player-1 :minions 0 :name])
              "Wisp")))))
+
+(deftest find-dead-character
+  (testing "no dead characters"
+    (is (= (find-a-dead-character-in-board board) nil)))
+
+  (let [card (first (get-in board [:player-1 :hand]))
+        board (-> board
+                  (play-card :player-1 0)
+                  (assoc-in [:player-1 :minions 0 :base-health] 0))]
+
+    (testing "one dead character"
+      (is (= (:name card)
+             (:name (find-a-dead-character-in-board board)))))
+
+    (let [board (-> board
+                    (play-card :player-1 0)
+                    (assoc-in [:player-1 :minions 1 :base-health] 0))
+          first-minion (get-in board [:player-1 :minions 0])]
+    ; xxx is left-to-right the correct order to seek dead minions? probably not, right?
+    ; should be sorting by id, not board position - update this test when we implement deathrattles (and playing a minion at a position) and it starts mattering
+    (testing "if there are two dead characters, we should get the first"
+      (is (= (:base-health first-minion) 0))
+      (is (= (get-in board [:player-1 :minions 1 :base-health]) 0))
+      (is (= (:id (find-a-dead-character-in-board board))
+             (:id first-minion)))))))
+
+(deftest removing-minions
+  (let [board (-> board
+                  (play-card :player-1 0)
+                  (play-card :player-2 0)
+                  (play-card :player-1 0))
+        player-1-minions (get-in board [:player-1 :minions])]
+  (is (= (get-in (remove-minion board (:id (nth player-1-minions 1)))
+                 [:player-1 :minions])
+         (subvec player-1-minions 0 1)))))

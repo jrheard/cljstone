@@ -2,7 +2,7 @@
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
         [cljstone.character :only [Character CharacterModifier]]
-        [cljstone.minion :only [get-attack]]))
+        [cljstone.minion :only [get-attack get-health]]))
 
 (s/defn cause-damage :- Board
   [board :- Board
@@ -43,3 +43,18 @@
 ; and it triggers on-before-attack,
 ; and then it does (when (look up attacker in board) actually perform attack)
 ; because the attacker may have died in the meantime
+
+(s/defn remove-minion :- Board
+  [board :- Board
+   minion-id :- s/Int]
+  (let [minions-path (take 2 (path-to-character board minion-id))
+        vec-without-minion (vec (remove #(= (:id %) minion-id)
+                                        (get-in board minions-path)))]
+    (assoc-in board minions-path vec-without-minion)))
+
+(s/defn find-a-dead-character-in-board :- (s/maybe Character)
+  [board :- Board]
+  (let [all-minions (concat (get-in board [:player-1 :minions])
+                            (get-in board [:player-2 :minions]))]
+    (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
+      dead-minion)))

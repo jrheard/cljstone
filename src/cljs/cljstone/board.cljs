@@ -1,14 +1,12 @@
 (ns cljstone.board
-  (:require [reagent.core :as r]
-            [reagent.ratom :as ratom]
-            [schema.core :as s]
-            [cljstone.hero :as hero])
+  (:require [schema.core :as s])
   (:use [cljstone.card :only [Card]]
         [cljstone.character :only [Character Player get-next-character-id other-player]]
-        [cljstone.minion :only [Minion get-health make-minion]]))
+        [cljstone.hero :only [Hero]]
+        [cljstone.minion :only [Minion make-minion]]))
 
 (s/defschema BoardHalf
-  {:hero hero/Hero
+  {:hero Hero
    :hand [Card]
    :deck [Card]
    :minions [Minion]})
@@ -42,48 +40,20 @@
       half-2-path (vec (concat [:player-2] half-2-path))
       :else nil)))
 
-(s/defn remove-minion :- Board
-  [board :- Board
-   minion-id :- s/Int]
-  (let [minions-path (take 2 (path-to-character board minion-id))
-        vec-without-minion (vec (remove #(= (:id %) minion-id)
-                                        (get-in board minions-path)))]
-    (assoc-in board minions-path vec-without-minion)))
-
-(s/defn find-a-dead-character-in-board :- (s/maybe Character)
-  [board :- Board]
-  (let [all-minions (concat (get-in board [:player-1 :minions])
-                            (get-in board [:player-2 :minions]))]
-    (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
-      dead-minion)))
-
-; XXXX have this just return a Board
-; not sure who turns it into an atom - html.cljs? reactive.cljs?
-(s/defn make-board :- ratom/RAtom
-  [hero-1 :- hero/Hero
+(s/defn make-board :- Board
+  [hero-1 :- Hero
    deck-1 :- [Card]
-   hero-2 :- hero/Hero
+   hero-2 :- Hero
    deck-2 :- [Card]]
   (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
                            :deck (vec (drop STARTING-HAND-SIZE deck))
-                           :minions []})
-        board (r/atom {:player-1 (make-board-half hero-1 deck-1)
-                       :player-2 (make-board-half hero-2 deck-2)
-                       :whose-turn (rand-nth [:player-1 :player-2])
-                       :turn 0})]
-    (add-watch board
-               :grim-reaper
-               (fn [_ board-atom _ new-val]
-                 (when-let [dead-character (find-a-dead-character-in-board new-val)]
-                   ; TODO if :character is a hero, end the game
-                   ; TODO eventually program in draws if both heroes are dead
-                   ; TODO if :character is a minion with a deathrattle, fire deathrattle
-                   ; TODO also fire on-minion-death for flesheating ghoul, cult master, etc
-                   ; anyway for right now dead-character is always a Minion
-                   (swap! board-atom remove-minion (:id dead-character)))))
-    board))
+                           :minions []})]
+        {:player-1 (make-board-half hero-1 deck-1)
+         :player-2 (make-board-half hero-2 deck-2)
+         :whose-turn (rand-nth [:player-1 :player-2])
+         :turn 0}))
 
 (s/defn end-turn :- Board
   [board :- Board]
@@ -94,7 +64,8 @@
       (update-in [:turn] inc)
       (update-in [:whose-turn] other-player)))
 
-
+; TODO look into using protocols to express minion/spell cards more cleanly
+; they basically just need to implement a (play) function and.. that's it?
 (s/defn play-spell :- Board
   [board :- Board
    player :- Player
@@ -125,7 +96,6 @@
   (let [hand (-> board player :hand)
         card (nth hand card-index)
         new-hand (vec (remove #(= (:id %) (:id card)) hand))
-        ; TODO use a protocol to express this more cleanly?
         play-fn (condp = (:type card)
                   :spell play-spell
                   :minion play-minion)]

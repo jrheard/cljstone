@@ -55,3 +55,6 @@
         (let [board (end-turn board)]
           ; once player 1 hits "end turn", though, the croc can attack again the next time it's p1's turn.
           (is (= true (m/can-attack (get-in board [:player-1 :minions 0])))))))))
+
+
+; TODO test playing cards

@@ -9,9 +9,8 @@
   {:name s/Str
    :effect (s/=> Board Board Player)
    :mana-cost s/Int
-   :class (s/enum :neutral :mage :shaman)
-   ; TODO - an optional :targeting-fn k/v pair?
-   })
+   :class (s/enum :neutral :mage :shaman)})
+; TODO - an optional :targeting-fn k/v pair?
 
 (def all-spells
   {:flamecannon {:name "Flamecannon"

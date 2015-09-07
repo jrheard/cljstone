@@ -4,10 +4,12 @@
             [cljstone.board-test]
             [cljstone.card-test]
             [cljstone.combat-test]
-            [cljstone.minion-test]))
+            [cljstone.minion-test]
+            [cljstone.spell-test]))
 
 (doo-tests 'cljstone.app-test
            'cljstone.board-test
            'cljstone.card-test
            'cljstone.combat-test
-           'cljstone.minion-test)
+           'cljstone.minion-test
+           'cljstone.spell-test)

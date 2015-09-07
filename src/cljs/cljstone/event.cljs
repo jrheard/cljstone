@@ -56,3 +56,27 @@
 ; or perhaps could return functions + args, like [draw-card :half-1], or [cause-damage the-knife-juggler-minion another-character], etc. that could work.
 
 ; TODO - look into async/merge
+
+
+
+
+
+
+
+
+; list of events in rough order
+
+; on-turn-begin
+; on-play-card (questing adventurer, mana wyrm)
+; on-summon-minion (knife juggler, dire wolf alpha)
+; on-before-attack (blessing of widsom)
+; on-taking-damage (acolyte of pain)
+; on-dealing-damage (mistress of pain)
+; on-minion-death (flesheating ghoul, cult master)
+
+
+; to be implemented later on:
+; on-character-healed (lightwarden, northshire cleric)
+
+; finally:
+; on-turn-end (ragnaros, healing totem)

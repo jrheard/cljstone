@@ -1,5 +1,6 @@
 (ns cljstone.character
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s])
+  (:use [clojure.set :only [difference]]))
 
 ; Schemas
 
@@ -10,7 +11,7 @@
    (s/optional-key :attack) s/Int})
 
 (s/defschema CharacterModifier
-  {:type (s/enum :attack :buff)
+  {:type (s/enum :attack :damage-spell :buff)
    :name (s/maybe s/Str)
    :effect CharacterEffect})
 
@@ -29,3 +30,7 @@
   (let [id-to-return @next-character-id]
     (swap! next-character-id inc)
     id-to-return))
+
+(s/defn other-player :- Player
+  [player :- Player]
+  (first (difference #{:player-1 :player-2} #{player})))

@@ -5,7 +5,7 @@
   (:use [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
         [cljstone.board :only [end-turn play-card]]
-        [cljstone.combat :only [attack]]))
+        [cljstone.combat :only [attack!]]))
 
 (defn- get-minion-id-from-event [event]
   (-> event
@@ -48,7 +48,7 @@
            :on-drop (fn [e]
                      (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
                            destination-minion-id (get-minion-id-from-event e)]
-                       (swap! board-atom attack origin-minion-id destination-minion-id)
+                       (attack! board-atom origin-minion-id destination-minion-id)
                        (.preventDefault e)))}
      [:div.name (:name minion)]
      [:div.attack (get-attack minion)]

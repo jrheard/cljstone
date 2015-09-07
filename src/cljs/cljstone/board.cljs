@@ -3,9 +3,8 @@
             [reagent.ratom :as ratom]
             [schema.core :as s]
             [cljstone.hero :as hero])
-  (:use [clojure.set :only [difference]]
-        [cljstone.card :only [Card make-random-deck]]
-        [cljstone.character :only [Character Player get-next-character-id]]
+  (:use [cljstone.card :only [Card make-random-deck]]
+        [cljstone.character :only [Character Player get-next-character-id other-player]]
         [cljstone.minion :only [Minion get-health make-minion]]))
 
 (s/defschema BoardHalf
@@ -85,9 +84,6 @@
     board))
 
 
-; TODO make a separate file concerned with attacking / damage
-; heh combat.cljs nice
-
 ; ugh - what does this function end up actually looking like?
 ; minions have to be played on a board-half's minions list, and can be positioned between any of the current elements in that list, or prepended/appended to it.
 ; some spells can be just tossed into the ether (arcane missiles)
@@ -119,5 +115,4 @@
                  (fn [minions]
                    (mapv #(assoc % :attacks-this-turn 0) minions)))
       (update-in [:turn] inc)
-      (update-in [:whose-turn] #(first (difference #{:player-1 :player-2}
-                                                   #{%})))))
+      (update-in [:whose-turn] other-player)))

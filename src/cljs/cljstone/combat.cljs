@@ -1,37 +1,55 @@
 (ns cljstone.combat
-  (:require [schema.core :as s])
+  (:require [schema.core :as s]
+            [reagent.ratom :as ratom])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character]]
-        [cljstone.minion :only [get-attack]]
-        )
-  )
+        [cljstone.character :only [Character CharacterModifier]]
+        [cljstone.minion :only [get-attack]]))
 
-(s/defn modify-characters-for-attack :- [(s/one Character "attacker") (s/one Character "defender")]
-  [character-1 :- Character
-   character-2 :- Character]
-  (let [create-attack-modifier (fn [c1 c2]
-                                 {:type :attack
-                                  :name nil
-                                  :effect {:health (- (get-attack c1))}})
-        character-1 (update-in character-1 [:attacks-this-turn] inc)]
-    [(update-in character-1 [:modifiers] conj (create-attack-modifier character-2 character-1))
-     (update-in character-2 [:modifiers] conj (create-attack-modifier character-1 character-2))]))
+(s/defn cause-damage!
+  [board :- ratom/RAtom
+   character-id :- s/Int
+   modifier :- CharacterModifier]
+  (let [modifiers-path (conj (path-to-character @board character-id) :modifiers)]
+    (swap! board update-in modifiers-path conj modifier)))
 
-; todo - this is currently a pure function but will eventually want to put messages in channels, which is a side effect. how to reconcile?
-; i guess it won't be a pure function any more - planning on implementing a (cause-damage!) function, so this will become (attack!)
-; and will call (cause-damage!) once on the attacker, once on the defender
+(defn create-attack-modifier
+  [c1 c2]
+  ; TODO eventually take divine shield into account
+  {:type :attack
+   :name nil
+   :effect {:health (- (get-attack c1))}})
+
 ; TODO - when we get around to implementing secrets - what if get-down is up and bloodfen raptor attacks into something, and get-down kills it?
 ; how do you prevent its original target from taking damage?
 ; perhaps an on-before-attack event gets fired and switches the target around - that could work pretty well
 ; on-before-attack could also work for eg explosive trap, lets you kill the minion before it actually causes any damage
-(s/defn attack :- Board
-  "Takes a board and a couple of characters that're attacking each other, returns a new post-attack board."
-  [board :- Board
+(s/defn attack!
+  [board :- ratom/RAtom
    attacker-id :- s/Int
    defender-id :- s/Int]
-  (let [[attacker-path defender-path] (map #(path-to-character board %) [attacker-id defender-id])
-        [attacker defender] (map #(get-in board %) [attacker-path defender-path])
-        [attacker defender] (modify-characters-for-attack attacker defender)]
-    (-> board
-        (assoc-in attacker-path attacker)
-        (assoc-in defender-path defender))))
+  (js/console.log "ok we're in attack")
+  ; XXXX todo everything's fucked up
+  ; gotta clear up where we're in board-land and where we're in atom-land
+  ; god is this going to even work? was this idiotic
+  ; maybe there should just be pure functions, and the click handlers call them and use swap!
+  ; no fuckin clue how channels are gonna work... maybe it's fine
+  ; ugh maybe it's not
+  ; uuuuuuuughhhhhhhhhhhhhhhhhh
+  ; i guess it's probably fine
+  ; it's probably fine.
+  (let [[attacker defender] (map #(->> %
+                                       (path-to-character board)
+                                       (get-in board))
+                                 [attacker-id defender-id])]
+    (js/console.log attacker)
+    (js/console.log defender)
+    (cause-damage! board defender-id (create-attack-modifier attacker defender))
+    (cause-damage! board attacker-id (create-attack-modifier defender attacker))))
+
+; ok ok ok
+; it's all just functions that take boards and return boards
+; except some of them can trigger events
+; anyway there should be a perform-attack function that takes two characters
+; and it triggers on-before-attack,
+; and then it does (when (look up attacker in board) actually perform attack)
+; because the attacker may have died in the meantime

@@ -91,12 +91,13 @@
                nil))))))
 
 (deftest turns
-  (is (= (:turn board) 0))
-  ; TODO test resetting attacks
-  (let [board (assoc board :whose-turn :player-1)
-        board (end-turn board)]
-    (is (= (:turn board 1)))
-    (is (= (:whose-turn board) :player-2)))
+  (testing "turns existing"
+    (is (= (:turn board) 0))
+
+    (let [board (assoc board :whose-turn :player-1)
+          board (end-turn board)]
+      (is (= (:turn board 1)))
+      (is (= (:whose-turn board) :player-2))))
 
   (testing "resetting minions' number of attacks this turn"
     (let [board (-> board

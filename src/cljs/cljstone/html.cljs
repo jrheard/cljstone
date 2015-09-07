@@ -80,7 +80,7 @@
      [draw-board-half board board-atom :player-2 (board :whose-turn)]
      [draw-end-turn-button board board-atom]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]
-     [:div.debug
+     #_[:div.debug
       [:pre (with-out-str (pprint board))]]]))
 
 (defn mount-reagent [board-atom]

@@ -1,6 +1,7 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.character :only [CharacterModifier]]))
+  (:use [cljstone.card :only [Card get-next-card-id]]
+        [cljstone.character :only [CharacterModifier]]))
 
 ; todo - what about aldor peacekeeper? it sets a new base attack
 ; what about blessing of wisdom? a :buff with an :on-attack -> function k/v pair?
@@ -46,6 +47,14 @@
    :oasis-snapjaw {:name "Oasis Snapjaw" :attack 2 :health 7}
    :boulderfist-ogre {:name "Boulderfist Ogre" :attack 6 :health 7}
    :war-golem {:name "War Golem" :attack 7 :health 7}})
+
+(s/defn minion-schematic->card :- Card
+  [schematic :- MinionSchematic]
+  {:type :minion
+   :name (:name schematic)
+   :mana-cost (rand-int 10)
+   :id (get-next-card-id)
+   :minion-schematic schematic})
 
 
 ; TODO - minion types like :beast, :dragon, :mech

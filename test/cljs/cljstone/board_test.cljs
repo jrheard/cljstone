@@ -3,7 +3,8 @@
             [cljstone.hero :as h]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card remove-minion BoardHalf end-turn]]
+  (:use [cljstone.app :only [make-random-deck]]
+        [cljstone.board :only [find-a-dead-character-in-board path-to-character make-board play-card remove-minion BoardHalf end-turn]]
         [cljstone.character :only [get-next-character-id]]
         [cljstone.combat :only [attack]]
         [schema.test :only [validate-schemas]]))
@@ -12,7 +13,12 @@
 
 (def hero-1 (h/make-hero "Jaina" :mage (get-next-character-id)))
 (def hero-2 (h/make-hero "Thrall" :shaman (get-next-character-id)))
-(def board @(make-board hero-1 hero-2))
+(def board @(make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
+
+(js/console.log "HEY HEY HEY HEY")
+(js/console.log board)
+(js/console.log "HEY HEY HEY HEY")
+(js/console.log "HEY HEY HEY HEY")
 
 (deftest find-dead-character
   (testing "no dead characters"
@@ -68,7 +74,7 @@
 (deftest grim-reaper
   ; TODO test for hero death
 
-  (let [board (make-board hero-1 hero-2)]
+  (let [board (make-board hero-1 (make-random-deck) hero-2 (make-random-deck))]
     (swap! board play-card :player-1 0)
     (swap! board play-card :player-1 0)
     (swap! board play-card :player-1 0)

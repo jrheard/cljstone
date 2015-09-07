@@ -3,7 +3,7 @@
             [reagent.ratom :as ratom]
             [schema.core :as s]
             [cljstone.hero :as hero])
-  (:use [cljstone.card :only [Card make-random-deck]]
+  (:use [cljstone.card :only [Card]]
         [cljstone.character :only [Character Player get-next-character-id other-player]]
         [cljstone.minion :only [Minion get-health make-minion]]))
 
@@ -57,18 +57,20 @@
     (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
       dead-minion)))
 
+; XXXX have this just return a Board
+; not sure who turns it into an atom - html.cljs? reactive.cljs?
 (s/defn make-board :- ratom/RAtom
   [hero-1 :- hero/Hero
-   hero-2 :- hero/Hero]
-  (let [hero-1-deck (make-random-deck)
-        hero-2-deck (make-random-deck)
-        make-board-half (fn [hero deck]
+   deck-1 :- [Card]
+   hero-2 :- hero/Hero
+   deck-2 :- [Card]]
+  (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
-                           :deck []; (vec (drop STARTING-HAND-SIZE deck))
+                           :deck (vec (drop STARTING-HAND-SIZE deck))
                            :minions []})
-        board (r/atom {:player-1 (make-board-half hero-1 hero-1-deck)
-                       :player-2 (make-board-half hero-2 hero-2-deck)
+        board (r/atom {:player-1 (make-board-half hero-1 deck-1)
+                       :player-2 (make-board-half hero-2 deck-2)
                        :whose-turn (rand-nth [:player-1 :player-2])
                        :turn 0})]
     (add-watch board
@@ -83,31 +85,6 @@
                    (swap! board-atom remove-minion (:id dead-character)))))
     board))
 
-
-; ugh - what does this function end up actually looking like?
-; minions have to be played on a board-half's minions list, and can be positioned between any of the current elements in that list, or prepended/appended to it.
-; some spells can be just tossed into the ether (arcane missiles)
-; some have to be targeted (frostbolt)
-; and so for those guys (and for minion summoning!), there's the begin-play-card phase, then the targeting phase, then the commit-to-playing-card [args] phase
-; for now, though, we can just pretend that targeting doesn't exist, and that all cards are tossed into the ether a la flamecannon.
-; but eventually there'll be multiple phases to playing a card, which some cards can skip (eg flamecannon)
-(s/defn play-card :- Board
-  [board :- Board
-   player :- Player
-   card-index :- s/Int]
-  {:pre [(< -1
-            card-index
-            (count (get-in board [player :hand])))]}
-  ; TODO support playing spells, weapons
-  (let [hand (-> board player :hand)
-        card (nth hand card-index)
-        new-hand (vec (remove #(= (:id %) (:id card)) hand))
-        new-minions-vec (conj (vec (get-in board [player :minions]))
-                              (make-minion (:minion-schematic card) (get-next-character-id)))]
-    (-> board
-        (assoc-in [player :hand] new-hand)
-        (assoc-in [player :minions] new-minions-vec))))
-
 (s/defn end-turn :- Board
   [board :- Board]
   (-> board
@@ -116,3 +93,42 @@
                    (mapv #(assoc % :attacks-this-turn 0) minions)))
       (update-in [:turn] inc)
       (update-in [:whose-turn] other-player)))
+
+
+(s/defn play-spell :- Board
+  [board :- Board
+   player :- Player
+   card :- Card]
+  board)
+
+(s/defn play-minion :- Board
+  [board :- Board
+   player :- Player
+   card :- Card]
+  (assoc-in board
+            [player :minions]
+            (conj (vec (get-in board [player :minions]))
+                  (make-minion (:minion-schematic card) (get-next-character-id)))))
+
+; TODO - eventually implement several phases to playing a card
+; minions have to be first a) positioned, then b) optionally targeted [eg bgh, shattered sun]
+; spells have to be optionally targeted (flamecannon vs frostbolt)
+; so there's choose-minion-position, choose-target, and play-card
+; and this function will just be play-card, and will take optional position / target info.
+(s/defn play-card :- Board
+  [board :- Board
+   player :- Player
+   card-index :- s/Int]
+  {:pre [(< -1
+            card-index
+            (count (get-in board [player :hand])))]}
+  (let [hand (-> board player :hand)
+        card (nth hand card-index)
+        new-hand (vec (remove #(= (:id %) (:id card)) hand))
+        ; TODO use a protocol to express this more cleanly?
+        play-fn (condp = (:type card)
+                  :spell play-spell
+                  :minion play-minion)]
+    (-> board
+        (assoc-in [player :hand] new-hand)
+        (play-fn player card))))

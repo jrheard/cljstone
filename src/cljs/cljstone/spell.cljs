@@ -1,13 +1,12 @@
 (ns cljstone.spell
   (:require [schema.core :as s])
-  (:use [cljstone.board :only [Board]]
-        [cljstone.character :only [Player other-player]]
+  (:use [cljstone.card :only [Card get-next-card-id]]
+        [cljstone.character :only [other-player]]
         [cljstone.combat :only [cause-damage]]))
-
 
 (s/defschema Spell
   {:name s/Str
-   :effect (s/=> Board Board Player)
+   :effect s/Any ; (s/=> Board Board Player)
    :mana-cost s/Int
    :class (s/enum :neutral :mage :shaman)
    ; TODO - an optional :targeting-fn k/v pair?
@@ -25,3 +24,9 @@
                                            {:type :damage-spell
                                             :name "Flamecannon"
                                             :effect {:health -4}})))}})
+
+(s/defn spell->card :- Card
+  [spell :- Spell]
+  (into {:type :spell
+         :id (get-next-card-id)}
+        spell))

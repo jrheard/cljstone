@@ -1,8 +1,5 @@
 (ns cljstone.card
-  (:require [schema.core :as s])
-  (:use [cljstone.minion :only [MinionSchematic all-minions]]))
-
-(def NUM-CARDS-IN-DECK 30)
+  (:require [schema.core :as s]))
 
 (def next-card-id (atom 0))
 
@@ -17,21 +14,6 @@
    :mana-cost s/Int
    :id s/Int
    s/Any s/Any})
-
-(s/defn minion-schematic->card :- Card
-  [schematic :- MinionSchematic]
-  {:type :minion
-   :name (:name schematic)
-   :mana-cost (rand-int 10)
-   :id (get-next-card-id)
-   :minion-schematic schematic})
-
-; TODO also eventually a spell->card function
-
-(s/defn make-random-deck :- [Card]
-  []
-  (map minion-schematic->card
-       (repeatedly NUM-CARDS-IN-DECK #(rand-nth (vals all-minions)))))
 
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions

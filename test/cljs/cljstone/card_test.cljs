@@ -1,11 +1,12 @@
 (ns cljstone.card-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures]])
-  (:use [cljstone.card :only [make-random-deck get-next-card-id NUM-CARDS-IN-DECK]]
+  (:use [cljstone.card :only [get-next-card-id]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(deftest test-make-random-deck
+; XXX TODO this moved to app.cljs
+#_(deftest test-make-random-deck
   (let [deck (make-random-deck)]
     (is (= (count deck)
            NUM-CARDS-IN-DECK))))

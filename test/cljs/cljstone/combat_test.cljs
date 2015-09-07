@@ -1,6 +1,5 @@
 (ns cljstone.combat-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.card :as c]
             [cljstone.hero :as h]
             [cljstone.minion :as m]
             [schema.core :as s])
@@ -33,7 +32,7 @@
 
 (deftest playing-cards
   (testing "playing a minion"
-    (let [card (c/minion-schematic->card (:wisp m/all-minions))
+    (let [card (m/minion-schematic->card (:wisp m/all-minions))
           board {:player-1 (make-test-board-half {:hero hero-1 :hand [card]})
                  :player-2 (make-test-board-half {:hero hero-2})
                  :whose-turn :player-1

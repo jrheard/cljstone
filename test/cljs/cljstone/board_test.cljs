@@ -15,11 +15,6 @@
 (def hero-2 (h/make-hero "Thrall" :shaman (get-next-character-id)))
 (def board @(make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
 
-(js/console.log "HEY HEY HEY HEY")
-(js/console.log board)
-(js/console.log "HEY HEY HEY HEY")
-(js/console.log "HEY HEY HEY HEY")
-
 (deftest find-dead-character
   (testing "no dead characters"
     (is (= (find-a-dead-character-in-board board) nil)))
@@ -107,6 +102,7 @@
 
   (testing "resetting minions' number of attacks this turn"
     (let [board (-> board
+                    (assoc :whose-turn :player-1)
                     (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 123))
                     (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 234)))]
       ; player 1 and player 2 each have a river croc.

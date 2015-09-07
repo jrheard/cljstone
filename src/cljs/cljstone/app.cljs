@@ -19,8 +19,8 @@
   []
   (assoc (mapv minion-schematic->card
               (repeatedly NUM-CARDS-IN-DECK #(rand-nth (vals all-minions))))
-         5 ; TODO change this to 4, watch everything fall over
-         (spell->card (:frostbolt all-spells))))
+         4
+         (spell->card (all-spells :flamecannon))))
 
 (def board (let [board-atom (make-board jaina (make-random-deck) thrall (make-random-deck))
                  the-board @board-atom]

@@ -14,20 +14,31 @@
       .-minionId
       js/parseInt))
 
+(defn draw-minion-card [card]
+  [:div.content
+   [:div.name (:name card)]
+   [:div.attack (:attack (:minion-schematic card))]
+   [:div.health (:health (:minion-schematic card))]])
+
+(defn draw-spell-card [card]
+  (js/console.log (clj->js card))
+  [:div.content
+   [:div.name (:name card)]])
+
 (defn draw-card [card index player board-atom is-owners-turn]
   (let [playable is-owners-turn ; will become more complex later
         classes (str
                   "card "
-                  "minion "
+                  (condp = (:type card) :minion "minion " :spell "spell ")
                   (when playable "playable"))]
     [:div {:class classes
            :data-card-index index
            :on-click (fn [e]
                        (when playable
                          (swap! board-atom play-card player index)))}
-     [:div.name (:name card)]
-     [:div.attack (:attack (:minion-schematic card))]
-     [:div.health (:health (:minion-schematic card))]]))
+     (condp = (:type card)
+       :minion [draw-minion-card card]
+       :spell [draw-spell-card card])]))
 
 (defn draw-hero [hero]
   [:div.hero

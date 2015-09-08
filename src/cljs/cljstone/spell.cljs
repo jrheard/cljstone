@@ -30,15 +30,14 @@
                      :mana-cost 1
                      :class :mage
                      :effect (fn [board caster]
-                               (let [enemies (get-enemy-characters board caster)]
-                                 (take 3
-                                       (iterate (fn [board]
-                                                  (cause-damage board
-                                                                (:id (rand-nth enemies))
-                                                                {:type :damage-spell
-                                                                 :name "Arcane Missiles"
-                                                                 :effect {:health -1}}))
-                                                board))))}})
+                               (take 3
+                                     (iterate (fn [board]
+                                                (cause-damage board
+                                                              (:id (rand-nth (get-enemy-characters board caster)))
+                                                              {:type :damage-spell
+                                                               :name "Arcane Missiles"
+                                                               :effect {:health -1}}))
+                                              board)))}})
 
 (s/defn spell->card :- Card
   [spell :- Spell]

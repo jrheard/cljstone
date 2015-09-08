@@ -1,8 +1,8 @@
 (ns cljstone.combat
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character CharacterModifier]]
-        [cljstone.minion :only [get-attack get-health]]))
+        [cljstone.character :only [Character CharacterModifier Player other-player]]
+        [cljstone.minion :only [Minion get-attack get-health]]))
 
 (s/defn cause-damage :- Board
   [board :- Board
@@ -58,3 +58,14 @@
                             (get-in board [:player-2 :minions]))]
     (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
       dead-minion)))
+
+(s/defn get-enemy-characters :- [Character]
+  [board :- Board
+   player :- Player]
+  ; TODO concat the enemy hero to the result of get-enemy-minions
+  (get-enemy-minions board player))
+
+(s/defn get-enemy-minions :- [Minion]
+  [board :- Board
+   player :- Player]
+  (get-in board [(other-player player) :minions]))

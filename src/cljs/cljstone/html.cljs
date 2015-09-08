@@ -21,7 +21,6 @@
    [:div.health (:health (:minion-schematic card))]])
 
 (defn draw-spell-card [card]
-  (js/console.log (clj->js card))
   [:div.content
    [:div.name (:name card)]])
 

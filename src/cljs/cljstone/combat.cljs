@@ -59,13 +59,13 @@
     (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
       dead-minion)))
 
+(s/defn get-enemy-minions :- [Minion]
+  [board :- Board
+   player :- Player]
+  (get-in board [(other-player player) :minions]))
+
 (s/defn get-enemy-characters :- [Character]
   [board :- Board
    player :- Player]
   ; TODO concat the enemy hero to the result of get-enemy-minions
   (get-enemy-minions board player))
-
-(s/defn get-enemy-minions :- [Minion]
-  [board :- Board
-   player :- Player]
-  (get-in board [(other-player player) :minions]))

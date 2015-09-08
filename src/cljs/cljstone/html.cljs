@@ -90,7 +90,6 @@
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
-  (js/console.log entry)
   [:div.log-entry
    (str
      (-> entry :target :name)
@@ -100,9 +99,10 @@
 
 (s/defn draw-combat-log [board]
   (let [combat-log (:combat-log board)]
-    [:div.combat-log
+    [:div.combat-log-viewport
+     [:div.combat-log
      (for [entry combat-log]
-       ^{:key (:id entry)} [draw-combat-log-entry board entry])]))
+       ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
 (defn draw-board [board-atom]
   (let [board @board-atom]

@@ -11,6 +11,29 @@ h3 {
 	text-transform: uppercase;
 }
 
+.combat-log-viewport {
+	position: absolute;
+	top: 350px;
+	left: 358px;
+	font-size: 25px;
+	overflow: hidden;
+	width: 12px;
+	height: 300px;
+	padding: 4px;
+	border: solid 1px #AAA;
+	font-family: monospace;
+	background-color: #EEE;
+}
+
+.combat-log-viewport:hover {
+	width: 1000px;
+}
+
+.combat-log {
+	position: absolute;
+	width: 1000px;
+}
+
 .debug {
 	position: absolute;
 	top: 0;

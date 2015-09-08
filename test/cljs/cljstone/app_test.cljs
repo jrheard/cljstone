@@ -4,17 +4,15 @@
         [cljstone.board :only [path-to-character make-board play-card]]
         [cljstone.character :only [get-next-character-id]]
         [cljstone.hero :only [make-hero]]
+        [cljstone.test-helpers :only [fresh-board]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (make-hero "Jaina" :mage (get-next-character-id)))
-(def hero-2 (make-hero "Thrall" :shaman (get-next-character-id)))
-
 (deftest grim-reaper
   ; TODO test for hero death
 
-  (let [board (make-board-atom (make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))]
+  (let [board (make-board-atom fresh-board)]
     (swap! board play-card :player-1 0)
     (swap! board play-card :player-1 0)
     (swap! board play-card :player-1 0)

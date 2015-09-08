@@ -2,46 +2,36 @@
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.app :only [make-random-deck]]
-        [cljstone.board :only [path-to-character make-board play-card BoardHalf end-turn]]
-        [cljstone.character :only [get-next-character-id]]
+  (:use [cljstone.board :only [path-to-character end-turn]]
         [cljstone.combat :only [attack]]
-        [cljstone.hero :only [make-hero]]
+        [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (make-hero "Jaina" :mage (get-next-character-id)))
-(def hero-2 (make-hero "Thrall" :shaman (get-next-character-id)))
-(def board (make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
-
 (deftest finding-paths
   (testing "looking up heroes"
-    (is (= (path-to-character board (:id hero-1))
+    (is (= (path-to-character fresh-board (:id hero-1))
            [:player-1 :hero])
-        (= (path-to-character board (:id hero-2))
+        (= (path-to-character fresh-board (:id hero-2))
            [:player-2 :hero])))
 
   (testing "looking up minions"
-   (let [board (-> board
-                   (play-card :player-1 0)
-                   (play-card :player-1 0)
-                   (play-card :player-2 0))
-         minion-to-find (get-in board [:player-1 :minions 1])]
-     (is (= (path-to-character board (:id minion-to-find))
+   (let [minion-to-find (get-in three-minions-per-player-board [:player-1 :minions 1])]
+     (is (= (path-to-character three-minions-per-player-board (:id minion-to-find))
             [:player-1 :minions 1])))))
 
 (deftest turns
   (testing "turns existing"
-    (is (= (:turn board) 0))
+    (is (= (:turn fresh-board) 0))
 
-    (let [board (assoc board :whose-turn :player-1)
+    (let [board (assoc fresh-board :whose-turn :player-1)
           board (end-turn board)]
       (is (= (:turn board 1)))
       (is (= (:whose-turn board) :player-2))))
 
   (testing "resetting minions' number of attacks this turn"
-    (let [board (-> board
+    (let [board (-> fresh-board
                     (assoc :whose-turn :player-1)
                     (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 123))
                     (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 234)))]

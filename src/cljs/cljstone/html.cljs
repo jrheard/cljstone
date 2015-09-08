@@ -29,7 +29,8 @@
   (let [playable is-owners-turn ; will become more complex later
         classes (str
                   "card "
-                  (condp = (:type card) :minion "minion " :spell "spell ")
+                  (clj->js (:class card))
+                  (condp = (:type card) :minion " minion " :spell " spell ")
                   (when playable "playable"))]
     [:div {:class classes
            :data-card-index index

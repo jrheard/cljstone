@@ -89,12 +89,28 @@
                               (swap! board-atom end-turn))}
    "End Turn"])
 
+(defn draw-combat-log-entry [board entry]
+  (js/console.log entry)
+  [:div.log-entry
+   (str
+     (-> entry :target :name)
+     " was attacked for "
+     (- (-> entry :modifier :effect :health))
+     " damage")])
+
+(s/defn draw-combat-log [board]
+  (let [combat-log (:combat-log board)]
+    [:div.combat-log
+     (for [entry combat-log]
+       ^{:key (:id entry)} [draw-combat-log-entry board entry])]))
+
 (defn draw-board [board-atom]
   (let [board @board-atom]
     [:div.board
      [draw-board-half board board-atom :player-1 (board :whose-turn)]
      [draw-board-half board board-atom :player-2 (board :whose-turn)]
      [draw-end-turn-button board board-atom]
+     [draw-combat-log board]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]
      #_[:div.debug
       [:pre (with-out-str (pprint board))]]]))

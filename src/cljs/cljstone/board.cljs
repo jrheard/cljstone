@@ -1,9 +1,15 @@
 (ns cljstone.board
   (:require [schema.core :as s])
   (:use [cljstone.card :only [Card]]
-        [cljstone.character :only [Character Player get-next-character-id other-player]]
+        [cljstone.character :only [Character CharacterModifier Player get-next-character-id other-player]]
         [cljstone.hero :only [Hero]]
         [cljstone.minion :only [Minion make-minion]]))
+
+(s/defschema LogEntry
+  {:modifier CharacterModifier
+   :source (s/maybe Character)
+   :target Character
+   :id s/Int})
 
 (s/defschema BoardHalf
   {:hero Hero
@@ -15,7 +21,8 @@
   {:player-1 BoardHalf
    :player-2 BoardHalf
    :whose-turn Player
-   :turn s/Int})
+   :turn s/Int
+   :combat-log [LogEntry]})
 
 (def STARTING-HAND-SIZE 7)
 
@@ -53,7 +60,8 @@
         {:player-1 (make-board-half hero-1 deck-1)
          :player-2 (make-board-half hero-2 deck-2)
          :whose-turn (rand-nth [:player-1 :player-2])
-         :turn 0}))
+         :turn 0
+         :combat-log []}))
 
 (s/defn end-turn :- Board
   [board :- Board]

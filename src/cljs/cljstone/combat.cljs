@@ -2,6 +2,7 @@
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
+        [cljstone.combat-log :only [log-an-item]]
         [cljstone.minion :only [Minion get-attack get-health]]))
 
 (s/defn cause-damage :- Board
@@ -9,7 +10,9 @@
    character-id :- s/Int
    modifier :- CharacterModifier]
   (let [modifiers-path (conj (path-to-character board character-id) :modifiers)]
-    (update-in board modifiers-path conj modifier)))
+    (-> board
+        (update-in modifiers-path conj modifier)
+        (log-an-item modifier nil (get-in board (path-to-character board character-id))))))
 
 (s/defn create-attack-modifier :- CharacterModifier
   [c1 :- Character

@@ -25,6 +25,10 @@
          4
          (spell->card (all-spells :flamecannon))))
 
+;; XXXX NEXT UP SHOULD BE COMBAT LOG
+;; SERIOUSLY
+;; NO FUCKING CLUE HOW IT'LL INTERACT WITH SWAP AND ALSO CAUSE-DAMAGE (SEE ARCANE MISSILES, ETC)
+
 (s/defn make-board-atom :- ratom/RAtom
   [board :- Board]
   (let [board (r/atom board)]
@@ -37,6 +41,9 @@
                    ; TODO if :character is a minion with a deathrattle, fire deathrattle
                    ; TODO also fire on-minion-death for flesheating ghoul, cult master, etc
                    ; anyway for right now dead-character is always a Minion
+                   ; TODO have a separate kill-minion function: fires deathrattle, on-minion-death, and removes minion from board
+                   ; also split this grim-reaper functionality out into something that's reusable in other places (eg cause-damage)
+                   ; also will be used by twisting nether, assassinate, etc
                    (swap! board-atom remove-minion (:id dead-character)))))
     board))
 

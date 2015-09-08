@@ -33,6 +33,8 @@
                                ; xxxxxxxxxxxxxxxx this won't work
                                ; grim-reaper only exists on the board *atom*
                                ; so i guess we just update get-enemy-characters to filter out 0-health ones?
+                               ; xxxxx i guess cause-damage can *also* invoke grim-reaper
+                               ; can't think of any reason why not
                                (nth (iterate (fn [board]
                                               (cause-damage board
                                                             (:id (rand-nth (get-enemy-characters board caster)))

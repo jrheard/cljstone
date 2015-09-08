@@ -1,15 +1,15 @@
 (ns cljstone.app-test
-  (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.hero :as h])
+  (:require [cljs.test :refer-macros [deftest testing is use-fixtures]])
   (:use [cljstone.app :only [make-board-atom make-random-deck]]
         [cljstone.board :only [path-to-character make-board play-card]]
         [cljstone.character :only [get-next-character-id]]
+        [cljstone.hero :only [make-hero]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (h/make-hero "Jaina" :mage (get-next-character-id)))
-(def hero-2 (h/make-hero "Thrall" :shaman (get-next-character-id)))
+(def hero-1 (make-hero "Jaina" :mage (get-next-character-id)))
+(def hero-2 (make-hero "Thrall" :shaman (get-next-character-id)))
 
 (deftest grim-reaper
   ; TODO test for hero death

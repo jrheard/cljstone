@@ -1,18 +1,18 @@
 (ns cljstone.board-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.hero :as h]
             [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.app :only [make-random-deck]]
         [cljstone.board :only [path-to-character make-board play-card BoardHalf end-turn]]
         [cljstone.character :only [get-next-character-id]]
         [cljstone.combat :only [attack]]
+        [cljstone.hero :only [make-hero]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (h/make-hero "Jaina" :mage (get-next-character-id)))
-(def hero-2 (h/make-hero "Thrall" :shaman (get-next-character-id)))
+(def hero-1 (make-hero "Jaina" :mage (get-next-character-id)))
+(def hero-2 (make-hero "Thrall" :shaman (get-next-character-id)))
 (def board (make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
 
 (deftest finding-paths

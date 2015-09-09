@@ -9,10 +9,11 @@
   [board :- Board
    character-id :- s/Int
    modifier :- CharacterModifier]
-  (let [modifiers-path (conj (path-to-character board character-id) :modifiers)]
+  (let [character-path (path-to-character board character-id)
+        modifiers-path (conj character-path :modifiers)]
     (-> board
         (update-in modifiers-path conj modifier)
-        (log-an-item modifier nil (get-in board (path-to-character board character-id))))))
+        (log-an-item modifier nil (get-in board character-path)))))
 
 (s/defn create-attack-modifier :- CharacterModifier
   [c1 :- Character

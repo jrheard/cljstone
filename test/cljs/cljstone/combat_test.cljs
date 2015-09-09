@@ -1,8 +1,9 @@
 (ns cljstone.combat-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
+            [cljstone.combat-log :as cl]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.board :only [play-card]]
+  (:use [cljstone.board :only [play-card path-to-character]]
         [cljstone.combat :only [attack find-a-dead-character-in-board remove-minion]]
         [cljstone.test-helpers :only [fresh-board hero-1 hero-2 three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
@@ -13,13 +14,22 @@
   (testing "two minions attacking each other"
     (let [board (-> fresh-board
                     (update-in [:player-1 :minions] conj (m/make-minion (:boulderfist-ogre m/all-minions) 123))
-                    (update-in [:player-2 :minions] conj (m/make-minion (:war-golem m/all-minions) 234))
-                    (attack 123 234))]
+                    (update-in [:player-2 :minions] conj (m/make-minion (:war-golem m/all-minions) 234)))
+          ogre (get-in board (path-to-character board 123))
+          golem (get-in board (path-to-character board 234))
+          board (attack board 123 234)]
       ; ogre dies, war golem survives with 1 health
       (is (= (m/get-health (get-in board [:player-1 :minions 0]))
              0))
       (is (= (m/get-health (get-in board [:player-2 :minions 0]))
-             1)))))
+             1))
+
+      ; combat log recorded both of those damages
+      (with-redefs [cl/get-next-log-entry-id (fn [] 0)]
+        (is (= (-> board :combat-log first)
+               {:modifier {:type :attack :name nil :effect {:health -6}} :id 0 :source nil :target golem}))
+        (is (= (-> board :combat-log (nth 1))
+               {:modifier {:type :attack :name nil :effect {:health -7}} :id 0 :source nil :target ogre}))))))
 
 (deftest playing-cards
   (testing "playing a minion"

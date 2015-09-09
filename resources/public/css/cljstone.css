@@ -27,6 +27,7 @@ h3 {
 
 .combat-log-viewport:hover {
 	width: 1000px;
+	background-color: #DDD;
 }
 
 .combat-log {

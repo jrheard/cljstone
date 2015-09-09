@@ -17,6 +17,10 @@
    :deck [Card]
    :minions [Minion]})
 
+; TODO add a :graveyard to board?
+; consider reading logs
+; see comments in https://www.reddit.com/r/hearthstone/comments/3k32vh/hearthstone_science_steal_a_card_from_your/
+
 (s/defschema Board
   {:player-1 BoardHalf
    :player-2 BoardHalf

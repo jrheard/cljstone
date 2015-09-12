@@ -62,6 +62,15 @@
       half-2-path (vec (concat [:player-2] half-2-path))
       :else nil)))
 
+(s/defn add-modifier-to-character :- Board
+  [board :- Board
+   character-id :- s/Int
+   modifier :- CharacterModifier]
+  (update-in board
+             (concat (path-to-character board character-id) [:modifiers])
+             conj
+             modifier))
+
 (s/defn make-board :- Board
   [hero-1 :- Hero
    deck-1 :- [Card]

@@ -1,15 +1,19 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.board :only [Board Minion path-to-character]]
+  (:use [cljstone.board :only [Board Minion add-modifier-to-character]]
         [cljstone.card :only [Card get-next-card-id]]
-        [cljstone.character :only [Player CharacterModifier get-next-character-id]]))
+        [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]))
+
+(def Battlecry
+  {:targeting-fn (s/=> [Character] Board Player)
+   :effect-fn (s/=> Board Board s/Int)})
 
 (def MinionSchematic
   {:name s/Str
    (s/optional-key :class) (s/enum :neutral :mage :shaman)
    :attack s/Int
    :health s/Int
-   (s/optional-key :battlecry) s/Any
+   (s/optional-key :battlecry) Battlecry
    (s/optional-key :modifiers) [CharacterModifier]})
 
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
@@ -29,12 +33,12 @@
    :bloodfen-raptor {:name "Bloodfen Raptor" :attack 3 :health 2}
    :river-crocilisk {:name "River Crocilisk" :attack 2 :health 3}
    :shattered-sun {:name "Shattered Sun Cleric" :attack 3 :health 2
-                   :battlecry (fn [board target-minion-id]
-                                ; TODO have an (add-modifiers-to-character) function
-                                (update-in board
-                                           (concat (path-to-character board target-minion-id) [:modifiers])
-                                           conj
-                                           {:type :buff :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}
+                   :battlecry {:targeting-fn (fn [board player]
+                                               (get-in board [player :minions]))
+                               :effect-fn (fn [board target-minion-id]
+                                            (add-modifier-to-character board
+                                                                       target-minion-id
+                                                                       {:type :buff :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}}
    :magma-rager {:name "Magma Rager" :attack 5 :health 1}
    :chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5}
    :oasis-snapjaw {:name "Oasis Snapjaw" :attack 2 :health 7}
@@ -63,20 +67,18 @@
         (dissoc schematic :attack :health :battlecry)))
 
 
-; TODO get things working in this new play-card world before starting on battlecries
-
 (s/defn play-minion-card :- Board
   [board :- Board
    player :- Player
    schematic :- MinionSchematic]
   ; TODO how do we implement battlecries?
   ; check to see if schematic has a :battlecry
-  ; a Battlecry has a :targeting-fn and an :effect-fn
-  ; call (schematic :targeting-fn), returns a list of character ids
+  ; call (battlecry :targeting-fn), returns a list of character ids
   ; set board state to :targeting
   ; add .targeting class to main board div
   ; add .acceptable-target class to minions/heroes that can be targeted
   ;
+  ; XXXX SOMEHOW BLOCK AND WAIT FOR USER INPUT
   ; ??????? somehow accept user input
   ;
   ; call ((schematic :effect-fn) target-character-id)

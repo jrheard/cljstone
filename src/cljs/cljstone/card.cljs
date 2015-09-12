@@ -15,8 +15,9 @@
    :id s/Int
    :class s/Any
    :effect s/Any ; a function that takes (board, player) and returns a new Board
-   s/Any s/Any
-   })
+   (s/optional-key :attack) s/Int
+   (s/optional-key :health) s/Int
+   (s/optional-key :durability) s/Int})
 
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions

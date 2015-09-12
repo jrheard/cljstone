@@ -17,9 +17,8 @@
 (defn draw-minion-card [card]
   [:div.content
    [:div.name (:name card)]
-    ;;;;;; xxxxxx
-   [:div.attack (:attack (:minion-schematic card))]
-   [:div.health (:health (:minion-schematic card))]])
+   [:div.attack (:attack card)]
+   [:div.health (:health card)]])
 
 (defn draw-spell-card [card]
   [:div.content

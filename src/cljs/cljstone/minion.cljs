@@ -93,7 +93,8 @@
    :mana-cost (rand-int 10)
    :id (get-next-card-id)
    :class :neutral ; XXXXX TODO standardize on where this is handled
-   :minion-schematic schematic
+   :attack (:attack schematic)
+   :health (:health schematic)
    :effect (fn [board player]
              (play-minion-card board player schematic))})
 

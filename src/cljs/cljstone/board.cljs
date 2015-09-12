@@ -10,26 +10,6 @@
    :target Character
    :id s/Int})
 
-(s/defschema TargetingFunction (s/=> [Character] Board Player))
-
-; XXX it's weird that this lives in board.cljs but this file doesn't even *import* minion.cljs
-; this happens so we avoid circular imports
-; i guess the list of all minions shouldn't live in minion.cljs, and the list of all spells shouldn't live in spell.cljs
-; but if that's so, then where should they live?
-; bestiary.cljs?
-; spellbook.cljs?
-; armory.cljs?
-; these could all work pretty well, and would solve the circular-import problem
-(s/defschema Minion
-  {:name s/Str
-   :class (s/enum :neutral :mage :shaman)
-   :base-attack s/Int
-   :base-health s/Int
-   :attacks-this-turn s/Int
-   :attacks-per-turn s/Int
-   :id s/Int
-   :modifiers [CharacterModifier]})
-
 (s/defschema BoardHalf
   {:hero Hero
    :hand [Card]

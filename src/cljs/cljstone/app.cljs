@@ -6,28 +6,12 @@
             [cljstone.hero :as hero]
             [cljstone.html :as html])
   (:use [cljstone.board :only [Board make-board play-card]]
-        [cljstone.card :only [Card]]
         [cljstone.combat :only [find-a-dead-character-in-board remove-minion]]
         [cljstone.character :only [get-next-character-id]]
-        [cljstone.minion :only [all-minions minion-schematic->card]]
-        [cljstone.spell :only [Spell all-spells spell->card]]))
-
-(def NUM-CARDS-IN-DECK 30)
+        [cljstone.dealer :only [make-random-deck]]))
 
 (def jaina (hero/make-hero "Jaina" :mage (get-next-character-id)))
 (def thrall (hero/make-hero "Thrall" :shaman (get-next-character-id)))
-
-; XXX perhaps a dealer.cljs that handles spinning up a deck?
-(s/defn make-random-deck :- [Card]
-  []
-  (assoc (mapv minion-schematic->card
-              (repeatedly NUM-CARDS-IN-DECK #(rand-nth (vals all-minions))))
-         4
-         (spell->card (all-spells :flamecannon))))
-
-;; XXXX NEXT UP SHOULD BE COMBAT LOG
-;; SERIOUSLY
-;; NO FUCKING CLUE HOW IT'LL INTERACT WITH SWAP AND ALSO CAUSE-DAMAGE (SEE ARCANE MISSILES, ETC)
 
 (s/defn make-board-atom :- ratom/RAtom
   [board :- Board]

@@ -1,13 +1,15 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card get-next-card-id]]
-        [cljstone.character :only [CharacterModifier]]))
+  (:use [cljstone.board :only [Board Minion path-to-character]]
+        [cljstone.card :only [Card get-next-card-id]]
+        [cljstone.character :only [Player CharacterModifier get-next-character-id]]))
 
 (def MinionSchematic
   {:name s/Str
    (s/optional-key :class) (s/enum :neutral :mage :shaman)
    :attack s/Int
    :health s/Int
+   (s/optional-key :battlecry) s/Any
    (s/optional-key :modifiers) [CharacterModifier]})
 
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
@@ -17,15 +19,6 @@
 ; yeah, definitely go with :turn-expires.
 ; also: summoning sickness can be implemented as a one-turn modifier with effect :cant-attack true
 ; freezing will work similarly
-(def Minion
-  {:name s/Str
-   :class (s/enum :neutral :mage :shaman)
-   :base-attack s/Int
-   :base-health s/Int
-   :attacks-this-turn s/Int
-   :attacks-per-turn s/Int
-   :id s/Int
-   :modifiers [CharacterModifier]})
 
 ; Schematics
 
@@ -35,19 +28,18 @@
    :goldshire-footman {:name "Goldshire Footman" :attack 1 :health 2}
    :bloodfen-raptor {:name "Bloodfen Raptor" :attack 3 :health 2}
    :river-crocilisk {:name "River Crocilisk" :attack 2 :health 3}
+   :shattered-sun {:name "Shattered Sun Cleric" :attack 3 :health 2
+                   :battlecry (fn [board target-minion-id]
+                                ; TODO have an (add-modifiers-to-character) function
+                                (update-in board
+                                           (concat (path-to-character board target-minion-id) [:modifiers])
+                                           conj
+                                           {:type :buff :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}
    :magma-rager {:name "Magma Rager" :attack 5 :health 1}
    :chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5}
    :oasis-snapjaw {:name "Oasis Snapjaw" :attack 2 :health 7}
    :boulderfist-ogre {:name "Boulderfist Ogre" :attack 6 :health 7}
    :war-golem {:name "War Golem" :attack 7 :health 7}})
-
-(s/defn minion-schematic->card :- Card
-  [schematic :- MinionSchematic]
-  {:type :minion
-   :name (:name schematic)
-   :mana-cost (rand-int 10)
-   :id (get-next-card-id)
-   :minion-schematic schematic})
 
 
 ; TODO - minion types like :beast, :dragon, :mech
@@ -68,7 +60,42 @@
          :id id
          :modifiers []
          :class :neutral}
-        (dissoc schematic :attack :health)))
+        (dissoc schematic :attack :health :battlecry)))
+
+
+; TODO get things working in this new play-card world before starting on battlecries
+
+(s/defn play-minion-card :- Board
+  [board :- Board
+   player :- Player
+   schematic :- MinionSchematic]
+  ; TODO how do we implement battlecries?
+  ; check to see if schematic has a :battlecry
+  ; a Battlecry has a :targeting-fn and an :effect-fn
+  ; call (schematic :targeting-fn), returns a list of character ids
+  ; set board state to :targeting
+  ; add .targeting class to main board div
+  ; add .acceptable-target class to minions/heroes that can be targeted
+  ;
+  ; ??????? somehow accept user input
+  ;
+  ; call ((schematic :effect-fn) target-character-id)
+  ; play minion
+  (update-in board
+             [player :minions]
+             conj
+             (make-minion schematic (get-next-character-id))))
+
+(s/defn minion-schematic->card :- Card
+  [schematic :- MinionSchematic]
+  {:type :minion
+   :name (:name schematic)
+   :mana-cost (rand-int 10)
+   :id (get-next-card-id)
+   :class :neutral ; XXXXX TODO standardize on where this is handled
+   :minion-schematic schematic
+   :effect (fn [board player]
+             (play-minion-card board player schematic))})
 
 
 ; dire wolf alpha only needs to care about on-summon-friendly-minion, on-friendly-minion-death - no other situations cause a dire wolf alpha buff/debuff

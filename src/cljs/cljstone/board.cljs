@@ -1,15 +1,24 @@
 (ns cljstone.board
   (:require [schema.core :as s])
   (:use [cljstone.card :only [Card]]
-        [cljstone.character :only [Character CharacterModifier Player get-next-character-id other-player]]
-        [cljstone.hero :only [Hero]]
-        [cljstone.minion :only [Minion make-minion]]))
+        [cljstone.character :only [Character CharacterModifier Player other-player]]
+        [cljstone.hero :only [Hero]]))
 
 (s/defschema LogEntry
   {:modifier CharacterModifier
    :source (s/maybe Character)
    :target Character
    :id s/Int})
+
+(def Minion
+  {:name s/Str
+   :class (s/enum :neutral :mage :shaman)
+   :base-attack s/Int
+   :base-health s/Int
+   :attacks-this-turn s/Int
+   :attacks-per-turn s/Int
+   :id s/Int
+   :modifiers [CharacterModifier]})
 
 (s/defschema BoardHalf
   {:hero Hero
@@ -26,6 +35,8 @@
    :player-2 BoardHalf
    :whose-turn Player
    :turn s/Int
+   :state (s/enum :default :targeting :position-minion :mulligan :choose-one)
+   ; TODO does it make sense to have a separate :position-minion state or is that overkill?
    :combat-log [LogEntry]})
 
 (def STARTING-HAND-SIZE 7)
@@ -65,6 +76,7 @@
          :player-2 (make-board-half hero-2 deck-2)
          :whose-turn (rand-nth [:player-1 :player-2])
          :turn 0
+         :state :default
          :combat-log []}))
 
 (s/defn end-turn :- Board
@@ -75,23 +87,6 @@
                    (mapv #(assoc % :attacks-this-turn 0) minions)))
       (update-in [:turn] inc)
       (update-in [:whose-turn] other-player)))
-
-; TODO look into using protocols to express minion/spell cards more cleanly
-; they basically just need to implement a (play) function and.. that's it?
-(s/defn play-spell :- Board
-  [board :- Board
-   player :- Player
-   card :- Card]
-  ((card :effect) board player))
-
-(s/defn play-minion :- Board
-  [board :- Board
-   player :- Player
-   card :- Card]
-  (assoc-in board
-            [player :minions]
-            (conj (vec (get-in board [player :minions]))
-                  (make-minion (:minion-schematic card) (get-next-character-id)))))
 
 ; TODO - eventually implement several phases to playing a card
 ; minions have to be first a) positioned, then b) optionally targeted [eg bgh, shattered sun]
@@ -107,10 +102,7 @@
             (count (get-in board [player :hand])))]}
   (let [hand (-> board player :hand)
         card (nth hand card-index)
-        new-hand (vec (remove #(= (:id %) (:id card)) hand))
-        play-fn (condp = (:type card)
-                  :spell play-spell
-                  :minion play-minion)]
+        new-hand (vec (remove #(= (:id %) (:id card)) hand))]
     (-> board
         (assoc-in [player :hand] new-hand)
-        (play-fn player card))))
+        ((card :effect) player))))

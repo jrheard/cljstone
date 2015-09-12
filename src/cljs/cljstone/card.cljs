@@ -13,7 +13,10 @@
    :name s/Str
    :mana-cost s/Int
    :id s/Int
-   s/Any s/Any})
+   :class s/Any
+   :effect s/Any ; a function that takes (board, player) and returns a new Board
+   s/Any s/Any
+   })
 
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions

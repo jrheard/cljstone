@@ -7,7 +7,9 @@
 (s/defschema Player (s/enum :player-1 :player-2))
 
 (s/defschema CharacterEffect
-  {(s/optional-key :health) s/Int
+  {(s/optional-key :base-health) s/Int
+   (s/optional-key :base-attack) s/Int
+   (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int})
 
 (s/defschema CharacterModifier

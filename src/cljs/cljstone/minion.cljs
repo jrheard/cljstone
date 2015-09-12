@@ -61,7 +61,7 @@
          :id id
          :modifiers []
          :class :neutral}
-        (dissoc schematic :attack :health :battlecry)))
+        (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn)))
 
 
 (s/defn play-minion-card :- Board

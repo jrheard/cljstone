@@ -111,9 +111,7 @@
      [draw-board-half board board-atom :player-2 (board :whose-turn)]
      [draw-end-turn-button board board-atom]
      [draw-combat-log board]
-     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]
-     #_[:div.debug
-      [:pre (with-out-str (pprint board))]]]))
+     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 (defn mount-reagent [board-atom]
   (r/render-component [draw-board board-atom]

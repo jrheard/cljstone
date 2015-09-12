@@ -46,6 +46,7 @@
    :whose-turn Player
    :turn s/Int
    :state (s/enum :default :targeting :position-minion :mulligan :choose-one)
+   ;:targeting-callback s/Any ; XXXX TODO generalize
    ; TODO does it make sense to have a separate :position-minion state or is that overkill?
    :combat-log [LogEntry]})
 

@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.board :only [path-to-character end-turn]]
+  (:use [cljstone.bestiary :only [all-minions]]
+        [cljstone.board :only [path-to-character end-turn]]
         [cljstone.combat :only [attack]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
@@ -33,8 +34,8 @@
   (testing "resetting minions' number of attacks this turn"
     (let [board (-> fresh-board
                     (assoc :whose-turn :player-1)
-                    (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 123))
-                    (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk m/all-minions) 234)))]
+                    (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk all-minions) 123))
+                    (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk all-minions) 234)))]
       ; player 1 and player 2 each have a river croc.
       (is (= true (m/can-attack (get-in board [:player-1 :minions 0]))))
 

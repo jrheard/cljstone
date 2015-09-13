@@ -4,6 +4,7 @@
             [cljstone.board-test]
             [cljstone.card-test]
             [cljstone.combat-test]
+            [cljstone.dealer-test]
             [cljstone.minion-test]
             [cljstone.spell-test]))
 
@@ -11,5 +12,6 @@
            'cljstone.board-test
            'cljstone.card-test
            'cljstone.combat-test
+           'cljstone.dealer-test
            'cljstone.minion-test
            'cljstone.spell-test)

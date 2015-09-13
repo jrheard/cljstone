@@ -1,17 +1,19 @@
 (ns cljstone.spell-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.spell :as s])
+            )
   (:use [schema.test :only [validate-schemas]]
         [cljstone.combat-log :only [get-next-log-entry-id]]
         [cljstone.test-helpers :only [three-minions-per-player-board]]
-        [cljstone.board :only [make-board play-card]]))
+        [cljstone.board :only [make-board play-card]]
+        [cljstone.spell :only [spell->card]]
+        [cljstone.spellbook :only [all-spells]]))
 
 (use-fixtures :once validate-schemas)
 
 (deftest flamecannon
   (let [board (assoc-in three-minions-per-player-board
                         [:player-1 :hand 0]
-                        (s/spell->card (s/all-spells :flamecannon)))]
+                        (spell->card (all-spells :flamecannon)))]
     (with-redefs [rand-nth first
                   get-next-log-entry-id (fn [] 0)]
       (let [minion (get-in board [:player-2 :minions 0])

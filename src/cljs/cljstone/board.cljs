@@ -2,7 +2,8 @@
   (:require [schema.core :as s])
   (:use [cljstone.card :only [Card]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
-        [cljstone.hero :only [Hero]]))
+        [cljstone.hero :only [Hero]]
+        [cljstone.minion :only [Minion]]))
 
 (s/defschema LogEntry
   {:modifier CharacterModifier

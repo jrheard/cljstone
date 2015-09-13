@@ -5,12 +5,6 @@
 
 (use-fixtures :once validate-schemas)
 
-; XXX TODO this moved to app.cljs
-#_(deftest test-make-random-deck
-  (let [deck (make-random-deck)]
-    (is (= (count deck)
-           NUM-CARDS-IN-DECK))))
-
 (deftest test-card-ids
   (let [an-id (get-next-card-id)
         another-id (get-next-card-id)]

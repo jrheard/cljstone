@@ -1,9 +1,9 @@
 (ns cljstone.test-helpers
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]])
   (:use [schema.test :only [validate-schemas]]
-        [cljstone.app :only [make-random-deck]]
         [cljstone.board :only [make-board play-card]]
         [cljstone.character :only [get-next-character-id]]
+        [cljstone.dealer :only [make-random-deck]]
         [cljstone.hero :only [make-hero]]))
 
 (use-fixtures :once validate-schemas)

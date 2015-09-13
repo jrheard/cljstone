@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
             [cljstone.minion :as m]
             [schema.core :as s])
-  (:use [cljstone.board :only [play-card path-to-character]]
+  (:use [cljstone.bestiary :only [all-minions]]
+        [cljstone.board :only [play-card path-to-character]]
         [cljstone.combat :only [attack find-a-dead-character-in-board remove-minion]]
         [cljstone.combat-log :only [get-next-log-entry-id]]
         [cljstone.test-helpers :only [fresh-board hero-1 hero-2 three-minions-per-player-board]]
@@ -14,8 +15,8 @@
   (testing "two minions attacking each other"
     (with-redefs [get-next-log-entry-id (fn [] 0)]
       (let [board (-> fresh-board
-                      (update-in [:player-1 :minions] conj (m/make-minion (:boulderfist-ogre m/all-minions) 123))
-                      (update-in [:player-2 :minions] conj (m/make-minion (:war-golem m/all-minions) 234)))
+                      (update-in [:player-1 :minions] conj (m/make-minion (:boulderfist-ogre all-minions) 123))
+                      (update-in [:player-2 :minions] conj (m/make-minion (:war-golem all-minions) 234)))
             ogre (get-in board (path-to-character board 123))
             golem (get-in board (path-to-character board 234))
             board (attack board 123 234)]
@@ -33,7 +34,7 @@
 
 (deftest playing-cards
   (testing "playing a minion"
-    (let [card (m/minion-schematic->card (:wisp m/all-minions))
+    (let [card (m/minion-schematic->card (:wisp all-minions))
           board (-> fresh-board
                     (assoc-in [:player-1 :hand 0] card)
                     (play-card :player-1 0))]

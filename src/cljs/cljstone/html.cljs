@@ -18,16 +18,6 @@
       .-characterId
       js/parseInt))
 
-(defn async-some [predicate game-event-chan]
-  (go-loop []
-    (let [msg (<! game-event-chan)]
-      (if (predicate msg)
-        msg
-        (recur)))))
-
-(defn get-next-message [msg-type-set game-event-chan]
-  (async-some #(contains? msg-type-set (:type %)) game-event-chan))
-
 (defn draw-minion-card [card]
   [:div.content
    [:div.name (:name card)]
@@ -61,20 +51,20 @@
    [:div.name (:name hero)]])
 
 (defn draw-minion [minion board board-atom is-owners-turn mouse-event-chan]
-  ; XXXXXX have this also depend on the state of the board being :default
-  (let [minion-can-attack (and is-owners-turn (can-attack minion))
+  (let [minion-can-attack (and is-owners-turn
+                               (can-attack minion)
+                               (= (board :mode) :default))
         classes (str
                   "minion "
                   (when minion-can-attack "can-attack"))
         put-event-in-chan (fn [e]
                             (put! mouse-event-chan {:type :mouse-event
-                                              :mouse-event-type (.-type e)
-                                              :board board
-                                              :character-id (get-character-id-from-event e)}))]
+                                                    :mouse-event-type (.-type e)
+                                                    :board board
+                                                    :character-id (get-character-id-from-event e)}))]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
-           ; TODO break this out into its separate go-loop
            :on-drag-start put-event-in-chan
            :on-drag-over #(.preventDefault %)
            :on-drop (fn [e]
@@ -138,12 +128,13 @@
       (let [msg (<! mouse-event-chan)]
         (condp = (msg :mouse-event-type)
           "dragstart" (recur (:character-id msg))
-          "drop" (when (not= (first (path-to-character (:board msg) origin-character-id))
+          "drop" (do
+                   (when (not= (first (path-to-character (:board msg) origin-character-id))
                              (first (path-to-character (:board msg) (:character-id msg))))
-                   (>! game-event-chan {:type :attack
-                                      :origin-id origin-character-id
-                                      :destination-id (:character-id msg)})
-                   (recur nil)))))
+                     (>! game-event-chan {:type :attack
+                                        :origin-id origin-character-id
+                                        :destination-id (:character-id msg)}))
+                     (recur nil)))))
 
     (go-loop []
       (let [msg (<! game-event-chan)]

@@ -18,6 +18,16 @@
       .-characterId
       js/parseInt))
 
+(defn async-some [predicate input-chan]
+  (go-loop []
+    (let [msg (<! input-chan)]
+      (if (predicate msg)
+        msg
+        (recur)))))
+
+(defn get-next-message [msg-type-set input-chan]
+  (async-some #(contains? msg-type-set (:type %)) input-chan))
+
 (defn draw-minion-card [card]
   [:div.content
    [:div.name (:name card)]
@@ -52,27 +62,20 @@
   (let [minion-can-attack (and is-owners-turn (can-attack minion))
         classes (str
                   "minion "
-                  (when minion-can-attack "can-attack"))]
+                  (when minion-can-attack "can-attack"))
+        mouse-events->chan (fn [e]
+                             (put! input-chan {:type (.-type e)
+                                               :board board
+                                               :character-id (get-character-id-from-event e)
+                                               :event e})
+                             nil)]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
-           :on-click (fn [e]
-                       (put! input-chan {:type (.-type e)
-                                         :character-id (get-character-id-from-event e)}))
-           :on-drag-start (fn [e]
-                           (let [character-id (get-character-id-from-event e)]
-                             (.setData (.-dataTransfer e) "text/plain" character-id)))
-           :on-drag-over (fn [e]
-                           (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                                 destination-character-id (get-character-id-from-event e)]
-                             (when (not= (first (path-to-character board origin-character-id))
-                                         (first (path-to-character board destination-character-id)))
-                               (.preventDefault e))))
-           :on-drop (fn [e]
-                     (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                           destination-character-id (get-character-id-from-event e)]
-                       (swap! board-atom attack origin-character-id destination-character-id)
-                       (.preventDefault e)))}
+           :on-click mouse-events->chan
+           :on-drag-start mouse-events->chan
+           :on-drag-over mouse-events->chan
+           :on-drop mouse-events->chan}
      [:div.name (:name minion)]
      [:div.attack (get-attack minion)]
      [:div.health (get-health minion)]]))
@@ -113,17 +116,34 @@
 
 (defn draw-board [board-atom input-chan]
   (let [board @board-atom]
-    [:div.board
-     [draw-board-half board board-atom :player-1 (board :whose-turn) input-chan]
-     [draw-board-half board board-atom :player-2 (board :whose-turn) input-chan]
-     [draw-end-turn-button board board-atom input-chan]
-     [draw-combat-log board]
-     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
+    (fn [board-atom input-chan]
+      [:div.board
+       [draw-board-half board board-atom :player-1 (board :whose-turn) input-chan]
+       [draw-board-half board board-atom :player-2 (board :whose-turn) input-chan]
+       [draw-end-turn-button board board-atom input-chan]
+       [draw-combat-log board]
+       [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]])))
 
 (defn draw-board-atom [board-atom]
   (let [input-chan (chan)]
     (go-loop []
-      (js/console.log (clj->js (<! input-chan)))
+      (let [origin-character-id (:character-id (<! (get-next-message #{"dragstart"} input-chan)))]
+        (loop []
+          (let [msg (<! (get-next-message #{"dragover" "drop"} input-chan))
+                board (:board msg)]
+            (if (= (:type msg) "dragover")
+              (do
+                (when (not= (first (path-to-character board origin-character-id))
+                        (first (path-to-character board (:character-id msg))))
+
+                  ;(.preventDefault (:event msg))
+                  (js/console.log (:event msg))
+                  )
+                  (recur))
+              (do
+                (swap! board-atom attack origin-character-id (:character-id msg))
+                ;(.preventDefault (:event msg))
+                )))))
       (recur))
     (r/render-component [draw-board board-atom input-chan]
                         (js/document.getElementById "content"))))

@@ -115,8 +115,6 @@
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)]
     [:div.board
-     ; TODO we pass like 300 args to all these functions; clean this up
-     ; perhaps introduce a GameState schema that looks like {:game-event-chan a-chan :mouse-event-chan mouse-event-chan :board board}
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
      [draw-end-turn-button game-state]

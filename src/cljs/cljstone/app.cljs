@@ -43,4 +43,4 @@
              board-atom))
 
 (defn ^:export main []
-  (html/mount-reagent board))
+  (html/draw-board-atom board))

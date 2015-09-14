@@ -2,16 +2,20 @@
   (:require [goog.dom :as dom]
             [reagent.core :as r]
             [schema.core :as s])
-  (:use [cljs.pprint :only [pprint]]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:use [cljs.core.async :only [chan <! >! put!]]
+        [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
         [cljstone.board :only [end-turn play-card path-to-character]]
         [cljstone.combat :only [attack]]))
 
-(defn- get-minion-id-from-event [event]
+(s/defschema InputEvent {:foo s/Any})
+
+(defn- get-character-id-from-event [event]
   (-> event
       .-currentTarget
       .-dataset
-      .-minionId
+      .-characterId
       js/parseInt))
 
 (defn draw-minion-card [card]
@@ -24,7 +28,7 @@
   [:div.content
    [:div.name (:name card)]])
 
-(defn draw-card [card index player board-atom is-owners-turn]
+(defn draw-card [card index player board-atom is-owners-turn input-chan]
   (let [playable is-owners-turn ; will become more complex later
         classes (str
                   "card "
@@ -44,47 +48,50 @@
   [:div.hero
    [:div.name (:name hero)]])
 
-(defn draw-minion [minion board board-atom is-owners-turn]
+(defn draw-minion [minion board board-atom is-owners-turn input-chan]
   (let [minion-can-attack (and is-owners-turn (can-attack minion))
         classes (str
                   "minion "
                   (when minion-can-attack "can-attack"))]
     [:div {:class classes
-           :data-minion-id (:id minion)
+           :data-character-id (:id minion)
            :draggable minion-can-attack
+           :on-click (fn [e]
+                       (put! input-chan {:type (.-type e)
+                                         :character-id (get-character-id-from-event e)}))
            :on-drag-start (fn [e]
-                           (let [minion-id (get-minion-id-from-event e)]
-                             (.setData (.-dataTransfer e) "text/plain" minion-id)))
+                           (let [character-id (get-character-id-from-event e)]
+                             (.setData (.-dataTransfer e) "text/plain" character-id)))
            :on-drag-over (fn [e]
-                           (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                                 destination-minion-id (get-minion-id-from-event e)]
-                             (when (not= (first (path-to-character board origin-minion-id))
-                                         (first (path-to-character board destination-minion-id)))
+                           (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
+                                 destination-character-id (get-character-id-from-event e)]
+                             (when (not= (first (path-to-character board origin-character-id))
+                                         (first (path-to-character board destination-character-id)))
                                (.preventDefault e))))
            :on-drop (fn [e]
-                     (let [origin-minion-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                           destination-minion-id (get-minion-id-from-event e)]
-                       (swap! board-atom attack origin-minion-id destination-minion-id)
+                     (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
+                           destination-character-id (get-character-id-from-event e)]
+                       (swap! board-atom attack origin-character-id destination-character-id)
                        (.preventDefault e)))}
      [:div.name (:name minion)]
      [:div.attack (get-attack minion)]
      [:div.health (get-health minion)]]))
 
-(defn draw-board-half [board board-atom player whose-turn]
+(defn draw-board-half [board board-atom player whose-turn input-chan]
   (let [board-half (board player)
         is-owners-turn (= whose-turn player)]
     [:div.board-half
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]
-        ^{:key (:id card)} [draw-card card index player board-atom is-owners-turn])]
+        ^{:key (:id card)} [draw-card card index player board-atom is-owners-turn input-chan])]
      [:div.body
        [draw-hero (:hero board-half)]
        [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn])]]]))
+          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn input-chan])]]]))
 
-(defn draw-end-turn-button [board board-atom]
+(defn draw-end-turn-button [board board-atom input-chan]
   [:div.end-turn {:on-click (fn [e]
                               (swap! board-atom end-turn))}
    "End Turn"])
@@ -104,15 +111,19 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
-(defn draw-board [board-atom]
+(defn draw-board [board-atom input-chan]
   (let [board @board-atom]
     [:div.board
-     [draw-board-half board board-atom :player-1 (board :whose-turn)]
-     [draw-board-half board board-atom :player-2 (board :whose-turn)]
-     [draw-end-turn-button board board-atom]
+     [draw-board-half board board-atom :player-1 (board :whose-turn) input-chan]
+     [draw-board-half board board-atom :player-2 (board :whose-turn) input-chan]
+     [draw-end-turn-button board board-atom input-chan]
      [draw-combat-log board]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
-(defn mount-reagent [board-atom]
-  (r/render-component [draw-board board-atom]
-                      (js/document.getElementById "content")))
+(defn draw-board-atom [board-atom]
+  (let [input-chan (chan)]
+    (go-loop []
+      (js/console.log (clj->js (<! input-chan)))
+      (recur))
+    (r/render-component [draw-board board-atom input-chan]
+                        (js/document.getElementById "content"))))

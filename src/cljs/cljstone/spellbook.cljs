@@ -11,6 +11,8 @@
   {:flamecannon {:name "Flamecannon"
                  :mana-cost 2
                  :class :mage
+                 ; XXXXXXXX can't cast flamecannon when opponent has an empty board!
+                 ; how do we encode this?
                  :effect (s/fn [board :- Board caster :- Player]
                            (when-let [minions (get-enemy-minions board caster)]
                              (cause-damage board

@@ -4,12 +4,16 @@
             [schema.core :as s])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:use [cljs.core.async :only [chan <! >! put!]]
+        [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
-        [cljstone.board :only [end-turn play-card path-to-character]]
+        [cljstone.board :only [Board end-turn play-card path-to-character]]
         [cljstone.combat :only [attack]]))
 
-(s/defschema InputEvent {:foo s/Any})
+(s/defschema GameState
+  {:board Board
+   :game-event-chan Channel
+   :mouse-event-chan Channel})
 
 (defn- get-character-id-from-event [event]
   (-> event
@@ -28,7 +32,7 @@
   [:div.content
    [:div.name (:name card)]])
 
-(defn draw-card [card index player board-atom is-owners-turn game-event-chan]
+(defn draw-card [card index player is-owners-turn game-event-chan]
   (let [playable is-owners-turn ; will become more complex later
         classes (str
                   "card "
@@ -50,7 +54,7 @@
   [:div.hero
    [:div.name (:name hero)]])
 
-(defn draw-minion [minion board board-atom is-owners-turn mouse-event-chan]
+(defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn
                                (can-attack minion)
                                (= (board :mode) :default))
@@ -75,22 +79,22 @@
      [:div.attack (get-attack minion)]
      [:div.health (get-health minion)]]))
 
-(defn draw-board-half [board board-atom player whose-turn game-event-chan mouse-event-chan]
+(defn draw-board-half [board player game-state]
   (let [board-half (board player)
-        is-owners-turn (= whose-turn player)]
+        is-owners-turn (= (board :whose-turn) player)]
     [:div.board-half
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]
-        ^{:key (:id card)} [draw-card card index player board-atom is-owners-turn game-event-chan])]
+        ^{:key (:id card)} [draw-card card index player is-owners-turn (game-state :game-event-chan)])]
      [:div.body
        [draw-hero (:hero board-half)]
        [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn mouse-event-chan])]]]))
+          ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
 
-(defn draw-end-turn-button [board board-atom game-event-chan]
-  [:div.end-turn {:on-click #(put! game-event-chan {:type :end-turn})}
+(defn draw-end-turn-button [game-state]
+  [:div.end-turn {:on-click #(put! (game-state :game-event-chan) {:type :end-turn})}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -108,34 +112,35 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
-(defn draw-board [board-atom game-event-chan mouse-event-chan]
-  (let [board @board-atom]
+(defn draw-board [game-state]
+  (let [board @(game-state :board-atom)]
     [:div.board
      ; TODO we pass like 300 args to all these functions; clean this up
      ; perhaps introduce a GameState schema that looks like {:game-event-chan a-chan :mouse-event-chan mouse-event-chan :board board}
-     [draw-board-half board board-atom :player-1 (board :whose-turn) game-event-chan mouse-event-chan]
-     [draw-board-half board board-atom :player-2 (board :whose-turn) game-event-chan mouse-event-chan]
-     [draw-end-turn-button board board-atom game-event-chan mouse-event-chan]
+     [draw-board-half board :player-1 game-state]
+     [draw-board-half board :player-2 game-state]
+     [draw-end-turn-button game-state]
      [draw-combat-log board]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 ; TODO - eventually implement click->click attacking
-(defn handle-mouse-events [mouse-event-chan game-event-chan]
+(defn handle-mouse-events [game-state]
   (go-loop [origin-character-id nil]
-    (let [msg (<! mouse-event-chan)]
+    (let [msg (<! (game-state :mouse-event-chan))]
       (condp = (msg :mouse-event-type)
         "dragstart" (recur (:character-id msg))
         "drop" (do
                  (when (not= (first (path-to-character (:board msg) origin-character-id))
                              (first (path-to-character (:board msg) (:character-id msg))))
-                   (>! game-event-chan {:type :attack
-                                        :origin-id origin-character-id
-                                        :destination-id (:character-id msg)}))
+                   (>! (game-state :game-event-chan) {:type :attack
+                                                      :origin-id origin-character-id
+                                                      :destination-id (:character-id msg)}))
                  (recur nil))))))
 
-(defn handle-game-events [game-event-chan board-atom]
+(defn handle-game-events [game-state]
   (go-loop []
-    (let [msg (<! game-event-chan)]
+    (let [msg (<! (game-state :game-event-chan))
+          board-atom (:board-atom game-state)]
       (condp = (:type msg)
         :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
         :play-card (swap! board-atom play-card (msg :player) (msg :index))
@@ -143,11 +148,12 @@
     (recur))))
 
 (defn draw-board-atom [board-atom]
-  (let [game-event-chan (chan)
-        mouse-event-chan (chan)]
+  (let [game-state {:board-atom board-atom
+                    :game-event-chan (chan)
+                    :mouse-event-chan (chan)}]
 
-    (r/render-component [draw-board board-atom game-event-chan mouse-event-chan]
+    (r/render-component [draw-board game-state]
                         (js/document.getElementById "content"))
 
-    (handle-mouse-events mouse-event-chan game-event-chan)
-    (handle-game-events game-event-chan board-atom)))
+    (handle-mouse-events game-state)
+    (handle-game-events game-state)))

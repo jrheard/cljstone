@@ -131,7 +131,7 @@
                    (>! game-event-chan {:type :attack
                                         :origin-id origin-character-id
                                         :destination-id (:character-id msg)}))
-                   (recur nil))))))
+                 (recur nil))))))
 
 (defn handle-game-events [game-event-chan board-atom]
   (go-loop []

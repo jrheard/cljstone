@@ -49,7 +49,9 @@
            :data-card-index index
            :on-click (fn [e]
                        (when playable
-                         (swap! board-atom play-card player index)))}
+                         (put! input-chan {:type :play-card
+                                           :player player
+                                           :index index})))}
      (condp = (:type card)
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
@@ -103,7 +105,7 @@
 
 (defn draw-end-turn-button [board board-atom input-chan]
   [:div.end-turn {:on-click (fn [e]
-                              (swap! board-atom end-turn))}
+                              (put! input-chan {:type :end-turn}))}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -132,10 +134,14 @@
 
 (defn draw-board-atom [board-atom]
   (let [input-chan (chan)]
-    ; xxx this go-loop seems a bit superfluous for now, but will become more useful when we have several different types of events coming in on input-chan
+    ; xxx this go-loop seems a bit superfluous for now, revisit it later to see how much it buys us
+    ; feels like it should be a lot more useful once we start supporting modes like targeting, mulligan, positioning, etc
     (go-loop []
-      (let [{:keys [origin-id destination-id]} (<! (get-next-message #{:attack} input-chan))]
-        (swap! board-atom attack origin-id destination-id)
+      (let [msg (<! input-chan)]
+        (condp = (:type msg)
+          :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
+          :play-card (swap! board-atom play-card (msg :player) (msg :index))
+          :end-turn (swap! board-atom end-turn))
       (recur)))
 
     (r/render-component [draw-board board-atom input-chan]

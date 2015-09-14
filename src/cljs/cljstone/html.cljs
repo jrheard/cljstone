@@ -40,8 +40,8 @@
            :on-click (fn [e]
                        (when playable
                          (put! game-event-chan {:type :play-card
-                                           :player player
-                                           :index index})))}
+                                                :player player
+                                                :index index})))}
      (condp = (:type card)
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
@@ -61,7 +61,8 @@
                             (put! mouse-event-chan {:type :mouse-event
                                                     :mouse-event-type (.-type e)
                                                     :board board
-                                                    :character-id (get-character-id-from-event e)}))]
+                                                    :character-id (get-character-id-from-event e)})
+                            nil)]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
@@ -89,8 +90,7 @@
           ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn mouse-event-chan])]]]))
 
 (defn draw-end-turn-button [board board-atom game-event-chan]
-  [:div.end-turn {:on-click (fn [e]
-                              (put! game-event-chan {:type :end-turn}))}
+  [:div.end-turn {:on-click #(put! game-event-chan {:type :end-turn})}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -119,30 +119,35 @@
      [draw-combat-log board]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
+; TODO - eventually implement click->click attacking
+(defn handle-mouse-events [mouse-event-chan game-event-chan]
+  (go-loop [origin-character-id nil]
+    (let [msg (<! mouse-event-chan)]
+      (condp = (msg :mouse-event-type)
+        "dragstart" (recur (:character-id msg))
+        "drop" (do
+                 (when (not= (first (path-to-character (:board msg) origin-character-id))
+                             (first (path-to-character (:board msg) (:character-id msg))))
+                   (>! game-event-chan {:type :attack
+                                        :origin-id origin-character-id
+                                        :destination-id (:character-id msg)}))
+                   (recur nil))))))
+
+(defn handle-game-events [game-event-chan board-atom]
+  (go-loop []
+    (let [msg (<! game-event-chan)]
+      (condp = (:type msg)
+        :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
+        :play-card (swap! board-atom play-card (msg :player) (msg :index))
+        :end-turn (swap! board-atom end-turn))
+    (recur))))
+
 (defn draw-board-atom [board-atom]
   (let [game-event-chan (chan)
         mouse-event-chan (chan)]
 
-    ; TODO - eventually implement click->click attacking
-    (go-loop [origin-character-id nil]
-      (let [msg (<! mouse-event-chan)]
-        (condp = (msg :mouse-event-type)
-          "dragstart" (recur (:character-id msg))
-          "drop" (do
-                   (when (not= (first (path-to-character (:board msg) origin-character-id))
-                             (first (path-to-character (:board msg) (:character-id msg))))
-                     (>! game-event-chan {:type :attack
-                                        :origin-id origin-character-id
-                                        :destination-id (:character-id msg)}))
-                     (recur nil)))))
-
-    (go-loop []
-      (let [msg (<! game-event-chan)]
-        (condp = (:type msg)
-          :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
-          :play-card (swap! board-atom play-card (msg :player) (msg :index))
-          :end-turn (swap! board-atom end-turn))
-      (recur)))
-
     (r/render-component [draw-board board-atom game-event-chan mouse-event-chan]
-                        (js/document.getElementById "content"))))
+                        (js/document.getElementById "content"))
+
+    (handle-mouse-events mouse-event-chan game-event-chan)
+    (handle-game-events game-event-chan board-atom)))

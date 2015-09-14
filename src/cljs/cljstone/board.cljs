@@ -26,7 +26,7 @@
    :player-2 BoardHalf
    :whose-turn Player
    :turn s/Int
-   :state (s/enum :default :targeting :position-minion :mulligan :choose-one)
+   :mode (s/enum :default :targeting :position-minion :mulligan :choose-one)
    ;:targeting-callback s/Any ; XXXX TODO generalize
    ; TODO does it make sense to have a separate :position-minion state or is that overkill?
    :combat-log [LogEntry]})
@@ -77,7 +77,7 @@
          :player-2 (make-board-half hero-2 deck-2)
          :whose-turn (rand-nth [:player-1 :player-2])
          :turn 0
-         :state :default
+         :mode :default
          :combat-log []}))
 
 (s/defn end-turn :- Board

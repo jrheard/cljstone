@@ -18,15 +18,15 @@
       .-characterId
       js/parseInt))
 
-(defn async-some [predicate input-chan]
+(defn async-some [predicate game-event-chan]
   (go-loop []
-    (let [msg (<! input-chan)]
+    (let [msg (<! game-event-chan)]
       (if (predicate msg)
         msg
         (recur)))))
 
-(defn get-next-message [msg-type-set input-chan]
-  (async-some #(contains? msg-type-set (:type %)) input-chan))
+(defn get-next-message [msg-type-set game-event-chan]
+  (async-some #(contains? msg-type-set (:type %)) game-event-chan))
 
 (defn draw-minion-card [card]
   [:div.content
@@ -38,7 +38,7 @@
   [:div.content
    [:div.name (:name card)]])
 
-(defn draw-card [card index player board-atom is-owners-turn input-chan]
+(defn draw-card [card index player board-atom is-owners-turn game-event-chan]
   (let [playable is-owners-turn ; will become more complex later
         classes (str
                   "card "
@@ -49,7 +49,7 @@
            :data-card-index index
            :on-click (fn [e]
                        (when playable
-                         (put! input-chan {:type :play-card
+                         (put! game-event-chan {:type :play-card
                                            :player player
                                            :index index})))}
      (condp = (:type card)
@@ -60,52 +60,47 @@
   [:div.hero
    [:div.name (:name hero)]])
 
-(defn draw-minion [minion board board-atom is-owners-turn input-chan]
+(defn draw-minion [minion board board-atom is-owners-turn mouse-event-chan]
   ; XXXXXX have this also depend on the state of the board being :default
   (let [minion-can-attack (and is-owners-turn (can-attack minion))
         classes (str
                   "minion "
-                  (when minion-can-attack "can-attack"))]
+                  (when minion-can-attack "can-attack"))
+        put-event-in-chan (fn [e]
+                            (put! mouse-event-chan {:type :mouse-event
+                                              :mouse-event-type (.-type e)
+                                              :board board
+                                              :character-id (get-character-id-from-event e)}))]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
-           :on-drag-start (fn [e]
-                           (let [character-id (get-character-id-from-event e)]
-                             (.setData (.-dataTransfer e) "text/plain" character-id)))
-           :on-drag-over (fn [e]
-                           (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                                 destination-character-id (get-character-id-from-event e)]
-                             (when (not= (first (path-to-character board origin-character-id))
-                                         (first (path-to-character board destination-character-id)))
-                               (.preventDefault e))))
+           ; TODO break this out into its separate go-loop
+           :on-drag-start put-event-in-chan
+           :on-drag-over #(.preventDefault %)
            :on-drop (fn [e]
-                     (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
-                           destination-character-id (get-character-id-from-event e)]
-                       (put! input-chan {:type :attack
-                                         :origin-id origin-character-id
-                                         :destination-id destination-character-id})
-                       (.preventDefault e)))}
+                      (put-event-in-chan e)
+                      (.preventDefault e))}
      [:div.name (:name minion)]
      [:div.attack (get-attack minion)]
      [:div.health (get-health minion)]]))
 
-(defn draw-board-half [board board-atom player whose-turn input-chan]
+(defn draw-board-half [board board-atom player whose-turn game-event-chan mouse-event-chan]
   (let [board-half (board player)
         is-owners-turn (= whose-turn player)]
     [:div.board-half
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]
-        ^{:key (:id card)} [draw-card card index player board-atom is-owners-turn input-chan])]
+        ^{:key (:id card)} [draw-card card index player board-atom is-owners-turn game-event-chan])]
      [:div.body
        [draw-hero (:hero board-half)]
        [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn input-chan])]]]))
+          ^{:key (:id minion)} [draw-minion minion board board-atom is-owners-turn mouse-event-chan])]]]))
 
-(defn draw-end-turn-button [board board-atom input-chan]
+(defn draw-end-turn-button [board board-atom game-event-chan]
   [:div.end-turn {:on-click (fn [e]
-                              (put! input-chan {:type :end-turn}))}
+                              (put! game-event-chan {:type :end-turn}))}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -123,26 +118,40 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
-(defn draw-board [board-atom input-chan]
+(defn draw-board [board-atom game-event-chan mouse-event-chan]
   (let [board @board-atom]
     [:div.board
-     [draw-board-half board board-atom :player-1 (board :whose-turn) input-chan]
-     [draw-board-half board board-atom :player-2 (board :whose-turn) input-chan]
-     [draw-end-turn-button board board-atom input-chan]
+     ; TODO we pass like 300 args to all these functions; clean this up
+     ; perhaps introduce a GameState schema that looks like {:game-event-chan a-chan :mouse-event-chan mouse-event-chan :board board}
+     [draw-board-half board board-atom :player-1 (board :whose-turn) game-event-chan mouse-event-chan]
+     [draw-board-half board board-atom :player-2 (board :whose-turn) game-event-chan mouse-event-chan]
+     [draw-end-turn-button board board-atom game-event-chan mouse-event-chan]
      [draw-combat-log board]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 (defn draw-board-atom [board-atom]
-  (let [input-chan (chan)]
-    ; xxx this go-loop seems a bit superfluous for now, revisit it later to see how much it buys us
-    ; feels like it should be a lot more useful once we start supporting modes like targeting, mulligan, positioning, etc
+  (let [game-event-chan (chan)
+        mouse-event-chan (chan)]
+
+    ; TODO - eventually implement click->click attacking
+    (go-loop [origin-character-id nil]
+      (let [msg (<! mouse-event-chan)]
+        (condp = (msg :mouse-event-type)
+          "dragstart" (recur (:character-id msg))
+          "drop" (when (not= (first (path-to-character (:board msg) origin-character-id))
+                             (first (path-to-character (:board msg) (:character-id msg))))
+                   (>! game-event-chan {:type :attack
+                                      :origin-id origin-character-id
+                                      :destination-id (:character-id msg)})
+                   (recur nil)))))
+
     (go-loop []
-      (let [msg (<! input-chan)]
+      (let [msg (<! game-event-chan)]
         (condp = (:type msg)
           :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           :play-card (swap! board-atom play-card (msg :player) (msg :index))
           :end-turn (swap! board-atom end-turn))
       (recur)))
 
-    (r/render-component [draw-board board-atom input-chan]
+    (r/render-component [draw-board board-atom game-event-chan mouse-event-chan]
                         (js/document.getElementById "content"))))

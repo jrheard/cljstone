@@ -18,6 +18,16 @@
       .-characterId
       js/parseInt))
 
+(defn async-some [predicate input-chan]
+  (go-loop []
+    (let [msg (<! input-chan)]
+      (if (predicate msg)
+        msg
+        (recur)))))
+
+(defn get-next-message [msg-type-set input-chan]
+  (async-some #(contains? msg-type-set (:type %)) input-chan))
+
 (defn draw-minion-card [card]
   [:div.content
    [:div.name (:name card)]
@@ -49,6 +59,7 @@
    [:div.name (:name hero)]])
 
 (defn draw-minion [minion board board-atom is-owners-turn input-chan]
+  ; XXXXXX have this also depend on the state of the board being :default
   (let [minion-can-attack (and is-owners-turn (can-attack minion))
         classes (str
                   "minion "
@@ -56,9 +67,6 @@
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
-           :on-click (fn [e]
-                       (put! input-chan {:type (.-type e)
-                                         :character-id (get-character-id-from-event e)}))
            :on-drag-start (fn [e]
                            (let [character-id (get-character-id-from-event e)]
                              (.setData (.-dataTransfer e) "text/plain" character-id)))
@@ -71,7 +79,9 @@
            :on-drop (fn [e]
                      (let [origin-character-id (js/parseInt (.getData (.-dataTransfer e) "text/plain"))
                            destination-character-id (get-character-id-from-event e)]
-                       (swap! board-atom attack origin-character-id destination-character-id)
+                       (put! input-chan {:type :attack
+                                         :origin-id origin-character-id
+                                         :destination-id destination-character-id})
                        (.preventDefault e)))}
      [:div.name (:name minion)]
      [:div.attack (get-attack minion)]
@@ -122,8 +132,11 @@
 
 (defn draw-board-atom [board-atom]
   (let [input-chan (chan)]
+    ; xxx this go-loop seems a bit superfluous for now, but will become more useful when we have several different types of events coming in on input-chan
     (go-loop []
-      (js/console.log (clj->js (<! input-chan)))
-      (recur))
+      (let [{:keys [origin-id destination-id]} (<! (get-next-message #{:attack} input-chan))]
+        (swap! board-atom attack origin-id destination-id)
+      (recur)))
+
     (r/render-component [draw-board board-atom input-chan]
                         (js/document.getElementById "content"))))

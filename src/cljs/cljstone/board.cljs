@@ -26,7 +26,6 @@
    :player-2 BoardHalf
    :whose-turn Player
    :turn s/Int
-   ; TODO do we need all these different states? still haven't decided on exactly how targeting / modes / etc will work
    :state (s/enum :default :targeting :position-minion :mulligan :choose-one)
    ;:targeting-callback s/Any ; XXXX TODO generalize
    ; TODO does it make sense to have a separate :position-minion state or is that overkill?

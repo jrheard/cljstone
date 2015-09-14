@@ -122,23 +122,22 @@
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 ; TODO - eventually implement click->click attacking
-(defn handle-mouse-events [game-state]
+(defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]
   (go-loop [origin-character-id nil]
-    (let [msg (<! (game-state :mouse-event-chan))]
+    (let [msg (<! mouse-event-chan)]
       (condp = (msg :mouse-event-type)
         "dragstart" (recur (:character-id msg))
         "drop" (do
                  (when (not= (first (path-to-character (:board msg) origin-character-id))
                              (first (path-to-character (:board msg) (:character-id msg))))
-                   (>! (game-state :game-event-chan) {:type :attack
-                                                      :origin-id origin-character-id
-                                                      :destination-id (:character-id msg)}))
+                   (>! game-event-chan {:type :attack
+                                        :origin-id origin-character-id
+                                        :destination-id (:character-id msg)}))
                  (recur nil))))))
 
-(defn handle-game-events [game-state]
+(defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
-    (let [msg (<! (game-state :game-event-chan))
-          board-atom (:board-atom game-state)]
+    (let [msg (<! game-event-chan)]
       (condp = (:type msg)
         :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
         :play-card (swap! board-atom play-card (msg :player) (msg :index))

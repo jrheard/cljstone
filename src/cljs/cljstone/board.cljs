@@ -21,13 +21,31 @@
 ; consider reading logs
 ; see comments in https://www.reddit.com/r/hearthstone/comments/3k32vh/hearthstone_science_steal_a_card_from_your/
 
+(s/defschema TargetingMode
+  {:type :targeting
+   :targets [Character]
+   ; XXXX TODO not convinced that having a continuation/callback is the right approach - but maybe it is?
+   ; just gotta figure out how the flow of control in this program works.
+   ; who's orchestrating what?
+   :continuation s/Any})
+
+(s/defschema MulliganMode
+  {:type :mulligan
+   :cards [Card]
+   :continuation s/Any})
+
+(s/defschema BoardMode
+  (s/enum
+    {:type :default}
+    TargetingMode
+    MulliganMode))
+
 (s/defschema Board
   {:player-1 BoardHalf
    :player-2 BoardHalf
    :whose-turn Player
    :turn s/Int
-   ;:mode (s/enum :default :targeting :position-minion :mulligan :choose-one)
-   :mode s/Any
+   :mode BoardMode
    ;:targeting-callback s/Any ; XXXX TODO generalize
    ; TODO does it make sense to have a separate :position-minion state or is that overkill?
    :combat-log [LogEntry]})

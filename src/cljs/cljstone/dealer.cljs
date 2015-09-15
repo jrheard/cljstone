@@ -8,9 +8,13 @@
 
 (def NUM-CARDS-IN-DECK 30)
 
+(def vanilla-minions
+  (filter #(not (contains? % :battlecry))
+          (vals all-minions)))
+
 (s/defn make-random-deck :- [Card]
   []
-  (assoc (mapv minion-schematic->card
-              (repeatedly NUM-CARDS-IN-DECK #(rand-nth (vals all-minions))))
-         4
-         (spell->card (all-spells :flamecannon))))
+  (-> (mapv minion-schematic->card
+            (repeatedly NUM-CARDS-IN-DECK #(rand-nth vanilla-minions)))
+      (assoc 4 (spell->card (all-spells :flamecannon)))
+      (assoc 6 (minion-schematic->card (all-minions :shattered-sun)))))

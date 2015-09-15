@@ -60,7 +60,11 @@
                                (= (board :mode) :default))
         classes (str
                   "minion "
-                  (when minion-can-attack "can-attack"))
+                  (when minion-can-attack "can-attack")
+                  (when (and (= (get-in board [:mode :type]) :targeting)
+                             (contains? (get-in board [:mode :targets])
+                                        (:id minion)))
+                    " targetable"))
         put-event-in-chan (fn [e]
                             (put! mouse-event-chan {:type :mouse-event
                                                     :mouse-event-type (.-type e)
@@ -113,8 +117,13 @@
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
 (defn draw-board [game-state]
-  (let [board @(game-state :board-atom)]
-    [:div.board
+  (let [board @(game-state :board-atom)
+        classes (str
+                  "board "
+                  (when (= (get-in board [:mode :type])
+                           :targeting)
+                    "targeting"))]
+    [:div {:class classes}
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
      [draw-end-turn-button game-state]

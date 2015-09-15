@@ -82,7 +82,14 @@
    :attack (:attack schematic)
    :health (:health schematic)
    :effect (fn [board player]
-             (play-minion-card board player schematic))})
+             (if-let [battlecry (:battlecry schematic)]
+               (assoc board :mode {:type :targeting
+                                   :targets ((schematic :battlecry-targeting-fn) board player)
+                                   :continuation (fn [board target-character-id]
+                                                   (-> board
+                                                       (#((schematic :battlecry) % target-character-id))
+                                                       (play-minion board player schematic)))})
+               (play-minion-card board player schematic)))})
 
 
 ; dire wolf alpha only needs to care about on-summon-friendly-minion, on-friendly-minion-death - no other situations cause a dire wolf alpha buff/debuff

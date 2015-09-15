@@ -10,7 +10,7 @@
    :river-crocilisk {:name "River Crocilisk" :attack 2 :health 3}
    :shattered-sun {:name "Shattered Sun Cleric" :attack 3 :health 2
                    :battlecry-targeting-fn (fn [board player]
-                                             (get-in board [player :minions]))
+                                             (apply hash-set (map :id (get-in board [player :minions]))))
                    :battlecry (fn [board target-minion-id]
                                 (add-modifier-to-character board
                                                            target-minion-id

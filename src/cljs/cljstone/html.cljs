@@ -57,7 +57,7 @@
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn
                                (can-attack minion)
-                               (= (board :mode) :default))
+                               (= (get-in board [:mode :type]) :default))
         classes (str
                   "minion "
                   (when minion-can-attack "can-attack")
@@ -67,7 +67,7 @@
                     " targetable"))
         put-event-in-chan (fn [e]
                             (put! mouse-event-chan {:type :mouse-event
-                                                    :mouse-event-type (.-type e)
+                                                    :mouse-event-type (keyword (.-type e))
                                                     :board board
                                                     :character-id (get-character-id-from-event e)})
                             nil)]
@@ -135,14 +135,14 @@
   (go-loop [origin-character-id nil]
     (let [msg (<! mouse-event-chan)]
       (condp = (msg :mouse-event-type)
-        "dragstart" (recur (:character-id msg))
-        "drop" (do
-                 (when (not= (first (path-to-character (:board msg) origin-character-id))
-                             (first (path-to-character (:board msg) (:character-id msg))))
-                   (>! game-event-chan {:type :attack
-                                        :origin-id origin-character-id
-                                        :destination-id (:character-id msg)}))
-                 (recur nil))))))
+        :dragstart (recur (:character-id msg))
+        :drop (do
+                (when (not= (first (path-to-character (:board msg) origin-character-id))
+                            (first (path-to-character (:board msg) (:character-id msg))))
+                  (>! game-event-chan {:type :attack
+                                       :origin-id origin-character-id
+                                       :destination-id (:character-id msg)}))
+                (recur nil))))))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []

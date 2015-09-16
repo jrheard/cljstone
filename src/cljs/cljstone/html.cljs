@@ -46,7 +46,8 @@
                        (when playable
                          (put! game-event-chan {:type :play-card
                                                 :player player
-                                                :index index})))}
+                                                :index index}))
+                       nil)}
      (condp = (:type card)
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
@@ -138,8 +139,10 @@
   (go-loop [origin-character-id nil]
     (let [msg (<! mouse-event-chan)]
       (condp = (msg :mouse-event-type)
-        :click (>! game-event-chan {:type :character-selected
-                                    :character-id (:character-id msg)})
+        :click (do
+                 (>! game-event-chan {:type :character-selected
+                                      :character-id (:character-id msg)})
+                 (recur nil))
         :dragstart (recur (:character-id msg))
         :drop (do
                 (when (not= (first (path-to-character (:board msg) origin-character-id))
@@ -150,7 +153,6 @@
                 (recur nil))))))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
-  ; TODO take board mode into account
   (go-loop []
     (let [msg (<! game-event-chan)]
       (if (= (get-in @board-atom [:mode :type]) :default)

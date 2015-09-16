@@ -49,8 +49,6 @@
    :whose-turn Player
    :turn s/Int
    :mode BoardMode
-   ;:targeting-callback s/Any ; XXXX TODO generalize
-   ; TODO does it make sense to have a separate :position-minion state or is that overkill?
    :combat-log [LogEntry]})
 
 (def STARTING-HAND-SIZE 7)

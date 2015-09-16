@@ -47,7 +47,7 @@
          :attacks-per-turn 1 ; TODO - turn into :base-attacks-per-turn, there'll be modifiers that can add 1 to this number (will freezing remove 1 from this number?)
          :id id
          :modifiers []
-         :class :neutral}
+         :class (:class schematic :neutral)}
         (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn)))
 
 
@@ -68,7 +68,7 @@
    :name (:name schematic)
    :mana-cost (rand-int 10)
    :id (get-next-card-id)
-   :class :neutral ; XXXXX TODO standardize on where this is handled
+   :class (:class schematic :neutral)
    :attack (:attack schematic)
    :health (:health schematic)
    :effect (fn [board player]

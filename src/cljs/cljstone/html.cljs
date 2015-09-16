@@ -11,6 +11,8 @@
         [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
         [cljstone.combat :only [attack]]))
 
+; TODO test this file
+
 (s/defschema GameState
   {:board-atom ratom/RAtom
    :game-event-chan Channel

@@ -119,6 +119,8 @@
   (apply (get-in board [:mode :continuation])
          (concat [board] args)))
 
+; TODO test modes
+
 ; TODO - eventually implement several phases to playing a card
 ; minions have to be first a) positioned, then b) optionally targeted [eg bgh, shattered sun]
 ; spells have to be optionally targeted (flamecannon vs frostbolt)

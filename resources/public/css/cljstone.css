@@ -60,6 +60,7 @@ h3 {
 	overflow: hidden;
 	width: 202px;
 	padding: 0 3px;
+	z-index: 1;
 }
 
 .board-half:nth-of-type(2) .hand {

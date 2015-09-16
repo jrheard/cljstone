@@ -157,12 +157,17 @@
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)]
+      ; TODO look into using core.match here
       (if (= (get-in @board-atom [:mode :type]) :default)
         (condp = (:type msg)
           :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           :play-card (swap! board-atom play-card (msg :player) (msg :index))
           :end-turn (swap! board-atom end-turn))
         ; XXX right now the only mode we support is targeting
+        ; TODO: support canceling out of targeting / positioning / any mode
+        ; should there be a :success-continuation and a :cancel-continuation?
+        ; i mean :cancel-continuation will just always look like "set the mode back to :default", right?
+        ; so there's no need to actually include it in modes, we can just implement that here
         (condp = (:type msg)
           :character-selected (swap! board-atom run-continuation (msg :character-id))))
     (recur))))

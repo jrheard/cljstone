@@ -55,8 +55,6 @@
   [board
    player :- Player
    schematic :- MinionSchematic]
-  ; call ((schematic :effect-fn) target-character-id)
-  ; play minion
   (update-in board
              [player :minions]
              conj
@@ -72,6 +70,10 @@
    :attack (:attack schematic)
    :health (:health schematic)
    :effect (fn [board player]
+             ; TODO implement positioning by associng :mode PositioningMode
+             ; *then* do battlecries/targeting if applicable
+             ; *then* play the minion at the right position in the board
+             ; *then* take the relevant card out of the player's hand
              (if-let [battlecry (:battlecry schematic)]
                (assoc board :mode {:type :targeting
                                    :targets ((schematic :battlecry-targeting-fn) board player)

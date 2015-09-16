@@ -119,11 +119,6 @@
 
 ; TODO test modes
 
-; TODO - eventually implement several phases to playing a card
-; minions have to be first a) positioned, then b) optionally targeted [eg bgh, shattered sun]
-; spells have to be optionally targeted (flamecannon vs frostbolt)
-; so there's choose-minion-position, choose-target, and play-card
-; and this function will just be play-card, and will take optional position / target info.
 (s/defn play-card :- Board
   [board :- Board
    player :- Player

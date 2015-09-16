@@ -1,17 +1,18 @@
 (ns cljstone.html
   (:require [goog.dom :as dom]
             [reagent.core :as r]
+            [reagent.ratom :as ratom]
             [schema.core :as s])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
-        [cljstone.board :only [Board end-turn play-card path-to-character]]
+        [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState
-  {:board Board
+  {:board-atom ratom/RAtom
    :game-event-chan Channel
    :mouse-event-chan Channel})
 
@@ -74,6 +75,7 @@
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
+           :on-click put-event-in-chan
            :on-drag-start put-event-in-chan
            :on-drag-over #(.preventDefault %)
            :on-drop (fn [e]
@@ -116,14 +118,15 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
+(defn draw-board-mode [board])
+
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)
         classes (str
                   "board "
-                  (when (= (get-in board [:mode :type])
-                           :targeting)
-                    "targeting"))]
+                  (name (get-in board [:mode :type])))]
     [:div {:class classes}
+     [draw-board-mode board]
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
      [draw-end-turn-button game-state]
@@ -135,6 +138,8 @@
   (go-loop [origin-character-id nil]
     (let [msg (<! mouse-event-chan)]
       (condp = (msg :mouse-event-type)
+        :click (>! game-event-chan {:type :character-selected
+                                    :character-id (:character-id msg)})
         :dragstart (recur (:character-id msg))
         :drop (do
                 (when (not= (first (path-to-character (:board msg) origin-character-id))
@@ -145,12 +150,17 @@
                 (recur nil))))))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
+  ; TODO take board mode into account
   (go-loop []
     (let [msg (<! game-event-chan)]
-      (condp = (:type msg)
-        :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
-        :play-card (swap! board-atom play-card (msg :player) (msg :index))
-        :end-turn (swap! board-atom end-turn))
+      (if (= (get-in @board-atom [:mode :type]) :default)
+        (condp = (:type msg)
+          :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
+          :play-card (swap! board-atom play-card (msg :player) (msg :index))
+          :end-turn (swap! board-atom end-turn))
+        ; XXX right now the only mode we support is targeting
+        (condp = (:type msg)
+          :character-selected (swap! board-atom run-continuation (msg :character-id))))
     (recur))))
 
 (defn draw-board-atom [board-atom]

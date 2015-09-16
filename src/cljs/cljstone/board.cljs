@@ -21,12 +21,14 @@
 ; consider reading logs
 ; see comments in https://www.reddit.com/r/hearthstone/comments/3k32vh/hearthstone_science_steal_a_card_from_your/
 
+(s/defschema PositioningMode
+  {:type :positioning
+   :minion Minion
+   :continuation s/Any})
+
 (s/defschema TargetingMode
   {:type :targeting
    :targets [Character]
-   ; XXXX TODO not convinced that having a continuation/callback is the right approach - but maybe it is?
-   ; just gotta figure out how the flow of control in this program works.
-   ; who's orchestrating what?
    :continuation s/Any})
 
 (s/defschema MulliganMode
@@ -37,6 +39,7 @@
 (s/defschema BoardMode
   (s/enum
     {:type :default}
+    PositioningMode
     TargetingMode
     MulliganMode))
 
@@ -108,6 +111,14 @@
       (update-in [:turn] inc)
       (update-in [:whose-turn] other-player)))
 
+; XXXXX TODO TIGHTEN UP
+(s/defn run-continuation :- Board
+  [board :- Board
+   & args]
+  {:pre (not= (get-in board [:mode :type]) :default)}
+  (apply (get-in board [:mode :continuation])
+         (concat [board] args)))
+
 ; TODO - eventually implement several phases to playing a card
 ; minions have to be first a) positioned, then b) optionally targeted [eg bgh, shattered sun]
 ; spells have to be optionally targeted (flamecannon vs frostbolt)
@@ -122,6 +133,7 @@
             (count (get-in board [player :hand])))]}
   (let [hand (-> board player :hand)
         card (nth hand card-index)
+        ; TODO - don't remove the card from the player's hand until *after* the targeting phase has completed successfully.
         new-hand (vec (remove #(= (:id %) (:id card)) hand))]
     (-> board
         (assoc-in [player :hand] new-hand)

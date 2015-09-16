@@ -55,16 +55,6 @@
   [board
    player :- Player
    schematic :- MinionSchematic]
-  ; TODO how do we implement battlecries?
-  ; check to see if schematic has a :battlecry
-  ; call (battlecry :targeting-fn), returns a list of character ids
-  ; set board state to :targeting
-  ; add .targeting class to main board div
-  ; add .acceptable-target class to minions/heroes that can be targeted
-  ;
-  ; XXXX SOMEHOW BLOCK AND WAIT FOR USER INPUT
-  ; ??????? somehow accept user input
-  ;
   ; call ((schematic :effect-fn) target-character-id)
   ; play minion
   (update-in board
@@ -87,8 +77,9 @@
                                    :targets ((schematic :battlecry-targeting-fn) board player)
                                    :continuation (fn [board target-character-id]
                                                    (-> board
+                                                       (assoc :mode {:type :default})
                                                        (#((schematic :battlecry) % target-character-id))
-                                                       (play-minion board player schematic)))})
+                                                       (play-minion-card player schematic)))})
                (play-minion-card board player schematic)))})
 
 
@@ -97,28 +88,34 @@
 ; i guess silencing will involve recomputing base attack and health, and so you can figure it out at recompute-because-of-silence time.
 ; hm.
 
+(s/defn sum-modifiers :- s/Int
+  [minion :- Minion
+   kw :- s/Keyword]
+  (apply + (map (fn [modifier]
+                  (kw (modifier :effect) 0))
+                (minion :modifiers))))
+
+(s/defn get-base-attack :- s/Int
+  [minion :- Minion]
+  (+ (:base-attack minion)
+     (sum-modifiers minion :base-attack)))
+
+(s/defn get-base-health :- s/Int
+  [minion :- Minion]
+  (+ (:base-health minion)
+     (sum-modifiers minion :base-health)))
+
 (s/defn get-health :- s/Int
   [minion :- Minion]
-  (+ (minion :base-health)
-     (apply + (map (fn [modifier]
-                     (:health (modifier :effect) 0))
-                   (minion :modifiers)))))
+  (+ (get-base-health minion)
+     (sum-modifiers minion :health)))
 
 (s/defn get-attack :- s/Int
   [minion :- Minion]
-  (minion :base-attack))
+  (get-base-attack minion))
 
 (s/defn can-attack :- s/Bool
   [minion :- Minion]
   (and (< (minion :attacks-this-turn)
           (minion :attacks-per-turn))
        (> (get-attack minion) 0)))
-
-; these'll eventually actually do stuff - base attack / health can be modified by eg reversing switch, shattered sun cleric, etc
-(s/defn get-base-attack :- s/Int
-  [minion :- Minion]
-  (:base-attack minion))
-
-(s/defn get-base-health :- s/Int
-  [minion :- Minion]
-  (:base-health minion))

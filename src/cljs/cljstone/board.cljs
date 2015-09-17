@@ -1,6 +1,7 @@
 (ns cljstone.board
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card]]
+  (:use [cljstone.board-mode :only [BoardMode DefaultMode]]
+        [cljstone.card :only [Card]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
         [cljstone.hero :only [Hero]]
         [cljstone.minion :only [Minion]]))
@@ -20,29 +21,6 @@
 ; TODO add a :graveyard to board?
 ; consider reading logs
 ; see comments in https://www.reddit.com/r/hearthstone/comments/3k32vh/hearthstone_science_steal_a_card_from_your/
-
-(s/defschema PositioningMode
-  {:type :positioning
-   :minion Minion
-   :continuation s/Any})
-
-(s/defschema TargetingMode
-  {:type :targeting
-   :targets [Character]
-   :continuation s/Any})
-
-(s/defschema MulliganMode
-  {:type :mulligan
-   :cards [Card]
-   :continuation s/Any})
-
-(s/defschema BoardMode
-  (s/enum
-    {:type :default}
-    PositioningMode
-    TargetingMode
-    MulliganMode))
-
 (s/defschema Board
   {:player-1 BoardHalf
    :player-2 BoardHalf
@@ -97,7 +75,7 @@
          :player-2 (make-board-half hero-2 deck-2)
          :whose-turn (rand-nth [:player-1 :player-2])
          :turn 0
-         :mode {:type :default}
+         :mode DefaultMode
          :combat-log []}))
 
 (s/defn end-turn :- Board

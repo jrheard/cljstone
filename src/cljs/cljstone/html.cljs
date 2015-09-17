@@ -122,6 +122,8 @@
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
 (defn draw-board-mode [board])
+; TODO - draw a cancel button whenever :mode isn't default
+; it fires a :cancel event, which just causes us to assoc the default :mode back on to the board, ezpz
 
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)

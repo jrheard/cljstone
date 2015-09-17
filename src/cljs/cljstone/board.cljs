@@ -39,10 +39,10 @@
                              (if (= character-id (:id (:hero board-half)))
                                [:hero]
                                (let [minions-index (-> board-half
-                                               :minions
-                                               (#(map :id %))
-                                               to-array
-                                               (.indexOf character-id))]
+                                                       :minions
+                                                       (#(map :id %))
+                                                       to-array
+                                                       (.indexOf character-id))]
                                  (when (not= minions-index -1)
                                    [:minions minions-index]))))
         half-1-path (find-in-board-half (:player-1 board))

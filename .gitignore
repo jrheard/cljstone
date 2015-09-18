@@ -14,3 +14,4 @@ resources/public/
 *.swo
 .cljs_rhino_repl/
 test_resources/
+figwheel_server.log

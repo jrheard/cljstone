@@ -14,7 +14,7 @@ h3 {
 .combat-log-viewport {
 	position: absolute;
 	top: 350px;
-	left: 358px;
+	left: 299px;
 	font-size: 25px;
 	overflow: hidden;
 	width: 12px;
@@ -49,6 +49,7 @@ h3 {
 .board {
 	width: 1800px;
 	margin: 0 auto;
+	position: relative;
 }
 
 .board-half {
@@ -123,7 +124,7 @@ h3 {
 
 .end-turn {
 	position: absolute;
-	right: 359px;
+	right: 299px;
 	top: 477px;
 	background-color: #EEE;
 	font-size: 25px;

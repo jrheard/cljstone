@@ -20,7 +20,7 @@
                 ;:pretty-print true
                 :output-to "resources/public/js/core.js"}
              :source-paths ["src/cljs"]
-             :figwheel true}
+             :figwheel {:on-jsload "cljstone.app/main"}}
        :test {:compiler
               {:main "cljstone.runner"
                :output-to "test_resources/test.js"

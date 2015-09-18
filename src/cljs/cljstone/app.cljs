@@ -31,16 +31,14 @@
                    (swap! board-atom remove-minion (:id dead-character)))))
     board))
 
-(def board (let [board-atom (make-board-atom (make-board jaina (make-random-deck) thrall (make-random-deck)))
-                 the-board @board-atom]
-             (reset! board-atom (-> the-board
-                                    (play-card :player-1 0)
-                                    (play-card :player-1 0)
-                                    (play-card :player-1 0)
-                                    (play-card :player-2 0)
-                                    (play-card :player-2 0)
-                                    (play-card :player-2 0)))
-             board-atom))
-
 (defn ^:export main []
-  (html/draw-board-atom board))
+  (let [board-atom (make-board-atom (make-board jaina (make-random-deck) thrall (make-random-deck)))
+                   the-board @board-atom]
+               (reset! board-atom (-> the-board
+                                      (play-card :player-1 0)
+                                      (play-card :player-1 0)
+                                      (play-card :player-1 0)
+                                      (play-card :player-2 0)
+                                      (play-card :player-2 0)
+                                      (play-card :player-2 0)))
+    (html/draw-board-atom board-atom)))

@@ -3,7 +3,8 @@
             [reagent.core :as r]
             [reagent.ratom :as ratom]
             [schema.core :as s])
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [devcards.core :as dc :refer [defcard]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
@@ -175,12 +176,21 @@
     (recur))))
 
 (defn draw-board-atom [board-atom]
-  (let [game-state {:board-atom board-atom
-                    :game-event-chan (chan)
-                    :mouse-event-chan (chan)}]
+  (when (js/document.getElementById "content")
+    (let [game-state {:board-atom board-atom
+                      :game-event-chan (chan)
+                      :mouse-event-chan (chan)}]
 
-    (r/render-component [draw-board game-state]
-                        (js/document.getElementById "content"))
+      (r/render-component [draw-board game-state]
+                          (js/document.getElementById "content"))
 
-    (handle-mouse-events game-state)
-    (handle-game-events game-state)))
+      (handle-mouse-events game-state)
+      (handle-game-events game-state))))
+
+
+
+
+(defcard end-turn-card
+  "blat"
+  draw-end-turn-button
+  )

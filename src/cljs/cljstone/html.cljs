@@ -3,8 +3,7 @@
             [reagent.core :as r]
             [reagent.ratom :as ratom]
             [schema.core :as s])
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
-                   [devcards.core :as dc :refer [defcard]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
@@ -186,11 +185,3 @@
 
       (handle-mouse-events game-state)
       (handle-game-events game-state))))
-
-
-
-
-(defcard end-turn-card
-  "blat"
-  draw-end-turn-button
-  )

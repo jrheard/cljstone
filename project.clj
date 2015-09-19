@@ -24,9 +24,11 @@
              :source-paths ["src/cljs"]
              :figwheel {:on-jsload "cljstone.app/main"}}
        :devcards {:compiler
-                  {:output-dir "resources/public/js/compiled/devcards_out"
+                  {:main "cljstone.devcards"
+                   :asset-path "js/compiled/devcards_out"
+                   :output-dir "resources/public/js/compiled/devcards_out"
                    :output-to "resources/public/js/compiled/core_devcards.js"}
-                  :source-paths ["src/cljs"]
+                  :source-paths ["devcards/cljs" "src/cljs"]
                   :figwheel {:devcards true}}
        :test {:compiler
               {:main "cljstone.runner"

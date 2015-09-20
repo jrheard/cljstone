@@ -102,8 +102,10 @@
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
 
-(defn draw-end-turn-button [game-state]
-  [:div.end-turn {:on-click #(put! (game-state :game-event-chan) {:type :end-turn})}
+(defn draw-end-turn-button [board game-state]
+  [:div.end-turn {:on-click #(do (put! (game-state :game-event-chan) {:type :end-turn})
+                               nil)
+                  :title (str "Turn " (:turn board) " (" (:whose-turn board) ")")}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -134,9 +136,9 @@
      [draw-board-mode board]
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
-     [draw-end-turn-button game-state]
-     [draw-combat-log board]
-     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
+     [:div.end-turn-button-container
+       [draw-end-turn-button board game-state]]
+     [draw-combat-log board]]))
 
 ; TODO - eventually implement click->click attacking
 (defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]

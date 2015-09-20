@@ -122,13 +122,10 @@ h3 {
 	border-bottom: 0;
 }
 
-.end-turn-button-container {
+.end-turn {
 	position: absolute;
 	right: 299px;
 	top: 477px;
-}
-
-.end-turn {
 	background-color: #EEE;
 	font-size: 25px;
 	padding: 10px;

@@ -102,9 +102,8 @@
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
 
-(defn draw-end-turn-button [board game-state]
-  [:div.end-turn {:on-click #(do (put! (game-state :game-event-chan) {:type :end-turn})
-                               nil)}
+(defn draw-end-turn-button [game-state]
+  [:div.end-turn {:on-click #(put! (game-state :game-event-chan) {:type :end-turn})}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -117,9 +116,10 @@
 
 (s/defn draw-combat-log [board]
   (let [combat-log (:combat-log board)]
-    [:div.combat-log
+    [:div.combat-log-viewport
+     [:div.combat-log
      (for [entry combat-log]
-       ^{:key (:id entry)} [draw-combat-log-entry board entry])]))
+       ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
 (defn draw-board-mode [board])
 ; TODO - draw a cancel button whenever :mode isn't default
@@ -134,10 +134,9 @@
      [draw-board-mode board]
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
-     [:div.end-turn-button-container
-       [draw-end-turn-button board game-state]]
-     [:div.combat-log-viewport
-      [draw-combat-log board]]]))
+     [draw-end-turn-button game-state]
+     [draw-combat-log board]
+     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 ; TODO - eventually implement click->click attacking
 (defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]
@@ -176,13 +175,12 @@
     (recur))))
 
 (defn draw-board-atom [board-atom]
-  (when (js/document.getElementById "content")
-    (let [game-state {:board-atom board-atom
-                      :game-event-chan (chan)
-                      :mouse-event-chan (chan)}]
+  (let [game-state {:board-atom board-atom
+                    :game-event-chan (chan)
+                    :mouse-event-chan (chan)}]
 
-      (r/render-component [draw-board game-state]
-                          (js/document.getElementById "content"))
+    (r/render-component [draw-board game-state]
+                        (js/document.getElementById "content"))
 
-      (handle-mouse-events game-state)
-      (handle-game-events game-state))))
+    (handle-mouse-events game-state)
+    (handle-game-events game-state)))

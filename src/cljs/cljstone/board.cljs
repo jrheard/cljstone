@@ -87,11 +87,11 @@
       (update-in [:turn] inc)
       (update-in [:whose-turn] other-player)))
 
-; XXXXX TODO TIGHTEN UP
 (s/defn run-continuation :- Board
+  "Run the board's mode's continuation function. See cljstone.board-mode."
   [board :- Board
    & args]
-  {:pre (not= (get-in board [:mode :type]) :default)}
+  {:pre (not= (board :mode) DefaultMode)}
   (apply (get-in board [:mode :continuation])
          (concat [board] args)))
 
@@ -106,8 +106,5 @@
             (count (get-in board [player :hand])))]}
   (let [hand (-> board player :hand)
         card (nth hand card-index)
-        ; TODO - don't remove the card from the player's hand until *after* the targeting phase has completed successfully.
         new-hand (vec (remove #(= (:id %) (:id card)) hand))]
-    (-> board
-        (assoc-in [player :hand] new-hand)
-        ((card :effect) player))))
+    ((card :effect) board player new-hand)))

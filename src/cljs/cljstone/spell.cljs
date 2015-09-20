@@ -11,6 +11,11 @@
 
 (s/defn spell->card :- Card
   [spell :- Spell]
-  (into {:type :spell
-         :id (get-next-card-id)}
-        spell))
+  (assoc (into {:type :spell
+                :id (get-next-card-id)}
+               spell)
+         :effect
+         (fn [board player new-hand]
+           (-> board
+               ((spell :effect) player)
+               (assoc-in [player :hand] new-hand)))))

@@ -69,7 +69,8 @@
    :class (:class schematic :neutral)
    :attack (:attack schematic)
    :health (:health schematic)
-   :effect (fn [board player]
+   ; TODO break this out into a separate function, write tests, refactor
+   :effect (fn [board player new-hand]
              ; TODO implement positioning by associng :mode PositioningMode
              ; *then* do battlecries/targeting if applicable
              ; *then* play the minion at the right position in the board
@@ -80,9 +81,12 @@
                                    :continuation (fn [board target-character-id]
                                                    (-> board
                                                        (assoc :mode {:type :default})
+                                                       (assoc-in [player :hand] new-hand)
                                                        (#((schematic :battlecry) % target-character-id))
                                                        (play-minion-card player schematic)))})
-               (play-minion-card board player schematic)))})
+               (-> board
+                   (assoc-in [player :hand] new-hand)
+                   (play-minion-card player schematic))))})
 
 
 ; dire wolf alpha only needs to care about on-summon-friendly-minion, on-friendly-minion-death - no other situations cause a dire wolf alpha buff/debuff

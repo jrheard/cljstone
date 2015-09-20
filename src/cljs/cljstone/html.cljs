@@ -144,8 +144,7 @@
      [draw-board-half board :player-2 game-state]
      [draw-end-turn-button game-state]
      [draw-combat-log board]
-     [draw-board-mode board game-state]
-     [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
+     [draw-board-mode board game-state]]))
 
 ; TODO - eventually implement click->click attacking
 (defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]

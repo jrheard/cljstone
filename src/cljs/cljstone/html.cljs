@@ -104,8 +104,7 @@
 
 (defn draw-end-turn-button [board game-state]
   [:div.end-turn {:on-click #(do (put! (game-state :game-event-chan) {:type :end-turn})
-                               nil)
-                  :title (str "Turn " (:turn board) " (" (:whose-turn board) ")")}
+                               nil)}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -118,10 +117,9 @@
 
 (s/defn draw-combat-log [board]
   (let [combat-log (:combat-log board)]
-    [:div.combat-log-viewport
-     [:div.combat-log
+    [:div.combat-log
      (for [entry combat-log]
-       ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
+       ^{:key (:id entry)} [draw-combat-log-entry board entry])]))
 
 (defn draw-board-mode [board])
 ; TODO - draw a cancel button whenever :mode isn't default
@@ -138,7 +136,8 @@
      [draw-board-half board :player-2 game-state]
      [:div.end-turn-button-container
        [draw-end-turn-button board game-state]]
-     [draw-combat-log board]]))
+     [:div.combat-log-viewport
+      [draw-combat-log board]]]))
 
 ; TODO - eventually implement click->click attacking
 (defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]

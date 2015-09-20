@@ -28,17 +28,24 @@
                    ; TODO have a separate kill-minion function: fires deathrattle, on-minion-death, and removes minion from board
                    ; also split this grim-reaper functionality out into something that's reusable in other places (eg cause-damage)
                    ; also will be used by twisting nether, assassinate, etc
+                   ;
+                   ; XXX honestly, ideally i'd like to remove this watch entirely, and have it just
+                   ; be implemented in the normal, pure portion of the program.
                    (swap! board-atom remove-minion (:id dead-character)))))
     board))
 
+(defonce board-atom
+  (do
+    (let [board-atom (make-board-atom (make-board jaina (make-random-deck) thrall (make-random-deck)))
+          the-board @board-atom]
+      (reset! board-atom (-> the-board
+                             (play-card :player-1 0)
+                             (play-card :player-1 0)
+                             (play-card :player-1 0)
+                             (play-card :player-2 0)
+                             (play-card :player-2 0)
+                             (play-card :player-2 0)))
+      board-atom)))
+
 (defn ^:export main []
-  (let [board-atom (make-board-atom (make-board jaina (make-random-deck) thrall (make-random-deck)))
-                   the-board @board-atom]
-               (reset! board-atom (-> the-board
-                                      (play-card :player-1 0)
-                                      (play-card :player-1 0)
-                                      (play-card :player-1 0)
-                                      (play-card :player-2 0)
-                                      (play-card :player-2 0)
-                                      (play-card :player-2 0)))
-    (html/draw-board-atom board-atom)))
+  (html/draw-board-atom board-atom))

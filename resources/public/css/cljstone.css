@@ -62,6 +62,7 @@ h3 {
 	width: 202px;
 	padding: 0 3px;
 	z-index: 1;
+	top: 0;
 }
 
 .board-half:nth-of-type(2) .hand {
@@ -122,18 +123,28 @@ h3 {
 	border-bottom: 0;
 }
 
-.end-turn {
+.end-turn,
+.cancel-mode {
 	position: absolute;
-	right: 299px;
 	top: 477px;
 	background-color: #EEE;
 	font-size: 25px;
 	padding: 10px;
 	border: solid 2px #AAA;
 	color: #666;
+	z-index: 5;
 }
 
-.end-turn:hover {
+.cancel-mode {
+	left: 43%;
+}
+
+.end-turn {
+	right: 299px;
+}
+
+.end-turn:hover,
+.cancel-mode:hover {
 	background-color: #CCC;
 	cursor: pointer;
 }
@@ -151,13 +162,14 @@ h3 {
 	top: 0px;
 }
 
-/* TODO have this only apply to .minion-container? */
-.board.targeting .minion {
+.board.targeting .minion,
+.board.targeting .hand .spell {
 	background-color: #AAA;
 	border: solid 1px #AAA;
 }
 
-.board.targeting .minion:hover {
+.board.targeting .minion:hover,
+.board.targeting .hand .spell:hover{
 	cursor: default;
 }
 

@@ -9,6 +9,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.minion :only [get-attack get-health can-attack]]
         [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
+        [cljstone.board-mode :only [DefaultMode]]
         [cljstone.combat :only [attack]]))
 
 ; TODO test this file
@@ -103,7 +104,9 @@
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
 
 (defn draw-end-turn-button [game-state]
-  [:div.end-turn {:on-click #(put! (game-state :game-event-chan) {:type :end-turn})}
+  [:div.end-turn {:on-click #(do
+                               (put! (game-state :game-event-chan) {:type :end-turn})
+                               nil)}
    "End Turn"])
 
 (defn draw-combat-log-entry [board entry]
@@ -114,16 +117,22 @@
      (- (-> entry :modifier :effect :health))
      " damage")])
 
-(s/defn draw-combat-log [board]
+(defn draw-combat-log [board]
   (let [combat-log (:combat-log board)]
     [:div.combat-log-viewport
      [:div.combat-log
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
-(defn draw-board-mode [board])
-; TODO - draw a cancel button whenever :mode isn't default
-; it fires a :cancel event, which just causes us to assoc the default :mode back on to the board, ezpz
+(defn draw-board-mode [board game-state]
+  (when (not= (board :mode) DefaultMode)
+    (let [button-text (condp = (get-in board [:mode :type])
+                        :targeting "Cancel Targeting"
+                        :positioning "Cancel Positioning")]
+      [:div.cancel-mode {:on-click #(do
+                                      (put! (game-state :game-event-chan) {:type :cancel-mode})
+                                      nil)}
+         button-text])))
 
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)
@@ -131,11 +140,11 @@
                   "board "
                   (name (get-in board [:mode :type])))]
     [:div {:class classes}
-     [draw-board-mode board]
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
      [draw-end-turn-button game-state]
      [draw-combat-log board]
+     [draw-board-mode board game-state]
      [:div.turn (pr-str (:whose-turn board)) (pr-str (:turn board))]]))
 
 ; TODO - eventually implement click->click attacking
@@ -166,12 +175,9 @@
           :play-card (swap! board-atom play-card (msg :player) (msg :index))
           :end-turn (swap! board-atom end-turn))
         ; XXX right now the only mode we support is targeting
-        ; TODO: support canceling out of targeting / positioning / any mode
-        ; should there be a :success-continuation and a :cancel-continuation?
-        ; i mean :cancel-continuation will just always look like "set the mode back to :default", right?
-        ; so there's no need to actually include it in modes, we can just implement that here
         (condp = (:type msg)
-          :character-selected (swap! board-atom run-continuation (msg :character-id))))
+          :character-selected (swap! board-atom run-continuation (msg :character-id))
+          :cancel-mode (swap! board-atom assoc :mode DefaultMode)))
     (recur))))
 
 (defn draw-board-atom [board-atom]

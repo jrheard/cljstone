@@ -3,7 +3,7 @@
             [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
-        [cljstone.board :only [path-to-character end-turn run-continuation]]
+        [cljstone.board :only [path-to-character end-turn run-continuation play-card]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.combat :only [attack]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
@@ -48,9 +48,6 @@
           ; once player 1 hits "end turn", though, the croc can attack again the next time it's p1's turn.
           (is (= true (m/can-attack (get-in board [:player-1 :minions 0])))))))))
 
-
-; TODO test playing cards
-
 (deftest running-continuations
   (let [board (assoc fresh-board :mode {:type :targeting
                                         :targets []
@@ -63,3 +60,18 @@
 
   ; Can't call run-continuation on a DefaultModed board.
   (is (thrown? js/Error (run-continuation fresh-board 123))))
+
+(deftest playing-cards
+  ; god, i'd love to use a generator here
+  (testing "when a card gets played, its :effect function gets run and the result is returned"
+    (let [test-card {:type :minion
+                     :name "foo"
+                     :mana-cost 1
+                     :id 123
+                     :class :warrior
+                     :effect (fn [board player new-hand]
+                               (assoc-in board [player :hand] new-hand))}
+          board (assoc-in fresh-board [:player-1 :hand 0] test-card)
+          old-hand (get-in board [:player-1 :hand])]
+      (is (= (play-card board :player-1 0)
+             (assoc-in fresh-board [:player-1 :hand] (subvec old-hand 1)))))))

@@ -12,8 +12,6 @@
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.combat :only [attack]]))
 
-; TODO test this file
-
 (s/defschema GameState
   {:board-atom ratom/RAtom
    :game-event-chan Channel

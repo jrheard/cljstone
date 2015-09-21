@@ -30,3 +30,11 @@
                    :player :player-2
                    :index 0}))
            (done))))))
+
+(deftest drawing-minions)
+
+(deftest drawing-end-turn-button)
+
+(deftest drawing-board-mode)
+
+(deftest handling-mouse-events)

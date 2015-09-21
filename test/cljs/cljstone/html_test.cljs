@@ -4,8 +4,8 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [clojure.string :only [trim]]
-        [cljstone.html :only [draw-card draw-minion-card]]
-        [cljstone.test-helpers :only [boulderfist-card fresh-board]]))
+        [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event]]
+        [cljstone.test-helpers :only [boulderfist-card boulderfist-minion fresh-board]]))
 
 (def test-board (-> fresh-board
                     (assoc :whose-turn :player-2)
@@ -31,7 +31,34 @@
                    :index 0}))
            (done))))))
 
-(deftest drawing-minions)
+(deftest drawing-minions
+  (with-fn-validation
+    (let [mouse-event-chan (chan)
+          minion (draw-minion boulderfist-minion test-board true mouse-event-chan)
+          props (nth minion 1)]
+      (is (= (trim (props :class)) "minion can-attack"))
+      (is (= (props :data-character-id) 12345))
+      (is (= (props :draggable) true))
+
+      (let [fake-mouse-event (clj->js {"type" "foo"
+                                       "preventDefault" (fn [])})]
+        ; fire all of the mouse events we support, verify that correct-looking events are emitted
+        (with-redefs [get-character-id-from-event (fn [e] 12345)]
+          ((props :on-click) fake-mouse-event)
+          ((props :on-drag-start) fake-mouse-event)
+          ; on-drag-over just calls .preventDefault, doesn't put anything in mouse-event-chan
+          ((props :on-drag-over) fake-mouse-event)
+          ((props :on-drop) fake-mouse-event)
+
+          (async done
+            (go
+              (doseq [i (range 3)]
+                (is (= (<! mouse-event-chan)
+                       {:type :mouse-event
+                        :mouse-event-type :foo
+                        :board test-board
+                        :character-id 12345})))
+              (done))))))))
 
 (deftest drawing-end-turn-button)
 

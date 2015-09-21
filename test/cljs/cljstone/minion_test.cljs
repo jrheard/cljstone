@@ -11,6 +11,14 @@
     (let [minion (-> all-minions :wisp (make-minion 123))]
       (is (= (get-health minion) 1))))
 
+  (testing "buffed and attacked"
+    (let [minion (-> all-minions
+                     :boulderfist-ogre
+                     (make-minion 123)
+                     (update-in [:modifiers] conj {:type :buff :name "foo" :effect {:base-health 1}})
+                     (update-in [:modifiers] conj {:type :attack :name nil :effect {:health -2}}))]
+      (is (= (get-health minion) 6))))
+
   (testing "health after a couple of attacks"
     (let [minion (-> all-minions
                      :boulderfist-ogre

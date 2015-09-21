@@ -5,7 +5,6 @@
 
 (use-fixtures :once validate-schemas)
 
-; XXX TODO this moved to dealer.cljs
 (deftest test-make-random-deck
   (let [deck (make-random-deck)]
     (is (= (count deck)

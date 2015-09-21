@@ -19,7 +19,7 @@
    :game-event-chan Channel
    :mouse-event-chan Channel})
 
-(defn- get-character-id-from-event [event]
+(defn get-character-id-from-event [event]
   (-> event
       .-currentTarget
       .-dataset

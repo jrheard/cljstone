@@ -95,8 +95,6 @@
   (apply (get-in board [:mode :continuation])
          (concat [board] args)))
 
-; TODO test modes
-
 (s/defn play-card :- Board
   [board :- Board
    player :- Player

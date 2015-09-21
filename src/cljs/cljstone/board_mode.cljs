@@ -11,7 +11,7 @@
 ;
 ; Frequently, though, we'll need to enter an intermediate state, like
 ; "The player's playing a minion with a targetable battlecry - let's show them which characters can
-; be targeted and wait for them to choose one." The same thing happens when the player's played
+; be targeted ***and wait for them to choose one***." The same thing happens when the player's played
 ; one of the druid class's choose-one cards, or when we're performing the initial mulligan, etc.
 ;
 ; In situations like this, we represent that intermediate state by e.g. putting a TargetingMode
@@ -48,7 +48,9 @@
    :continuation s/Any})
 
 (s/defschema BoardMode
-  (s/enum
+  ; s/enum doesn't seem like the right thing to use here, poking w01fe for suggestions
+  s/Any
+  #_(s/enum
     DefaultMode
     PositioningMode
     TargetingMode

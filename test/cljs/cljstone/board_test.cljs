@@ -3,7 +3,8 @@
             [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
-        [cljstone.board :only [path-to-character end-turn]]
+        [cljstone.board :only [path-to-character end-turn run-continuation]]
+        [cljstone.board-mode :only [DefaultMode]]
         [cljstone.combat :only [attack]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
@@ -49,3 +50,16 @@
 
 
 ; TODO test playing cards
+
+(deftest running-continuations
+  (let [board (assoc fresh-board :mode {:type :targeting
+                                        :targets []
+                                        :continuation (fn [board b c]
+                                                        (is (= b 123))
+                                                        (is (= c 234))
+                                                        (assoc board :mode DefaultMode))})]
+    (is (= (run-continuation board 123 234)
+           fresh-board)))
+
+  ; Can't call run-continuation on a DefaultModed board.
+  (is (thrown? js/Error (run-continuation fresh-board 123))))

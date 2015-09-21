@@ -4,7 +4,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [clojure.string :only [trim]]
-        [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event]]
+        [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event draw-end-turn-button]]
         [cljstone.test-helpers :only [boulderfist-card boulderfist-minion fresh-board]]))
 
 (def test-board (-> fresh-board
@@ -60,7 +60,19 @@
                         :character-id 12345})))
               (done))))))))
 
-(deftest drawing-end-turn-button)
+(deftest drawing-end-turn-button
+  (with-fn-validation
+    (let [game-event-chan (chan)
+          button (draw-end-turn-button {:game-event-chan game-event-chan})
+          props (nth button 1) ]
+
+      ((props :on-click))
+
+      (async done
+        (go
+          (is (= (<! game-event-chan)
+                 {:type :end-turn}))
+          (done))))))
 
 (deftest drawing-board-mode)
 

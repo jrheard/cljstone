@@ -94,4 +94,5 @@
                  {:type :cancel-mode}))
           (done))))))
 
+; TODO test this later, once we've decided where we want to go re: drag-drop vs click-click
 (deftest handling-mouse-events)

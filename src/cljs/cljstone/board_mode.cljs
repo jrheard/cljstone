@@ -1,5 +1,6 @@
 (ns cljstone.board-mode
-  (:require [schema.core :as s])
+  (:require [schema.core :as s]
+            [schema.experimental.abstract-map :as am :refer-macros [extend-schema]])
   (:use [cljstone.card :only [Card]]
         [cljstone.character :only [Character]]
         [cljstone.minion :only [Minion]]))
@@ -25,33 +26,12 @@
 ; This scheme lets us say "ok we're in an intermediate state, let's get user input!"; block until we've
 ; received that input; and then call a function that continues the flow of the game.
 
-(s/defschema DefaultMode
-  {:type :default})
-
-(s/defschema PositioningMode
-  {:type :positioning
-   :minion Minion
-   :continuation s/Any})
-
-(s/defschema TargetingMode
-  {:type :targeting
-   :targets [Character]
-   ; choose-one mode will also have an optional positioning-info
-   ; this is because minions can be positioned and can then have targetable battlecries or choose-ones
-   (s/optional-key :positioning-info) {:minion Minion
-                                       :index s/Int}
-   :continuation s/Any})
-
-(s/defschema MulliganMode
-  {:type :mulligan
-   :cards [Card]
-   :continuation s/Any})
-
 (s/defschema BoardMode
-  ; s/enum doesn't seem like the right thing to use here, poking w01fe for suggestions
-  s/Any
-  #_(s/enum
-    DefaultMode
-    PositioningMode
-    TargetingMode
-    MulliganMode))
+  (am/abstract-map-schema
+    :type
+    {(s/optional-key :continuation) s/Any}))
+
+(extend-schema DefaultMode BoardMode [:default] {})
+(extend-schema PositioningMode BoardMode [:positioning] {:minion Minion})
+(extend-schema TargetingMode BoardMode [:targeting] {:targets [Character]})
+(extend-schema MulliganMode BoardMode [:mulligan] {:card [Card]})

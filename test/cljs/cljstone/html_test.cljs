@@ -1,10 +1,10 @@
 (ns cljstone.html-test
   (:require [cljs.test :refer-macros [async deftest is use-fixtures]]
-            [schema.core :as s :refer-macros [with-fn-validation]])
+            [schema.core :refer-macros [with-fn-validation]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [cljs.core.async :only [chan <! >! put!]]
         [clojure.string :only [trim]]
-        [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event draw-end-turn-button]]
+        [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event draw-end-turn-button draw-board-mode]]
         [cljstone.test-helpers :only [boulderfist-card boulderfist-minion fresh-board]]))
 
 (def test-board (-> fresh-board
@@ -66,6 +66,7 @@
           button (draw-end-turn-button {:game-event-chan game-event-chan})
           props (nth button 1) ]
 
+      ; fire a click event, see if game-event-chan gets the message we expect
       ((props :on-click))
 
       (async done
@@ -74,6 +75,23 @@
                  {:type :end-turn}))
           (done))))))
 
-(deftest drawing-board-mode)
+(deftest drawing-board-mode
+  (with-fn-validation
+    (is (= (draw-board-mode fresh-board {})
+           nil))
+
+    (let [game-event-chan (chan)
+          board (assoc fresh-board :mode {:type :targeting :continuation nil :targets []})
+          button (draw-board-mode board {:game-event-chan game-event-chan})
+          props (nth button 1)]
+
+      ; click the cancel button, see if we get the right event
+      ((props :on-click))
+
+      (async done
+        (go
+          (is (= (<! game-event-chan)
+                 {:type :cancel-mode}))
+          (done))))))
 
 (deftest handling-mouse-events)

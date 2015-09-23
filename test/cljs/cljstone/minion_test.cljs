@@ -1,7 +1,8 @@
 (ns cljstone.minion-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]])
   (:use [cljstone.bestiary :only [all-minions]]
-        [cljstone.minion :only [get-health make-minion]]
+        [cljstone.character :only [get-health]]
+        [cljstone.minion :only [make-minion]]
         [schema.test :only [validate-schemas]]))
 
 (use-fixtures :once validate-schemas)

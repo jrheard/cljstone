@@ -93,35 +93,3 @@
 ; still need to figure out what happens when you silence something that's had its health buffed and has taken 1 damage, though.
 ; i guess silencing will involve recomputing base attack and health, and so you can figure it out at recompute-because-of-silence time.
 ; hm.
-
-(s/defn sum-modifiers :- s/Int
-  [minion :- Minion
-   kw :- s/Keyword]
-  (apply + (map (fn [modifier]
-                  (kw (modifier :effect) 0))
-                (minion :modifiers))))
-
-(s/defn get-base-attack :- s/Int
-  [minion :- Minion]
-  (+ (:base-attack minion)
-     (sum-modifiers minion :base-attack)))
-
-(s/defn get-base-health :- s/Int
-  [minion :- Minion]
-  (+ (:base-health minion)
-     (sum-modifiers minion :base-health)))
-
-(s/defn get-health :- s/Int
-  [minion :- Minion]
-  (+ (get-base-health minion)
-     (sum-modifiers minion :health)))
-
-(s/defn get-attack :- s/Int
-  [minion :- Minion]
-  (get-base-attack minion))
-
-(s/defn can-attack :- s/Bool
-  [minion :- Minion]
-  (and (< (minion :attacks-this-turn)
-          (minion :attacks-per-turn))
-       (> (get-attack minion) 0)))

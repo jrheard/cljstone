@@ -1,9 +1,9 @@
 (ns cljstone.combat
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character CharacterModifier Player other-player]]
+        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health]]
         [cljstone.combat-log :only [log-an-item]]
-        [cljstone.minion :only [Minion get-attack get-health]]))
+        [cljstone.minion :only [Minion]]))
 
 (s/defn cause-damage :- Board
   [board :- Board

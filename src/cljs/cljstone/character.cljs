@@ -36,3 +36,35 @@
 (s/defn other-player :- Player
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))
+
+(s/defn sum-modifiers :- s/Int
+  [character :- Character
+   kw :- s/Keyword]
+  (apply + (map (fn [modifier]
+                  (kw (modifier :effect) 0))
+                (character :modifiers))))
+
+(s/defn get-base-attack :- s/Int
+  [character :- Character]
+  (+ (:base-attack character)
+     (sum-modifiers character :base-attack)))
+
+(s/defn get-base-health :- s/Int
+  [character :- Character]
+  (+ (:base-health character)
+     (sum-modifiers character :base-health)))
+
+(s/defn get-health :- s/Int
+  [character :- Character]
+  (+ (get-base-health character)
+     (sum-modifiers character :health)))
+
+(s/defn get-attack :- s/Int
+  [character :- Character]
+  (get-base-attack character))
+
+(s/defn can-attack :- s/Bool
+  [character :- Character]
+  (and (< (character :attacks-this-turn)
+          (character :attacks-per-turn))
+       (> (get-attack character) 0)))

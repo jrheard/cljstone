@@ -4,6 +4,7 @@
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [play-card path-to-character]]
+        [cljstone.character :only [get-health]]
         [cljstone.combat :only [attack find-a-dead-character-in-board remove-minion]]
         [cljstone.combat-log :only [get-next-log-entry-id]]
         [cljstone.test-helpers :only [fresh-board hero-1 hero-2 three-minions-per-player-board]]
@@ -21,9 +22,9 @@
             golem (get-in board (path-to-character board 234))
             board (attack board 123 234)]
         ; ogre dies, war golem survives with 1 health
-        (is (= (m/get-health (get-in board [:player-1 :minions 0]))
+        (is (= (get-health (get-in board [:player-1 :minions 0]))
                0))
-        (is (= (m/get-health (get-in board [:player-2 :minions 0]))
+        (is (= (get-health (get-in board [:player-2 :minions 0]))
                1))
 
         ; combat log recorded both of those damages

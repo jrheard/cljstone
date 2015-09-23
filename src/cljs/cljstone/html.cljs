@@ -7,9 +7,9 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.minion :only [get-attack get-health can-attack]]
         [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
         [cljstone.board-mode :only [DefaultMode]]
+        [cljstone.character :only [get-attack get-health can-attack]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState

@@ -5,6 +5,7 @@
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [path-to-character end-turn run-continuation play-card]]
         [cljstone.board-mode :only [DefaultMode]]
+        [cljstone.character :only [can-attack]]
         [cljstone.combat :only [attack]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
@@ -38,15 +39,15 @@
                     (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk all-minions) 123))
                     (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk all-minions) 234)))]
       ; player 1 and player 2 each have a river croc.
-      (is (= true (m/can-attack (get-in board [:player-1 :minions 0]))))
+      (is (= true (can-attack (get-in board [:player-1 :minions 0]))))
 
       (let [board (attack board 123 234)]
         ; player 1's croc attacks player 2's croc; it can only attack once per turn, so it can't attack again.
-        (is (= false (m/can-attack (get-in board [:player-1 :minions 0]))))
+        (is (= false (can-attack (get-in board [:player-1 :minions 0]))))
 
         (let [board (end-turn board)]
           ; once player 1 hits "end turn", though, the croc can attack again the next time it's p1's turn.
-          (is (= true (m/can-attack (get-in board [:player-1 :minions 0])))))))))
+          (is (= true (can-attack (get-in board [:player-1 :minions 0])))))))))
 
 (deftest running-continuations
   (let [board (assoc fresh-board :mode {:type :targeting

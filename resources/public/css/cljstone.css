@@ -107,7 +107,6 @@ h3 {
 	height: 200px;
 
 	color: #666;
-	line-height: 200px;
 	text-align: center;
 	font-weight: bold;
 	font-size: 30px;
@@ -205,7 +204,8 @@ h3 {
 	text-transform: uppercase;
 }
 
-.minion .attack {
+.minion .attack,
+.hero .attack {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -218,7 +218,8 @@ h3 {
 	padding: 5px 10px;
 }
 
-.minion .health {
+.minion .health,
+.hero .health {
 	position: absolute;
 	bottom: 0;
 	right: 0;

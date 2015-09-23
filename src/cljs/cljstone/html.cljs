@@ -55,7 +55,10 @@
 
 (defn draw-hero [hero]
   [:div.hero
-   [:div.name (:name hero)]])
+   [:div.name (:name hero)]
+   (when (> (get-attack hero) 0)
+     [:div.attack (get-attack hero)])
+   [:div.health (get-health hero)]])
 
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn

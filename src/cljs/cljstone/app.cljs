@@ -7,11 +7,10 @@
             [cljstone.html :as html])
   (:use [cljstone.board :only [Board make-board play-card]]
         [cljstone.combat :only [find-a-dead-character-in-board remove-minion]]
-        [cljstone.character :only [get-next-character-id]]
         [cljstone.dealer :only [make-random-deck]]))
 
-(def jaina (hero/make-hero "Jaina" :mage (get-next-character-id)))
-(def thrall (hero/make-hero "Thrall" :shaman (get-next-character-id)))
+(def jaina (hero/make-hero "Jaina" :mage))
+(def thrall (hero/make-hero "Thrall" :shaman))
 
 (s/defn make-board-atom :- ratom/RAtom
   [board :- Board]

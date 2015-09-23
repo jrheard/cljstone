@@ -6,6 +6,8 @@
 (def MinionSchematic
   {:name s/Str
    (s/optional-key :class) (s/enum :neutral :mage :shaman)
+   ; TODO imo the keystrokes we save by not naming these :base-attack and :base-health doesn't make up for the confusion these shorter keys cause
+   ; TODO standardize on :base-attack, :base-health
    :attack s/Int
    :health s/Int
    (s/optional-key :battlecry) s/Any ; (Board, target-character-id) -> Board

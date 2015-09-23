@@ -10,8 +10,8 @@
 
 (use-fixtures :once validate-schemas)
 
-(def hero-1 (make-hero "Jaina" :mage (get-next-character-id)))
-(def hero-2 (make-hero "Thrall" :shaman (get-next-character-id)))
+(def hero-1 (make-hero "Jaina" :mage))
+(def hero-2 (make-hero "Thrall" :shaman))
 
 (def fresh-board (make-board hero-1 (make-random-deck) hero-2 (make-random-deck)))
 

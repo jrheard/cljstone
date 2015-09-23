@@ -22,6 +22,8 @@
    :attacks-this-turn s/Int
    :attacks-per-turn s/Int
    :id s/Int
+   ; XXX
+   :type (s/enum :minion)
    :modifiers [CharacterModifier]})
 
 ; hm - how do you implement silencing something that's taken damage and has also had its HP buffed?
@@ -49,6 +51,7 @@
          :attacks-per-turn 1 ; TODO - turn into :base-attacks-per-turn, there'll be modifiers that can add 1 to this number (will freezing remove 1 from this number?)
          :id id
          :modifiers []
+         :type :minion
          :class (:class schematic :neutral)}
         (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn)))
 

@@ -5,15 +5,49 @@
         [cljstone.combat-log :only [log-an-item]]
         [cljstone.minion :only [Minion]]))
 
+(s/defn find-dead-characters-in-board :- [Character]
+  [board :- Board]
+  ; TODO sort characters by :id ascending
+  (let [characters (concat (get-in board [:player-1 :minions])
+                           [(get-in board [:player-1 :hero])]
+                           (get-in board [:player-2 :minions])
+                           [(get-in board [:player-2 :hero])])]
+    (let [dead-characters (filter #(<= (get-health %) 0) characters)]
+      (or dead-characters []))))
+
+; TODO have a separate kill-minion function: fires deathrattle, on-minion-death [eg flesheating ghoul, cult master], and calls remove-minion
+; also will be used by twisting nether, assassinate, etc
+(s/defn remove-minion :- Board
+  [board :- Board
+   minion-id :- s/Int]
+  (let [minions-path (take 2 (path-to-character board minion-id))
+        vec-without-minion (vec (remove #(= (:id %) minion-id)
+                                        (get-in board minions-path)))]
+    (assoc-in board minions-path vec-without-minion)))
+
+(s/defn process-death :- Board
+  [board :- Board
+   character :- Character]
+  (condp = (:type character)
+    ; TODO game-over mode
+    ; TODO eventually program in draws if both heroes are dead
+    :hero board
+    :minion (remove-minion board (:id character))))
+
 (s/defn cause-damage :- Board
   [board :- Board
    character-id :- s/Int
-   modifier :- CharacterModifier]
+   modifier :- CharacterModifier
+   ; TODO document
+   & [delay-death]]
   (let [character-path (path-to-character board character-id)
         modifiers-path (conj character-path :modifiers)]
-    (-> board
-        (update-in modifiers-path conj modifier)
-        (log-an-item modifier nil (get-in board character-path)))))
+    (let [board (-> board
+                    (update-in modifiers-path conj modifier)
+                    (log-an-item modifier nil (get-in board character-path)))]
+      (if delay-death
+        board
+        (reduce process-death board (find-dead-characters-in-board board))))))
 
 (s/defn create-attack-modifier :- CharacterModifier
   [c1 :- Character
@@ -36,9 +70,16 @@
                                        (get-in board))
                                  [attacker-id defender-id])]
     (-> board
-        (cause-damage defender-id (create-attack-modifier attacker defender))
-        (cause-damage attacker-id (create-attack-modifier defender attacker))
-        (update-in (conj (path-to-character board attacker-id) :attacks-this-turn) inc))))
+        (cause-damage defender-id (create-attack-modifier attacker defender) true)
+        (cause-damage attacker-id (create-attack-modifier defender attacker) true)
+        (update-in (conj (path-to-character board attacker-id) :attacks-this-turn) inc)
+        (#(reduce process-death % (find-dead-characters-in-board %))))))
+
+; if two magma ragers attack each other and both kill each other, both attacks should go off, and *then* they should die.
+; so the first causes damage to the second, the second causes damage to the first
+; and THEN 
+
+
 
 ; ok ok ok
 ; it's all just functions that take boards and return boards
@@ -47,21 +88,6 @@
 ; and it triggers on-before-attack,
 ; and then it does (when (look up attacker in board) actually perform attack)
 ; because the attacker may have died in the meantime
-
-(s/defn remove-minion :- Board
-  [board :- Board
-   minion-id :- s/Int]
-  (let [minions-path (take 2 (path-to-character board minion-id))
-        vec-without-minion (vec (remove #(= (:id %) minion-id)
-                                        (get-in board minions-path)))]
-    (assoc-in board minions-path vec-without-minion)))
-
-(s/defn find-a-dead-character-in-board :- (s/maybe Character)
-  [board :- Board]
-  (let [all-minions (concat (get-in board [:player-1 :minions])
-                            (get-in board [:player-2 :minions]))]
-    (when-let [dead-minion (first (filter #(<= (get-health %) 0) all-minions))]
-      dead-minion)))
 
 (s/defn get-enemy-minions :- [Minion]
   [board :- Board

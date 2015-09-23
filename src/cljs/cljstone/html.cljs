@@ -62,6 +62,7 @@
        :spell [draw-spell-card card])]))
 
 (defn draw-hero [hero board mouse-event-chan]
+  ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
   [:div.hero {:data-character-id (:id hero)
               :on-drag-over #(.preventDefault %)
               :on-drop (fn [e]

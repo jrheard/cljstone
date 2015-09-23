@@ -1,7 +1,6 @@
 (ns cljstone.app-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]])
-  (:use [cljstone.app :only [make-board-atom]]
-        [cljstone.board :only [path-to-character play-card]]
+  (:use [cljstone.board :only [path-to-character play-card]]
         [cljstone.character :only [get-next-character-id]]
         [cljstone.hero :only [make-hero]]
         [cljstone.test-helpers :only [fresh-board]]
@@ -9,7 +8,7 @@
 
 (use-fixtures :once validate-schemas)
 
-(deftest grim-reaper
+#_(deftest grim-reaper
   ; TODO test for hero death
 
   (let [board (make-board-atom fresh-board)]

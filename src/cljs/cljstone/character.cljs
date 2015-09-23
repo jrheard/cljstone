@@ -19,6 +19,7 @@
 
 (s/defschema Character
   {:id s/Int
+   :type (s/enum :hero :minion)
    :base-health (s/conditional #(>= % 0) s/Int)
    :base-attack (s/conditional #(>= % 0) s/Int)
    :modifiers [CharacterModifier]

@@ -11,6 +11,8 @@
    :base-health s/Int
    :base-attack s/Int
    :modifiers [CharacterModifier]
+   ; XXX
+   :type (s/enum :hero)
    :id s/Int})
 
 ; todo hero powers
@@ -22,4 +24,5 @@
    :base-health 30
    :base-attack 0
    :modifiers []
+   :type :hero
    :id (get-next-character-id)})

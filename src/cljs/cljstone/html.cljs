@@ -133,15 +133,22 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
+(defn draw-cancel-button [board game-state button-text]
+  [:div.cancel-mode {:on-click #(do
+                                  (put! (game-state :game-event-chan) {:type :cancel-mode})
+                                  nil)}
+   button-text])
+
+(defn draw-game-over [winner]
+  [:div.game-over
+   (str "HOLY SHIT " winner " WON!!!!!!")])
+
 (defn draw-board-mode [board game-state]
-  (when (not= (board :mode) DefaultMode)
-    (let [button-text (condp = (get-in board [:mode :type])
-                        :targeting "Cancel Targeting"
-                        :positioning "Cancel Positioning")]
-      [:div.cancel-mode {:on-click #(do
-                                      (put! (game-state :game-event-chan) {:type :cancel-mode})
-                                      nil)}
-         button-text])))
+  (condp = (:type (board :mode))
+    :default nil
+    :targeting (draw-cancel-button board game-state "Cancel Targeting")
+    :positioning (draw-cancel-button board game-state "Cancel Positioning")
+    :game-over (draw-game-over (:winner (board :mode)))))
 
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)
@@ -175,9 +182,11 @@
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
-    (let [msg (<! game-event-chan)]
+    (let [msg (<! game-event-chan)
+          mode (get-in @board-atom [:mode :type])]
       ; TODO look into using core.match here
-      (if (= (get-in @board-atom [:mode :type]) :default)
+      (when (not= mode :game-over)
+        (if (= mode :default)
         (condp = (:type msg)
           :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           :play-card (swap! board-atom play-card (msg :player) (msg :index))
@@ -186,7 +195,7 @@
         (condp = (:type msg)
           :character-selected (swap! board-atom run-continuation (msg :character-id))
           :cancel-mode (swap! board-atom assoc :mode DefaultMode)
-          (recur)))
+          (recur))))
     (recur))))
 
 (defn draw-board-atom [board-atom]

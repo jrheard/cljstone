@@ -21,7 +21,7 @@
   [hero-name hero-class]
   {:name hero-name
    :class hero-class
-   :base-health 30
+   :base-health 3
    :base-attack 0
    :modifiers []
    :type :hero

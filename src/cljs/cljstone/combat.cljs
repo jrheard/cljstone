@@ -29,9 +29,15 @@
   [board :- Board
    character :- Character]
   (condp = (:type character)
-    ; TODO game-over mode
     ; TODO eventually program in draws if both heroes are dead
-    :hero board
+    :hero (assoc board
+                 :mode
+                 {:type :game-over
+                  :winner (->> character
+                              :id
+                              (path-to-character board)
+                              first
+                              other-player)})
     :minion (remove-minion board (:id character))))
 
 (s/defn cause-damage :- Board

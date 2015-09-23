@@ -48,7 +48,10 @@
    :continuation s/Any})
 
 (s/defschema BoardMode
-  ; s/enum doesn't seem like the right thing to use here, poking w01fe for suggestions
+  ; unfortunately, it's hard to encode this with schema. s/enum is only for literals,
+  ; abstract-map-schema is experimental and i haven't gotten it to work here,
+  ; and i'm not sure how to express this with s/conditional.
+  ; so anyway these modes are currently just for documentation.
   s/Any
   #_(s/enum
     DefaultMode

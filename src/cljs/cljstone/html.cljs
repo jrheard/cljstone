@@ -24,6 +24,14 @@
       .-characterId
       js/parseInt))
 
+(defn put-character-mouse-event-in-chan
+  [board mouse-event-chan event]
+  (put! mouse-event-chan {:type :mouse-event
+                          :mouse-event-type (keyword (.-type event))
+                          :board board
+                          :character-id (get-character-id-from-event event)})
+  nil)
+
 (defn draw-minion-card [card]
   [:div.content
    [:div.name (:name card)]
@@ -53,8 +61,12 @@
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
 
-(defn draw-hero [hero]
-  [:div.hero
+(defn draw-hero [hero board mouse-event-chan]
+  [:div.hero {:data-character-id (:id hero)
+              :on-drag-over #(.preventDefault %)
+              :on-drop (fn [e]
+                         (put-character-mouse-event-in-chan board mouse-event-chan e)
+                         (.preventDefault e)) }
    [:div.name (:name hero)]
    (when (> (get-attack hero) 0)
      [:div.attack (get-attack hero)])
@@ -71,12 +83,7 @@
                              (contains? (get-in board [:mode :targets])
                                         (:id minion)))
                     " targetable"))
-        put-event-in-chan (fn [e]
-                            (put! mouse-event-chan {:type :mouse-event
-                                                    :mouse-event-type (keyword (.-type e))
-                                                    :board board
-                                                    :character-id (get-character-id-from-event e)})
-                            nil)]
+        put-event-in-chan (partial put-character-mouse-event-in-chan board mouse-event-chan)]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
@@ -99,7 +106,7 @@
       (for [[index card] (map-indexed vector (:hand board-half))]
         ^{:key (:id card)} [draw-card card index player is-owners-turn (game-state :game-event-chan)])]
      [:div.body
-       [draw-hero (:hero board-half)]
+       [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
        [:div.minion-container
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
@@ -177,7 +184,8 @@
         ; XXX right now the only mode we support is targeting
         (condp = (:type msg)
           :character-selected (swap! board-atom run-continuation (msg :character-id))
-          :cancel-mode (swap! board-atom assoc :mode DefaultMode)))
+          :cancel-mode (swap! board-atom assoc :mode DefaultMode)
+          (recur)))
     (recur))))
 
 (defn draw-board-atom [board-atom]

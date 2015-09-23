@@ -151,7 +151,7 @@ h3 {
 .minion-container {
 	position: relative;
 	top: 200px;
-	height: 300px;
+	height: 250px;
 	width: 100%;
 	overflow: hidden;
 	padding: 50px;
@@ -159,6 +159,7 @@ h3 {
 
 .board-half:nth-of-type(2) .body .minion-container {
 	top: 0px;
+	padding-bottom: 0;
 }
 
 .board.targeting .minion,

@@ -9,7 +9,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [get-attack get-health can-attack]]
+        [cljstone.character :only [get-attack get-health can-attack other-player]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState
@@ -63,15 +63,23 @@
 
 (defn draw-hero [hero board mouse-event-chan]
   ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
-  [:div.hero {:data-character-id (:id hero)
-              :on-drag-over #(.preventDefault %)
-              :on-drop (fn [e]
-                         (put-character-mouse-event-in-chan board mouse-event-chan e)
-                         (.preventDefault e)) }
-   [:div.name (:name hero)]
-   (when (> (get-attack hero) 0)
-     [:div.attack (get-attack hero)])
-   [:div.health (get-health hero)]])
+  (let [hero-is-alive (not (and (= (get-in board [:mode :type])
+                                   :game-over)
+                                (= (other-player (get-in board [:mode :winner]))
+                                   (first (path-to-character board (:id hero))))))]
+    (if hero-is-alive
+      [:div.hero {:data-character-id (:id hero)
+                  :on-drag-over #(.preventDefault %)
+                  :on-drop (fn [e]
+                             (put-character-mouse-event-in-chan board mouse-event-chan e)
+                             (.preventDefault e)) }
+       [:div.name (:name hero)]
+       (when (> (get-attack hero) 0)
+         [:div.attack (get-attack hero)])
+       [:div.health (get-health hero)]]
+
+      [:div.hero
+         [:div.loser "X"]])))
 
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn

@@ -122,6 +122,15 @@ h3 {
 	border-bottom: 0;
 }
 
+.hero .loser {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	font-size: 200px;
+	color: #cc0000;
+	background-color: #EEE;
+}
+
 .end-turn,
 .cancel-mode {
 	position: absolute;

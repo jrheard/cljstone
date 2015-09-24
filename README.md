@@ -1,6 +1,6 @@
 # cljstone
 
-[![Build Status](https://travis-ci.org/jrheard/cljstone.png)](https://travis-ci.org/jrheard/cljstone)
+[![Build Status](https://travis-ci.org/jrheard/cljstone.svg?branch=master)](https://travis-ci.org/jrheard/cljstone)
 
 a fun card game
 

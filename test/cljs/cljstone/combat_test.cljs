@@ -31,7 +31,20 @@
         (is (= (-> board :combat-log first)
                {:modifier {:type :attack :name nil :effect {:health -6}} :id 0 :source nil :target golem}))
         (is (= (-> board :combat-log (nth 1))
-               {:modifier {:type :attack :name nil :effect {:health -7}} :id 0 :source nil :target ogre}))))))
+               {:modifier {:type :attack :name nil :effect {:health -7}} :id 0 :source nil :target ogre})))))
+
+  (testing "both minions kill each other"
+    (let [board (-> fresh-board
+                      (update-in [:player-1 :minions] conj (m/make-minion (:war-golem all-minions) 123))
+                      (update-in [:player-2 :minions] conj (m/make-minion (:war-golem all-minions) 234)))
+            ogre (get-in board (path-to-character board 123))
+            golem (get-in board (path-to-character board 234))
+            board (attack board 123 234)]
+        ; both die
+        (is (= (get-in board [:player-1 :minions 0])
+               nil))
+        (is (= (get-in board [:player-2 :minions 0])
+               nil)))))
 
 (deftest playing-cards
   (testing "playing a minion"

@@ -44,7 +44,9 @@
   [board :- Board
    character-id :- s/Int
    modifier :- CharacterModifier
-   ; TODO document
+   ; delay-death - if True, does *not* trim dead characters from the board after damage has been caused.
+   ; Used when two characters are attacking each other - if two magma ragers fight each other, neither should
+   ; die until both sides of the attack are complete, at which point both should die. Used by (attack).
    & [delay-death]]
   (let [character-path (path-to-character board character-id)
         modifiers-path (conj character-path :modifiers)]
@@ -80,11 +82,6 @@
         (cause-damage attacker-id (create-attack-modifier defender attacker) true)
         (update-in (conj (path-to-character board attacker-id) :attacks-this-turn) inc)
         (#(reduce process-death % (find-dead-characters-in-board %))))))
-
-; if two magma ragers attack each other and both kill each other, both attacks should go off, and *then* they should die.
-; so the first causes damage to the second, the second causes damage to the first
-; and THEN 
-
 
 
 ; ok ok ok

@@ -55,9 +55,9 @@
       (is (= (get-in board [:player-1 :minions 0 :name])
              "Wisp")))))
 
-#_(deftest find-dead-character
+(deftest find-dead-character
   (testing "no dead characters"
-    (is (= (find-a-dead-character-in-board fresh-board) nil)))
+    (is (= (find-dead-characters-in-board fresh-board) [])))
 
   (let [card (first (get-in fresh-board [:player-1 :hand]))
         board (-> fresh-board
@@ -65,22 +65,27 @@
                   (assoc-in [:player-1 :minions 0 :base-health] 0))]
 
     (testing "one dead character"
+      (is (= (count (find-dead-characters-in-board board)) 1))
+
       (is (= (:name card)
-             (:name (find-a-dead-character-in-board board))))))
+             (:name (nth (find-dead-characters-in-board board) 0))))))
 
   (let [board (-> fresh-board
                   (play-card :player-1 0)
                   (play-card :player-1 0)
                   (assoc-in [:player-1 :minions 0 :base-health] 0)
-                  (assoc-in [:player-1 :minions 1 :base-health] 0))
-        first-minion (get-in board [:player-1 :minions 0])]
+                  (assoc-in [:player-1 :minions 1 :base-health] 0))]
   ; xxx is left-to-right the correct order to seek dead minions? probably not, right?
   ; should be sorting by id, not board position - update this test when we implement deathrattles (and playing a minion at a position) and it starts mattering
-  (testing "if there are two dead characters, we should get the first"
-    (is (= (:base-health first-minion) 0))
-    (is (= (get-in board [:player-1 :minions 1 :base-health]) 0))
-    (is (= (:id (find-a-dead-character-in-board board))
-           (:id first-minion))))))
+
+  (testing "if there are two dead characters, we should get both"
+    (is (= (count (find-dead-characters-in-board board)) 2))
+
+    (is (= (:id (first (find-dead-characters-in-board board)))
+           (:id (get-in board [:player-1 :minions 0]))))
+
+    (is (= (:id (second (find-dead-characters-in-board board)))
+           (:id (get-in board [:player-1 :minions 1])))))))
 
 (deftest removing-minions
   (let [board three-minions-per-player-board

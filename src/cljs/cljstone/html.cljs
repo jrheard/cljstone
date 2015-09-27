@@ -42,8 +42,10 @@
   [:div.content
    [:div.name (:name card)]])
 
-(defn draw-card [card index player is-owners-turn game-event-chan]
-  (let [playable is-owners-turn ; will become more complex later
+(defn draw-card [card index player board-half is-owners-turn game-event-chan]
+  (let [playable (and is-owners-turn
+                      (>= (board-half :mana)
+                          (:mana-cost card)))
         classes (str
                   "card "
                   (clj->js (:class card))
@@ -120,7 +122,7 @@
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]
-        ^{:key (:id card)} [draw-card card index player is-owners-turn (game-state :game-event-chan)])]
+        ^{:key (:id card)} [draw-card card index player board-half is-owners-turn (game-state :game-event-chan)])]
      [:div.body
       [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
       [draw-mana-tray board-half player]

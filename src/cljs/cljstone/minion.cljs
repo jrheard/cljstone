@@ -10,6 +10,7 @@
    ; TODO standardize on :base-attack, :base-health
    :attack s/Int
    :health s/Int
+   :mana-cost s/Int
    (s/optional-key :battlecry) s/Any ; (Board, target-character-id) -> Board
    (s/optional-key :battlecry-targeting-fn) s/Any ; (Board, Player) -> [Character]
    (s/optional-key :modifiers) [CharacterModifier]})
@@ -52,7 +53,7 @@
          :modifiers []
          :type :minion
          :class (:class schematic :neutral)}
-        (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn)))
+        (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn :mana-cost)))
 
 
 (s/defn play-minion-card
@@ -68,7 +69,7 @@
   [schematic :- MinionSchematic]
   {:type :minion
    :name (:name schematic)
-   :mana-cost (rand-int 10)
+   :mana-cost (:mana-cost schematic)
    :id (get-next-card-id)
    :class (:class schematic :neutral)
    :attack (:attack schematic)

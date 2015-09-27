@@ -11,7 +11,6 @@
    :base-health s/Int
    :base-attack s/Int
    :modifiers [CharacterModifier]
-   ; XXX
    :type (s/enum :hero)
    :id s/Int})
 
@@ -21,7 +20,7 @@
   [hero-name hero-class]
   {:name hero-name
    :class hero-class
-   :base-health 3
+   :base-health 30
    :base-attack 0
    :modifiers []
    :type :hero

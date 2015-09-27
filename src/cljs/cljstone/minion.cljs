@@ -22,7 +22,6 @@
    :attacks-this-turn s/Int
    :attacks-per-turn s/Int
    :id s/Int
-   ; XXX
    :type (s/enum :minion)
    :modifiers [CharacterModifier]})
 

@@ -34,14 +34,20 @@
 
 (defn draw-minion-card [card]
   [:div.content
+   [:div.mana-cost
+    [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]
    [:div.attack (:attack card)]
    [:div.health (:health card)]])
 
 (defn draw-spell-card [card]
   [:div.content
+   [:div.mana-cost
+    [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]])
 
+; TODO this arglist is a mess, clean it up
+; TODO have a container div for class coloration
 (defn draw-card [card index player board-half is-owners-turn game-event-chan]
   (let [playable (and is-owners-turn
                       (>= (board-half :mana)

@@ -18,6 +18,8 @@
 (def boulderfist-card (-> all-minions :boulderfist-ogre minion-schematic->card))
 (def boulderfist-minion (-> all-minions :boulderfist-ogre (make-minion 12345)))
 
+(def goldshire-card (-> all-minions :goldshire-footman minion-schematic->card))
+
 (def three-minions-per-player-board
   (-> fresh-board
       (play-card :player-1 0)

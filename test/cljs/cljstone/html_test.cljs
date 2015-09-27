@@ -2,23 +2,24 @@
   (:require [cljs.test :refer-macros [async deftest is use-fixtures]]
             [schema.core :refer-macros [with-fn-validation]])
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:use [cljs.core.async :only [chan <! >! put!]]
+  (:use [cljs.core.async :only [chan <! >! put! timeout alts!]]
         [clojure.string :only [trim]]
         [cljstone.html :only [draw-card draw-minion-card draw-minion get-character-id-from-event draw-end-turn-button draw-board-mode]]
-        [cljstone.test-helpers :only [boulderfist-card boulderfist-minion fresh-board]]))
+        [cljstone.test-helpers :only [boulderfist-card boulderfist-minion goldshire-card fresh-board]]))
 
 (def test-board (-> fresh-board
                     (assoc :whose-turn :player-2)
+                    (assoc-in [:player-2 :mana] 1)
                     (assoc-in [:player-2 :hand 0] boulderfist-card)))
 
-(deftest drawing-cards
+(deftest draw-playable-card
   (with-fn-validation
     (let [game-event-chan (chan)
-          card (draw-card boulderfist-card 0 :player-2 true game-event-chan)
+          card (draw-card goldshire-card 0 :player-2 (test-board :player-2) true game-event-chan)
           props (nth card 1)]
       (is (= (trim (props :class)) "card neutral minion playable"))
       (is (= (props :data-card-index) 0))
-      (is (= (nth card 2) [draw-minion-card boulderfist-card]))
+      (is (= (nth card 2) [draw-minion-card goldshire-card]))
 
       ; fire a click event, test to see if something was put in game-event-chan
       ((props :on-click) 'foo)
@@ -30,6 +31,24 @@
                    :player :player-2
                    :index 0}))
            (done))))))
+
+(deftest draw-unplayable-card
+    (let [game-event-chan (chan)
+          card (draw-card boulderfist-card 0 :player-2 (test-board :player-2) true game-event-chan)
+          props (nth card 1)]
+      ; boulderfist ogre's too expensive for us to play on turn 1, so it should be unplayable
+      (is (= (trim (props :class)) "card neutral minion"))
+      (is (= (nth card 2) [draw-minion-card boulderfist-card]))
+
+      ; fire a click event, verify that game-event-chan gets no message
+      ((props :on-click) 'foo)
+
+      (async done
+         (go
+           (let [timeout-chan (timeout 100)
+                 [v c] (alts! [game-event-chan timeout-chan])]
+             (is (= c timeout-chan)))
+           (done)))))
 
 (deftest drawing-minions
   (with-fn-validation

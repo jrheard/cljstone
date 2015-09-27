@@ -330,12 +330,10 @@ h3 {
 	position: absolute;
 	bottom: 0;
 	left: 0;
-	color: red;
+	background-color: #E8A026;
+	color: white;
 	font-size: 25px;
 	font-weight: bold;
-	border: solid 1px red;
-	border-bottom: none;
-	border-left: none;
 	padding: 5px 10px;
 }
 
@@ -344,11 +342,9 @@ h3 {
 	position: absolute;
 	bottom: 0;
 	right: 0;
-	color: green;
+	background-color: #C92623;
+	color: white;
 	font-size: 25px;
 	font-weight: bold;
-	border: solid 1px green;
-	border-bottom: none;
-	border-right: none;
 	padding: 5px 10px;
 }

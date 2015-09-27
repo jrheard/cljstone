@@ -119,7 +119,8 @@
    player :- Player]
   [:div.mana-tray
    (for [i (range (board-half :mana))]
-     ^{:key [player i]} [:div.mana-crystal "💎"])])
+     ^{:key [player i]} [:div.mana-crystal-container
+                         [:div.mana-crystal]])])
 
 ; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
 ; make this more clear visually

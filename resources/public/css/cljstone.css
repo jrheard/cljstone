@@ -134,7 +134,6 @@ h3 {
 }
 
 
-
 .board-half .hand .card.mage {
 	background-color: #9BDBFF;
 }
@@ -142,7 +141,7 @@ h3 {
 .board-half .mana-tray {
 	position: absolute;
 	height: 25px;
-	width: 295px;
+	width: 291px;
 	right: 0;
 	padding-left: 3px;
 	border: solid 1px #BBB;
@@ -150,9 +149,45 @@ h3 {
 	overflow: hidden;
 }
 
-.board-half .mana-tray .mana-crystal {
-	font-size: 25px;
+.board-half .mana-tray .mana-crystal-container {
 	float: left;
+	margin-right: 4px;
+}
+
+.board-half .mana-tray .mana-crystal {
+  position: relative;
+  width: 22px;
+  height: 12.70px;
+  background-color: #5ab9db;
+  margin: 6.35px 0;
+  border-left: solid 1px #555;
+  border-right: solid 1px #555;
+}
+
+.board-half .mana-tray .mana-crystal:before,
+.board-half .mana-tray .mana-crystal:after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  width: 15.56px;
+  height: 15.56px;
+  -webkit-transform: scaleY(0.5774) rotate(-45deg);
+  -ms-transform: scaleY(0.5774) rotate(-45deg);
+  transform: scaleY(0.5774) rotate(-45deg);
+  background-color: inherit;
+  left: 2.2218px;
+}
+
+.board-half .mana-tray .mana-crystal:before {
+  top: -7.7782px;
+  border-top: solid 1.4142px #555;
+  border-right: solid 1.4142px #555;
+}
+
+.board-half .mana-tray .mana-crystal:after {
+  bottom: -7.7782px;
+  border-bottom: solid 1.4142px #555;
+  border-left: solid 1.4142px #555;
 }
 
 .board-half:nth-of-type(2) .mana-tray {

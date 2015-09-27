@@ -121,6 +121,8 @@
    (for [i (range (board-half :mana))]
      ^{:key [player i]} [:div.mana-crystal "💎"])])
 
+; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
+; make this more clear visually
 (defn draw-board-half [board player game-state]
   (let [board-half (board player)
         is-owners-turn (= (board :whose-turn) player)]

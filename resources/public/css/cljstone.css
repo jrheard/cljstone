@@ -157,6 +157,7 @@ h3 {
 
 .board-half:nth-of-type(2) .mana-tray {
 	bottom: 0;
+	border-bottom: none;
 }
 
 .board-half .body {

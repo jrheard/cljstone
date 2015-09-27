@@ -7,9 +7,9 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [get-attack get-health can-attack other-player]]
+        [cljstone.character :only [Player get-attack get-health can-attack other-player]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState
@@ -106,6 +106,13 @@
      [:div.attack (get-attack minion)]
      [:div.health (get-health minion)]]))
 
+(s/defn draw-mana-tray
+  [board-half :- BoardHalf
+   player :- Player]
+  [:div.mana-tray
+   (for [i (range (board-half :mana))]
+     ^{:key [player i]} [:div.mana-crystal "💎"])])
+
 (defn draw-board-half [board player game-state]
   (let [board-half (board player)
         is-owners-turn (= (board :whose-turn) player)]
@@ -115,8 +122,9 @@
       (for [[index card] (map-indexed vector (:hand board-half))]
         ^{:key (:id card)} [draw-card card index player is-owners-turn (game-state :game-event-chan)])]
      [:div.body
-       [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
-       [:div.minion-container
+      [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
+      [draw-mana-tray board-half player]
+      [:div.minion-container
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
 

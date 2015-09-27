@@ -84,6 +84,26 @@ h3 {
 	background-color: #9BDBFF;
 }
 
+.board-half .mana-tray {
+	position: absolute;
+	height: 25px;
+	width: 295px;
+	right: 0;
+	padding-left: 3px;
+	border: solid 1px #BBB;
+	border-right: none;
+	overflow: hidden;
+}
+
+.board-half .mana-tray .mana-crystal {
+	font-size: 25px;
+	float: left;
+}
+
+.board-half:nth-of-type(2) .mana-tray {
+	bottom: 0;
+}
+
 .board-half .body {
 	background-color: #EEE;
 	border: solid 2px #AAA;

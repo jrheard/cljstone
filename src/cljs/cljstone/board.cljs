@@ -16,6 +16,12 @@
   {:hero Hero
    :hand [Card]
    :deck [Card]
+   :mana s/Int
+   ; XXX TODO
+   ; the main thing that mana modifiers will share with character modifiers is
+   ; that they will _start_ on a turn and _expire_ on a turn, and they'll have
+   ; Effects. that's about it
+   :mana-modifiers s/Any
    :minions [Minion]})
 
 ; TODO add a :graveyard to board?
@@ -61,6 +67,21 @@
              conj
              modifier))
 
+(s/defn begin-turn :- Board
+  [board :- Board]
+  (-> board
+      (update-in [(board :whose-turn) :mana] #(if (< % 10) (inc %) %))))
+
+(s/defn end-turn :- Board
+  [board :- Board]
+  (-> board
+      (update-in [(:whose-turn board) :minions]
+                 (fn [minions]
+                   (mapv #(assoc % :attacks-this-turn 0) minions)))
+      (update-in [:turn] inc)
+      (update-in [:whose-turn] other-player)
+      begin-turn))
+
 (s/defn make-board :- Board
   [hero-1 :- Hero
    deck-1 :- [Card]
@@ -70,22 +91,15 @@
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
                            :deck (vec (drop STARTING-HAND-SIZE deck))
+                           :mana 0
+                           :mana-modifiers []
                            :minions []})]
-        {:player-1 (make-board-half hero-1 deck-1)
-         :player-2 (make-board-half hero-2 deck-2)
-         :whose-turn (rand-nth [:player-1 :player-2])
-         :turn 0
-         :mode DefaultMode
-         :combat-log []}))
-
-(s/defn end-turn :- Board
-  [board :- Board]
-  (-> board
-      (update-in [(:whose-turn board) :minions]
-                 (fn [minions]
-                   (mapv #(assoc % :attacks-this-turn 0) minions)))
-      (update-in [:turn] inc)
-      (update-in [:whose-turn] other-player)))
+        (begin-turn {:player-1 (make-board-half hero-1 deck-1)
+                     :player-2 (make-board-half hero-2 deck-2)
+                     :whose-turn (rand-nth [:player-1 :player-2])
+                     :turn 0
+                     :mode DefaultMode
+                     :combat-log []})))
 
 (s/defn run-continuation :- Board
   "Run the board's mode's continuation function. See cljstone.board-mode."

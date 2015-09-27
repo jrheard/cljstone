@@ -109,6 +109,8 @@
   (apply (get-in board [:mode :continuation])
          (concat [board] args)))
 
+; TODO *spend* mana. right now we don't do this at all.
+; also factor this into card playability in html.cljs.
 (s/defn play-card :- Board
   [board :- Board
    player :- Player

@@ -19,6 +19,12 @@
 
 (s/defschema Character
   {:id s/Int
+   ; TODO this likely indicates that this system is a good candidate for protocols
+   ; i guess the key way to start is to figure out what things vary between implementations?
+   ; what character-things are implemented differently in heroes from how they're implemented in minions?
+   ; and then you create a protocol that defines an interface that's *that* set of things
+   ; everything else is just a function that takes/returns characters, doesn't have to be part of the protocol
+   :type (s/enum :hero :minion)
    :base-health (s/conditional #(>= % 0) s/Int)
    :base-attack (s/conditional #(>= % 0) s/Int)
    :modifiers [CharacterModifier]
@@ -36,3 +42,35 @@
 (s/defn other-player :- Player
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))
+
+(s/defn sum-modifiers :- s/Int
+  [character :- Character
+   kw :- s/Keyword]
+  (apply + (map (fn [modifier]
+                  (kw (modifier :effect) 0))
+                (character :modifiers))))
+
+(s/defn get-base-attack :- s/Int
+  [character :- Character]
+  (+ (:base-attack character)
+     (sum-modifiers character :base-attack)))
+
+(s/defn get-base-health :- s/Int
+  [character :- Character]
+  (+ (:base-health character)
+     (sum-modifiers character :base-health)))
+
+(s/defn get-health :- s/Int
+  [character :- Character]
+  (+ (get-base-health character)
+     (sum-modifiers character :health)))
+
+(s/defn get-attack :- s/Int
+  [character :- Character]
+  (get-base-attack character))
+
+(s/defn can-attack :- s/Bool
+  [character :- Character]
+  (and (< (character :attacks-this-turn)
+          (character :attacks-per-turn))
+       (> (get-attack character) 0)))

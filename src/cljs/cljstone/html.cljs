@@ -7,9 +7,9 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.minion :only [get-attack get-health can-attack]]
         [cljstone.board :only [Board end-turn play-card path-to-character run-continuation]]
         [cljstone.board-mode :only [DefaultMode]]
+        [cljstone.character :only [get-attack get-health can-attack other-player]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState
@@ -23,6 +23,14 @@
       .-dataset
       .-characterId
       js/parseInt))
+
+(defn put-character-mouse-event-in-chan
+  [board mouse-event-chan event]
+  (put! mouse-event-chan {:type :mouse-event
+                          :mouse-event-type (keyword (.-type event))
+                          :board board
+                          :character-id (get-character-id-from-event event)})
+  nil)
 
 (defn draw-minion-card [card]
   [:div.content
@@ -53,9 +61,25 @@
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
 
-(defn draw-hero [hero]
-  [:div.hero
-   [:div.name (:name hero)]])
+(defn draw-hero [hero board mouse-event-chan]
+  ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
+  (let [hero-is-alive (not (and (= (get-in board [:mode :type])
+                                   :game-over)
+                                (= (other-player (get-in board [:mode :winner]))
+                                   (first (path-to-character board (:id hero))))))]
+    (if hero-is-alive
+      [:div.hero {:data-character-id (:id hero)
+                  :on-drag-over #(.preventDefault %)
+                  :on-drop (fn [e]
+                             (put-character-mouse-event-in-chan board mouse-event-chan e)
+                             (.preventDefault e)) }
+       [:div.name (:name hero)]
+       (when (> (get-attack hero) 0)
+         [:div.attack (get-attack hero)])
+       [:div.health (get-health hero)]]
+
+      [:div.hero
+         [:div.loser "X"]])))
 
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn
@@ -68,12 +92,7 @@
                              (contains? (get-in board [:mode :targets])
                                         (:id minion)))
                     " targetable"))
-        put-event-in-chan (fn [e]
-                            (put! mouse-event-chan {:type :mouse-event
-                                                    :mouse-event-type (keyword (.-type e))
-                                                    :board board
-                                                    :character-id (get-character-id-from-event e)})
-                            nil)]
+        put-event-in-chan (partial put-character-mouse-event-in-chan board mouse-event-chan)]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
@@ -96,7 +115,7 @@
       (for [[index card] (map-indexed vector (:hand board-half))]
         ^{:key (:id card)} [draw-card card index player is-owners-turn (game-state :game-event-chan)])]
      [:div.body
-       [draw-hero (:hero board-half)]
+       [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
        [:div.minion-container
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
@@ -122,15 +141,22 @@
      (for [entry combat-log]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
+(defn draw-cancel-button [board game-state button-text]
+  [:div.cancel-mode {:on-click #(do
+                                  (put! (game-state :game-event-chan) {:type :cancel-mode})
+                                  nil)}
+   button-text])
+
+(defn draw-game-over [winner]
+  [:div.game-over
+   (str "HOLY SHIT " winner " WON!!!!!!")])
+
 (defn draw-board-mode [board game-state]
-  (when (not= (board :mode) DefaultMode)
-    (let [button-text (condp = (get-in board [:mode :type])
-                        :targeting "Cancel Targeting"
-                        :positioning "Cancel Positioning")]
-      [:div.cancel-mode {:on-click #(do
-                                      (put! (game-state :game-event-chan) {:type :cancel-mode})
-                                      nil)}
-         button-text])))
+  (condp = (:type (board :mode))
+    :default nil
+    :targeting (draw-cancel-button board game-state "Cancel Targeting")
+    :positioning (draw-cancel-button board game-state "Cancel Positioning")
+    :game-over (draw-game-over (:winner (board :mode)))))
 
 (defn draw-board [game-state]
   (let [board @(game-state :board-atom)
@@ -164,9 +190,11 @@
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
-    (let [msg (<! game-event-chan)]
+    (let [msg (<! game-event-chan)
+          mode (get-in @board-atom [:mode :type])]
       ; TODO look into using core.match here
-      (if (= (get-in @board-atom [:mode :type]) :default)
+      (when (not= mode :game-over)
+        (if (= mode :default)
         (condp = (:type msg)
           :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           :play-card (swap! board-atom play-card (msg :player) (msg :index))
@@ -174,7 +202,8 @@
         ; XXX right now the only mode we support is targeting
         (condp = (:type msg)
           :character-selected (swap! board-atom run-continuation (msg :character-id))
-          :cancel-mode (swap! board-atom assoc :mode DefaultMode)))
+          :cancel-mode (swap! board-atom assoc :mode DefaultMode)
+          (recur))))
     (recur))))
 
 (defn draw-board-atom [board-atom]

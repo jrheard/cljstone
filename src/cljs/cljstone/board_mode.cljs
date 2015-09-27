@@ -1,7 +1,7 @@
 (ns cljstone.board-mode
   (:require [schema.core :as s])
   (:use [cljstone.card :only [Card]]
-        [cljstone.character :only [Character]]
+        [cljstone.character :only [Character Player]]
         [cljstone.minion :only [Minion]]))
 
 ;; Board modes.
@@ -46,6 +46,10 @@
   {:type :mulligan
    :cards [Card]
    :continuation s/Any})
+
+(s/defschema GameOverMode
+  {:type :game-over
+   :winner Player})
 
 (s/defschema BoardMode
   ; unfortunately, it's hard to encode this with schema. s/enum is only for literals,

@@ -1,5 +1,6 @@
 (ns cljstone.html
-  (:require [goog.dom :as dom]
+  (:require [cljs.core.match :refer-macros [match]]
+            [goog.dom :as dom]
             [reagent.core :as r]
             [reagent.ratom :as ratom]
             [schema.core :as s])
@@ -223,20 +224,17 @@
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
-          mode (get-in @board-atom [:mode :type])]
-      ; TODO look into using core.match here
-      (when (not= mode :game-over)
-        (if (= mode :default)
-        (condp = (:type msg)
-          :attack (swap! board-atom attack (msg :origin-id) (msg :destination-id))
-          :play-card (swap! board-atom play-card (msg :player) (msg :index))
-          :end-turn (swap! board-atom end-turn))
-        ; XXX right now the only mode we support is targeting
-        (condp = (:type msg)
-          :character-selected (swap! board-atom run-continuation (msg :character-id))
-          :cancel-mode (swap! board-atom assoc :mode DefaultMode)
-          (recur))))
-    (recur))))
+          board-mode (get-in @board-atom [:mode :type])]
+      (when (not= board-mode :game-over)
+        (match [board-mode (:type msg)]
+          [:default :attack] (swap! board-atom attack (msg :origin-id) (msg :destination-id))
+          [:default :play-card] (swap! board-atom play-card (msg :player) (msg :index))
+          [:default :end-turn] (swap! board-atom end-turn)
+          ; TODO no clause matching :targeting :play-card ?
+          [_ :character-selected] (when (not= board-mode :default)
+                                    (swap! board-atom run-continuation (msg :character-id)))
+          [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))
+        (recur)))))
 
 (defn draw-board-atom [board-atom]
   (let [game-state {:board-atom board-atom

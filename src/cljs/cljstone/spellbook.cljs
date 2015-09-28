@@ -14,6 +14,7 @@
                  ; XXXXXXXX can't cast flamecannon when opponent has an empty board!
                  ; how do we encode this?
                  ; how about a :castable -> Board -> bool predicate fn?
+                 ; currently the game crashes if you play flamecannon on an empty board
                  :effect (s/fn [board :- Board caster :- Player]
                            (when-let [minions (get-enemy-minions board caster)]
                              (cause-damage board

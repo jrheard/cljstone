@@ -337,6 +337,11 @@ h3 {
 	padding: 5px 10px;
 }
 
+.minion .attack.buffed {
+	color: #1BD919;
+	text-shadow: -1px 0 #444, 0 1px #444, 1px 0 #444, 0 -1px #444;
+}
+
 .minion .health,
 .hero .health {
 	position: absolute;
@@ -347,4 +352,14 @@ h3 {
 	font-size: 25px;
 	font-weight: bold;
 	padding: 5px 10px;
+}
+
+.minion .health.damaged {
+	color: #C92623;
+	text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+}
+
+.minion .health.buffed {
+	color: #1BD919;
+	text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
 }

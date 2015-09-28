@@ -9,7 +9,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [Player get-attack get-health can-attack other-player]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
         [cljstone.combat :only [attack]]))
 
 (s/defschema GameState
@@ -31,6 +31,16 @@
                           :board board
                           :character-id (get-character-id-from-event event)})
   nil)
+
+(s/defn draw-character-health [character :- Character]
+  (let [health (get-health character)
+        base-health (get-base-health character)
+        health-class (cond
+                       (and (= health base-health)
+                            (> base-health (character :base-health))) "buffed"
+                       (< health base-health) "damaged"
+                       :else "")]
+    [:div {:class (str "health " health-class)} health]))
 
 (defn draw-minion-card [card]
   [:div.content
@@ -84,7 +94,7 @@
        [:div.name (:name hero)]
        (when (> (get-attack hero) 0)
          [:div.attack (get-attack hero)])
-       [:div.health (get-health hero)]]
+       [draw-character-health hero]]
 
       [:div.hero
          [:div.loser "X"]])))
@@ -111,8 +121,11 @@
                       (put-event-in-chan e)
                       (.preventDefault e))}
      [:div.name (:name minion)]
-     [:div.attack (get-attack minion)]
-     [:div.health (get-health minion)]]))
+     (if (> (get-attack minion)
+            (minion :base-attack))
+       [:div.attack.buffed (get-attack minion)]
+       [:div.attack (get-attack minion)])
+     [draw-character-health minion]]))
 
 (s/defn draw-mana-tray
   [board-half :- BoardHalf

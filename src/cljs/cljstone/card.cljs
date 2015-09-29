@@ -27,5 +27,3 @@
 ; and then *that* calculated figure can have modifiers laid on top of it. so in this way, a mountain giant can have
 ; original base mana cost 12, then *calculated* base mana cost 8, and can have a {:mana-cost -1} modifier in its :modifiers list
 ; that'll give it a final calculated mana cost value of 7. i like this system, i think it can work, neat.
-
-; TODO - perhaps TargetingStrategies for battlecries/spells/attacking - minion attacking takes taunt into account, spells/battlecries don't

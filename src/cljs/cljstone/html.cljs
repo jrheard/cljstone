@@ -171,7 +171,7 @@
   (let [combat-log (:combat-log board)]
     [:div.combat-log-viewport
      [:div.combat-log
-     (for [entry combat-log]
+     (for [entry (reverse combat-log)]
        ^{:key (:id entry)} [draw-combat-log-entry board entry])]]))
 
 (defn draw-cancel-button [board game-state button-text]

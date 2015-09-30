@@ -87,8 +87,8 @@ h3 {
 
 .mana-cost {
   position: absolute;
-  top: -12px;
-  left: -12px;
+  top: -22px;
+  left: -22px;
   width: 50px;
   height: 28.87px;
   background-color: #5ab9db;
@@ -136,6 +136,24 @@ h3 {
 
 .board-half .hand .card.mage {
 	background-color: #9BDBFF;
+}
+
+.board-half .hand .card .content {
+	background-color: #EEE;
+	width: 90%;
+	height: 90%;
+	top: 10px;
+	left: 10px;
+}
+
+.board-half .hand .card .attack {
+	bottom: -10px;
+	left: -10px;
+}
+
+.board-half .hand .card .health {
+	bottom: -10px;
+	right: -10px;
 }
 
 .board-half .mana-tray {

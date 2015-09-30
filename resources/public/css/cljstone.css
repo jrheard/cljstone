@@ -144,7 +144,9 @@ h3 {
 	height: 90%;
 	top: 10px;
 	left: 10px;
+	display: table;
 }
+
 
 .board-half .hand .card .attack {
 	bottom: -10px;
@@ -234,6 +236,7 @@ h3 {
 	right: 0;
 	width: 20%;
 	height: 200px;
+	display: table;
 
 	color: #666;
 	text-align: center;
@@ -320,6 +323,7 @@ h3 {
 	height: 200px;
 	position: relative;
 	margin-right: 15px;
+	display: table;
 }
 
 .minion.can-attack,
@@ -336,7 +340,9 @@ h3 {
 
 .name {
 	color: #666;
-	line-height: 200px;
+	line-height: 20px;
+	display: table-cell;
+	vertical-align: middle;
 	text-align: center;
 	font-weight: bold;
 	font-size: 15px;

@@ -8,7 +8,7 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
         [cljstone.combat :only [attack]]))
@@ -59,7 +59,7 @@
 
 (defn draw-card [card index player board-half is-owners-turn game-event-chan]
   (let [playable (and is-owners-turn
-                      (>= (board-half :mana)
+                      (>= (:actual (get-mana board-half))
                           (:mana-cost card)))
         classes (str
                   "card "
@@ -130,8 +130,10 @@
   [board-half :- BoardHalf
    player :- Player]
   [:div.mana-tray
-   (for [i (range (board-half :mana))]
-     ^{:key [player i]} [:div.mana-crystal-container
+   (for [i (range (:max (get-mana board-half)))]
+     ^{:key [player i]} [:div {:class (str
+                                        "mana-crystal-container "
+                                        (when (>= i (:actual (get-mana board-half))) "spent"))}
                          [:div.mana-crystal]])])
 
 ; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything

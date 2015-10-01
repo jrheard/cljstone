@@ -75,4 +75,6 @@
           board (assoc-in fresh-board [:player-1 :hand 0] test-card)
           old-hand (get-in board [:player-1 :hand])]
       (is (= (play-card board :player-1 0)
-             (assoc-in fresh-board [:player-1 :hand] (subvec old-hand 1)))))))
+             (-> fresh-board
+                 (assoc-in [:player-1 :hand] (subvec old-hand 1))
+                 (update-in [:player-1 :mana-modifiers] conj -1)))))))

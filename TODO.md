@@ -1,4 +1,3 @@
-* spending mana
 * taunt
 * summoning sickness
 * freezing (i.e. modifiers that begin on a turn and expire on a turn)

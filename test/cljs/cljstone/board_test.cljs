@@ -3,7 +3,7 @@
             [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
-        [cljstone.board :only [path-to-character end-turn run-continuation play-card]]
+        [cljstone.board :only [path-to-character end-turn run-continuation play-card get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [can-attack]]
         [cljstone.combat :only [attack]]
@@ -61,6 +61,14 @@
 
   ; Can't call run-continuation on a DefaultModed board.
   (is (thrown? js/Error (run-continuation fresh-board 123))))
+
+(deftest getting-mana
+  (let [board (-> fresh-board
+                  (assoc-in [:player-1 :hand 0 :mana-cost] 4)
+                  (assoc-in [:player-1 :mana] 7)
+                  (play-card :player-1 0))]
+    (is (= {:max 7 :actual 3}
+           (get-mana (board :player-1))))))
 
 (deftest playing-cards
   ; god, i'd love to use a generator here

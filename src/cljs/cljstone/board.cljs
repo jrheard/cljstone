@@ -4,7 +4,8 @@
         [cljstone.card :only [Card]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
         [cljstone.hero :only [Hero]]
-        [cljstone.minion :only [Minion]]))
+        [cljstone.minion :only [Minion]]
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema LogEntry
   {:modifier CharacterModifier
@@ -105,10 +106,9 @@
   [board :- Board
    & args]
   {:pre (not= (board :mode) DefaultMode)}
-  (apply (get-in board [:mode :continuation])
+  (apply (safe-get-in board [:mode :continuation])
          (concat [board] args)))
 
-; TODO write tests
 (s/defn get-mana :- {:max s/Int :actual s/Int}
   [board-half :- BoardHalf]
   {:max (+ (:mana board-half)
@@ -116,15 +116,13 @@
    :actual (+ (:mana board-half)
               (apply + (:mana-modifiers board-half)))})
 
-; TODO factor spent mana into card playability in html.cljs
-
 (s/defn play-card :- Board
   [board :- Board
    player :- Player
    card-index :- s/Int]
   {:pre [(< -1
             card-index
-            (count (get-in board [player :hand])))]}
+            (count (safe-get-in board [player :hand])))]}
 
   (let [hand (-> board player :hand)
         card (nth hand card-index)

@@ -4,7 +4,8 @@
         [cljstone.card :only [Card]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
         [cljstone.hero :only [Hero]]
-        [cljstone.minion :only [Minion]]))
+        [cljstone.minion :only [Minion]]
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema LogEntry
   {:modifier CharacterModifier
@@ -17,11 +18,7 @@
    :hand [Card]
    :deck [Card]
    :mana s/Int
-   ; XXX TODO
-   ; the main thing that mana modifiers will share with character modifiers is
-   ; that they will _start_ on a turn and _expire_ on a turn, and they'll have
-   ; Effects. that's about it
-   :mana-modifiers s/Any
+   :mana-modifiers [s/Int]
    :minions [Minion]})
 
 ; TODO add a :graveyard to board?
@@ -70,6 +67,9 @@
 (s/defn begin-turn :- Board
   [board :- Board]
   (-> board
+      ; TODO - when we implement eg wild growth, will need to split this out into a standalone increment-mana function
+      ; it'll deal with eg giving you an "excess mana" card, etc
+      (assoc-in [(board :whose-turn) :mana-modifiers] [])
       (update-in [(board :whose-turn) :mana] #(if (< % 10) (inc %) %))))
 
 (s/defn end-turn :- Board
@@ -106,19 +106,27 @@
   [board :- Board
    & args]
   {:pre (not= (board :mode) DefaultMode)}
-  (apply (get-in board [:mode :continuation])
+  (apply (safe-get-in board [:mode :continuation])
          (concat [board] args)))
 
-; TODO *spend* mana. right now we don't do this at all.
-; also factor this into card playability in html.cljs.
+(s/defn get-mana :- {:max s/Int :actual s/Int}
+  [board-half :- BoardHalf]
+  {:max (+ (:mana board-half)
+           (apply + (filter pos? (:mana-modifiers board-half))))
+   :actual (+ (:mana board-half)
+              (apply + (:mana-modifiers board-half)))})
+
 (s/defn play-card :- Board
   [board :- Board
    player :- Player
    card-index :- s/Int]
   {:pre [(< -1
             card-index
-            (count (get-in board [player :hand])))]}
+            (count (safe-get-in board [player :hand])))]}
+
   (let [hand (-> board player :hand)
         card (nth hand card-index)
         new-hand (vec (remove #(= (:id %) (:id card)) hand))]
-    ((card :effect) board player new-hand)))
+    (-> board
+        (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
+        ((card :effect) player new-hand))))

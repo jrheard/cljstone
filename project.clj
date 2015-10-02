@@ -7,6 +7,7 @@
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.3.0-alpha4"]
+                 [prismatic/plumbing "0.5.0"]
                  [prismatic/schema "1.0.1"]
                  [reagent "0.5.1-rc"]]
   :plugins [[lein-cljsbuild "1.0.6"]

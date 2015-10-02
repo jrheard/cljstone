@@ -8,10 +8,11 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
-        [cljstone.combat :only [attack]]))
+        [cljstone.combat :only [attack]]
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema GameState
   {:board-atom ratom/RAtom
@@ -59,7 +60,7 @@
 
 (defn draw-card [card index player board-half is-owners-turn game-event-chan]
   (let [playable (and is-owners-turn
-                      (>= (board-half :mana)
+                      (>= (:actual (get-mana board-half))
                           (:mana-cost card)))
         classes (str
                   "card "
@@ -80,9 +81,9 @@
 
 (defn draw-hero [hero board mouse-event-chan]
   ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
-  (let [hero-is-alive (not (and (= (get-in board [:mode :type])
+  (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
                                    :game-over)
-                                (= (other-player (get-in board [:mode :winner]))
+                                (= (other-player (safe-get-in board [:mode :winner]))
                                    (first (path-to-character board (:id hero))))))]
     (if hero-is-alive
       [:div.hero {:data-character-id (:id hero)
@@ -101,12 +102,12 @@
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn
                                (can-attack minion)
-                               (= (get-in board [:mode :type]) :default))
+                               (= (safe-get-in board [:mode :type]) :default))
         classes (str
                   "minion "
                   (when minion-can-attack "can-attack")
-                  (when (and (= (get-in board [:mode :type]) :targeting)
-                             (contains? (get-in board [:mode :targets])
+                  (when (and (= (safe-get-in board [:mode :type]) :targeting)
+                             (contains? (safe-get-in board [:mode :targets])
                                         (:id minion)))
                     " targetable"))
         put-event-in-chan (partial put-character-mouse-event-in-chan board mouse-event-chan)]
@@ -130,8 +131,10 @@
   [board-half :- BoardHalf
    player :- Player]
   [:div.mana-tray
-   (for [i (range (board-half :mana))]
-     ^{:key [player i]} [:div.mana-crystal-container
+   (for [i (range (:max (get-mana board-half)))]
+     ^{:key [player i]} [:div {:class (str
+                                        "mana-crystal-container "
+                                        (when (>= i (:actual (get-mana board-half))) "spent"))}
                          [:div.mana-crystal]])])
 
 ; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
@@ -193,7 +196,7 @@
   (let [board @(game-state :board-atom)
         classes (str
                   "board "
-                  (name (get-in board [:mode :type])))]
+                  (name (safe-get-in board [:mode :type])))]
     [:div {:class classes}
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
@@ -222,7 +225,7 @@
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
-          board-mode (get-in @board-atom [:mode :type])]
+          board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
           [:default :attack] (swap! board-atom attack (msg :origin-id) (msg :destination-id))

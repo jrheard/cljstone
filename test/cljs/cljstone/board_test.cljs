@@ -63,12 +63,23 @@
   (is (thrown? js/Error (run-continuation fresh-board 123))))
 
 (deftest getting-mana
-  (let [board (-> fresh-board
-                  (assoc-in [:player-1 :hand 0 :mana-cost] 4)
-                  (assoc-in [:player-1 :mana] 7)
-                  (play-card :player-1 0))]
+  (let [make-test-board (s/fn [starting-mana :- s/Int
+                               card-costs :- [s/Int]]
+                  (let [board (assoc-in fresh-board [:player-1 :mana] starting-mana)]
+                        (reduce (fn [board cost]
+                                        (-> board
+                                            (assoc-in [:player-1 :hand 0 :mana-cost] cost)
+                                            (play-card :player-1 0)))
+                                      board
+                                      card-costs)))]
     (is (= {:max 7 :actual 3}
-           (get-mana (board :player-1))))))
+           (get-mana (:player-1 (make-test-board 7 [4])))))
+
+    (is (= {:max 5 :actual 0}
+           (get-mana (:player-1 (make-test-board 5 [2 3])))))
+
+    (is (= {:max 10 :actual 2}
+           (get-mana (:player-1 (make-test-board 10 [2 3 3])))))))
 
 (deftest playing-cards
   ; god, i'd love to use a generator here

@@ -55,6 +55,11 @@
       half-2-path (vec (concat [:player-2] half-2-path))
       :else nil)))
 
+(s/defn get-character-by-id :- Character
+  [board :- Board
+   character-id :- s/Int]
+  (safe-get-in board (path-to-character board character-id)))
+
 (s/defn add-modifier-to-character :- Board
   [board :- Board
    character-id :- s/Int

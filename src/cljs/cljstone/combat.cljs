@@ -101,5 +101,16 @@
 (s/defn get-enemy-characters :- [Character]
   [board :- Board
    player :- Player]
-  ; TODO concat the enemy hero to the result of get-enemy-minions
-  (get-enemy-minions board player))
+  (concat [(safe-get-in board [(other-player player) :hero])]
+          (get-enemy-minions board player)))
+
+(s/defn enter-targeting-mode-for-attack :- Board
+  [board :- Board
+   character-id :- s/Int]
+  (let [character-path (path-to-character board character-id)]
+    (assoc board :mode {:type :targeting
+                        :targets (apply hash-set (map :id (get-enemy-characters board (first character-path))))
+                        :continuation (fn [board target-character-id]
+                                        (-> board
+                                            (attack character-id target-character-id)
+                                            (assoc :mode {:type :default})))})))

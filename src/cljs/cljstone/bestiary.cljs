@@ -9,6 +9,9 @@
    :bloodfen-raptor {:name "Bloodfen Raptor" :attack 3 :health 2 :mana-cost 2}
    :river-crocilisk {:name "River Crocilisk" :attack 2 :health 3 :mana-cost 2}
    :shattered-sun {:name "Shattered Sun Cleric" :attack 3 :health 2 :mana-cost 3
+                   ; XXXX why ids? why make a set?
+                   ; TODO - look into whether targeting functions should return ids or Characters
+                   ; ok right. it has to be a set so that contains? will work. duh.
                    :battlecry-targeting-fn (fn [board player]
                                              (apply hash-set (map :id (get-in board [player :minions]))))
                    :battlecry (fn [board target-minion-id]

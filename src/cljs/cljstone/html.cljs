@@ -11,7 +11,7 @@
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
-        [cljstone.combat :only [attack]]
+        [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema GameState
@@ -204,22 +204,23 @@
      [draw-combat-log board]
      [draw-board-mode board game-state]]))
 
-; TODO - eventually implement click->click attacking
 (defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]
   (go-loop [origin-character-id nil]
-    (let [msg (<! mouse-event-chan)]
+    (let [msg (<! mouse-event-chan)
+          emit-selected-event (fn [mouse-event]
+                                (put! game-event-chan {:type :character-selected
+                                      :character-id (:character-id msg)}))]
       (condp = (msg :mouse-event-type)
         :click (do
-                 (>! game-event-chan {:type :character-selected
-                                      :character-id (:character-id msg)})
+                 (emit-selected-event msg)
                  (recur nil))
-        :dragstart (recur (:character-id msg))
-        :drop (do
-                (when (not= (first (path-to-character (:board msg) origin-character-id))
-                            (first (path-to-character (:board msg) (:character-id msg))))
-                  (>! game-event-chan {:type :attack
-                                       :origin-id origin-character-id
-                                       :destination-id (:character-id msg)}))
+        :dragstart (do
+                     (emit-selected-event msg)
+                     (recur (:character-id msg)))
+        :drop (do (if (= (first (path-to-character (:board msg) origin-character-id))
+                         (first (path-to-character (:board msg) (:character-id msg))))
+                    (>! game-event-chan {:type :cancel-mode})
+                    (emit-selected-event msg))
                 (recur nil))))))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
@@ -228,9 +229,9 @@
           board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
-          [:default :attack] (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           [:default :play-card] (swap! board-atom play-card (msg :player) (msg :index))
           [:default :end-turn] (swap! board-atom end-turn)
+          [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
           ; TODO at one when playing shattered sun, i got an error: "no clause matching :targeting :play-card". haven't been able to repro.
           [_ :character-selected] (when (not= board-mode :default)
                                     (swap! board-atom run-continuation (msg :character-id)))

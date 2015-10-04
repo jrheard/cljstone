@@ -35,17 +35,6 @@ h3 {
 	width: 1000px;
 }
 
-.debug {
-	position: absolute;
-	top: 0;
-	padding: 20px;
-	left: 1200px;
-	width: 500px;
-	background-color: rgba(200, 200, 200, 0.8);
-	border: solid 1px purple;
-	display: none;
-}
-
 .board {
 	width: 1800px;
 	margin: 0 auto;
@@ -232,7 +221,8 @@ h3 {
 	border-top: none;
 }
 
-.hero {
+.hero,
+.board.targeting .hero.targetable {
 	border: solid 1px #AAA;
 	margin: 0 auto;
 	position: absolute;
@@ -241,6 +231,7 @@ h3 {
 	width: 20%;
 	height: 200px;
 	display: table;
+	background-color: #EEE;
 
 	color: #666;
 	text-align: center;
@@ -308,7 +299,8 @@ h3 {
 }
 
 .board.targeting .minion,
-.board.targeting .hand .spell {
+.board.targeting .hand .spell,
+.board.targeting .hero {
 	background-color: #AAA;
 	border: solid 1px #AAA;
 }

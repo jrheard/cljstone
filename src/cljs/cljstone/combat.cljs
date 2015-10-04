@@ -111,8 +111,7 @@
         targets (if (some has-taunt? enemy-characters)
                   (filter has-taunt? enemy-characters)
                   enemy-characters)
-        target-ids (apply hash-set (map :id targets))
-        ]
+        target-ids (apply hash-set (map :id targets))]
     (assoc board :mode {:type :targeting
                         :targets target-ids
                         :continuation (fn [board target-character-id]

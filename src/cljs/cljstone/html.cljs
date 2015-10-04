@@ -16,8 +16,7 @@
 
 (s/defschema GameState
   {:board-atom ratom/RAtom
-   :game-event-chan Channel
-   :mouse-event-chan Channel})
+   :game-event-chan Channel})
 
 (defn get-character-id-from-event [event]
   (-> event
@@ -26,12 +25,10 @@
       .-characterId
       js/parseInt))
 
-(defn put-character-mouse-event-in-chan
-  [board mouse-event-chan event]
-  (put! mouse-event-chan {:type :mouse-event
-                          :mouse-event-type (keyword (.-type event))
-                          :board board
-                          :character-id (get-character-id-from-event event)})
+(defn fire-character-selected-event
+  [game-event-chan mouse-event]
+  (put! game-event-chan {:type :character-selected
+                         :character-id (get-character-id-from-event mouse-event)})
   nil)
 
 (s/defn draw-character-health [character :- Character]
@@ -79,7 +76,7 @@
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
 
-(defn draw-hero [hero board mouse-event-chan]
+(defn draw-hero [hero board game-event-chan]
   ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
   (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
                                    :game-over)
@@ -89,7 +86,7 @@
       [:div.hero {:data-character-id (:id hero)
                   :on-drag-over #(.preventDefault %)
                   :on-drop (fn [e]
-                             (put-character-mouse-event-in-chan board mouse-event-chan e)
+                             (fire-character-selected-event game-event-chan e)
                              (.preventDefault e)) }
        [:div.name (:name hero)]
        (when (> (get-attack hero) 0)
@@ -99,7 +96,7 @@
       [:div.hero
          [:div.loser "X"]])))
 
-(defn draw-minion [minion board is-owners-turn mouse-event-chan]
+(defn draw-minion [minion board is-owners-turn game-event-chan]
   (let [minion-can-attack (and is-owners-turn
                                (can-attack? minion)
                                (= (safe-get-in board [:mode :type]) :default))
@@ -111,15 +108,15 @@
                              (contains? (safe-get-in board [:mode :targets])
                                         (:id minion)))
                     " targetable"))
-        put-event-in-chan (partial put-character-mouse-event-in-chan board mouse-event-chan)]
+        fire-selected-event #(fire-character-selected-event game-event-chan %)]
     [:div {:class classes
            :data-character-id (:id minion)
            :draggable minion-can-attack
-           :on-click put-event-in-chan
-           :on-drag-start put-event-in-chan
+           :on-click fire-selected-event
+           :on-drag-start fire-selected-event
            :on-drag-over #(.preventDefault %)
            :on-drop (fn [e]
-                      (put-event-in-chan e)
+                      (fire-selected-event e)
                       (.preventDefault e))}
      [:div.name (:name minion)]
      (if (> (get-attack minion)
@@ -149,11 +146,11 @@
       (for [[index card] (map-indexed vector (:hand board-half))]
         ^{:key (:id card)} [draw-card card index player board-half is-owners-turn (game-state :game-event-chan)])]
      [:div.body
-      [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
+      [draw-hero (:hero board-half) board (game-state :game-event-chan)]
       [draw-mana-tray board-half player]
       [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
+          ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :game-event-chan)])]]]))
 
 (defn draw-end-turn-button [game-state]
   [:div.end-turn {:on-click #(do
@@ -205,25 +202,6 @@
      [draw-combat-log board]
      [draw-board-mode board game-state]]))
 
-(defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]
-  (go-loop [origin-character-id nil]
-    (let [msg (<! mouse-event-chan)
-          emit-selected-event (fn [mouse-event]
-                                (put! game-event-chan {:type :character-selected
-                                      :character-id (:character-id msg)}))]
-      (condp = (msg :mouse-event-type)
-        :click (do
-                 (emit-selected-event msg)
-                 (recur nil))
-        :dragstart (do
-                     (emit-selected-event msg)
-                     (recur nil))
-        :drop (do
-                (emit-selected-event msg)
-                (recur nil)
-                )
-        ))))
-
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
@@ -241,11 +219,9 @@
 
 (defn draw-board-atom [board-atom]
   (let [game-state {:board-atom board-atom
-                    :game-event-chan (chan)
-                    :mouse-event-chan (chan)}]
+                    :game-event-chan (chan)}]
 
     (r/render-component [draw-board game-state]
                         (js/document.getElementById "content"))
 
-    (handle-mouse-events game-state)
     (handle-game-events game-state)))

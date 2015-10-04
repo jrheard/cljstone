@@ -50,7 +50,7 @@
              (is (= c timeout-chan)))
            (done)))))
 
-(deftest drawing-minions
+#_(deftest drawing-minions
   (with-fn-validation
     (let [mouse-event-chan (chan)
           minion (draw-minion boulderfist-minion test-board true mouse-event-chan)

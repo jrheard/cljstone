@@ -13,6 +13,8 @@
    :modifiers [CharacterModifier]
    :type (s/enum :hero)
    :id s/Int})
+; TODO attacks-this-turn
+; :attacks-per-turn
 
 ; todo hero powers
 

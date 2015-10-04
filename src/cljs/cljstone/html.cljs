@@ -36,6 +36,33 @@
        (contains? (safe-get-in board [:mode :targets])
                   (:id character))))
 
+(s/defn character-properties
+  [board :- Board
+   character :- Character
+   game-event-chan]
+  (let [is-owners-turn (= (board :whose-turn)
+                          (first (path-to-character board (:id character))))
+        can-attack (and is-owners-turn
+                        (can-attack? character)
+                        (= (safe-get-in board [:mode :type]) :default))
+        can-be-selected (or can-attack
+                            (= (safe-get-in board [:mode :type]) :targeting))
+        classes (str
+                  (name (character :type))
+                  (when (is-targetable? board character) " targetable ")
+                  (when (has-taunt? character) " taunt ")
+                  (when can-attack " can-attack "))
+        fire-selected-event (partial fire-character-selected-event game-event-chan)]
+    {:class classes
+     :data-character-id (character :id)
+     :draggable can-attack
+     :on-click #(when can-be-selected (fire-selected-event %))
+     :on-drag-start #(when can-be-selected (fire-selected-event %))
+     :on-drag-over #(.preventDefault %)
+     :on-drop (fn [e]
+                (fire-selected-event e)
+                (.preventDefault e))}))
+
 (s/defn draw-character-health [character :- Character]
   (let [health (get-health character)
         base-health (get-base-health character)
@@ -82,21 +109,12 @@
        :spell [draw-spell-card card])]))
 
 (defn draw-hero [hero board game-event-chan]
-  ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
   (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
                                    :game-over)
                                 (= (other-player (safe-get-in board [:mode :winner]))
                                    (first (path-to-character board (:id hero))))))]
     (if hero-is-alive
-      [:div {:class (str
-                        "hero "
-                        (when (is-targetable? board hero) " targetable"))
-             :data-character-id (:id hero)
-             :on-click #(fire-character-selected-event game-event-chan %)
-             :on-drag-over #(.preventDefault %)
-             :on-drop (fn [e]
-                        (fire-character-selected-event game-event-chan e)
-                        (.preventDefault e))}
+      [:div (character-properties board hero game-event-chan)
        [:div.name (:name hero)]
        (when (> (get-attack hero) 0)
          [:div.attack (get-attack hero)])
@@ -106,30 +124,13 @@
          [:div.loser "X"]])))
 
 (defn draw-minion [minion board is-owners-turn game-event-chan]
-  (let [minion-can-attack (and is-owners-turn
-                               (can-attack? minion)
-                               (= (safe-get-in board [:mode :type]) :default))
-        classes (str
-                  "minion "
-                  (when minion-can-attack " can-attack ")
-                  (when (has-taunt? minion) " taunt ")
-                  (when (is-targetable? board minion) " targetable"))
-        fire-selected-event #(fire-character-selected-event game-event-chan %)]
-    [:div {:class classes
-           :data-character-id (:id minion)
-           :draggable minion-can-attack
-           :on-click fire-selected-event
-           :on-drag-start fire-selected-event
-           :on-drag-over #(.preventDefault %)
-           :on-drop (fn [e]
-                      (fire-selected-event e)
-                      (.preventDefault e))}
-     [:div.name (:name minion)]
-     (if (> (get-attack minion)
-            (minion :base-attack))
-       [:div.attack.buffed (get-attack minion)]
-       [:div.attack (get-attack minion)])
-     [draw-character-health minion]]))
+  [:div (character-properties board minion game-event-chan)
+   [:div.name (:name minion)]
+   (if (> (get-attack minion)
+          (minion :base-attack))
+     [:div.attack.buffed (get-attack minion)]
+     [:div.attack (get-attack minion)])
+   [draw-character-health minion]])
 
 (s/defn draw-mana-tray
   [board-half :- BoardHalf

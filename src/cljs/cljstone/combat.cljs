@@ -1,7 +1,7 @@
 (ns cljstone.combat
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health]]
+        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health has-taunt?]]
         [cljstone.combat-log :only [log-an-item]]
         [cljstone.minion :only [Minion]]
         [plumbing.core :only [safe-get safe-get-in]]))
@@ -63,7 +63,6 @@
    c2 :- Character]
   ; TODO eventually take divine shield into account
   {:type :attack
-   :name nil
    :effect {:health (- (get-attack c1))}})
 
 ; TODO - when we get around to implementing secrets - what if get-down is up and bloodfen raptor attacks into something, and get-down kills it?
@@ -107,10 +106,17 @@
 (s/defn enter-targeting-mode-for-attack :- Board
   [board :- Board
    character-id :- s/Int]
-  (let [character-path (path-to-character board character-id)]
+  (let [character-path (path-to-character board character-id)
+        enemy-characters (get-enemy-characters board (first character-path))
+        targets (if (some has-taunt? enemy-characters)
+                  (filter has-taunt? enemy-characters)
+                  enemy-characters)
+        target-ids (apply hash-set (map :id targets))
+        ]
     (assoc board :mode {:type :targeting
-                        :targets (apply hash-set (map :id (get-enemy-characters board (first character-path))))
+                        :targets target-ids
                         :continuation (fn [board target-character-id]
-                                        (-> board
-                                            (attack character-id target-character-id)
-                                            (assoc :mode {:type :default})))})))
+                                        (let [board (assoc board :mode {:type :default})]
+                                          (if (contains? target-ids target-character-id)
+                                            (attack board character-id target-character-id)
+                                            board)))})))

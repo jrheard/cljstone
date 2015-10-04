@@ -29,9 +29,9 @@
 
         ; combat log recorded both of those damages
         (is (= (-> board :combat-log first)
-               {:modifier {:type :attack :name nil :effect {:health -6}} :id 0 :source nil :target golem}))
+               {:modifier {:type :attack :effect {:health -6}} :id 0 :source nil :target golem}))
         (is (= (-> board :combat-log (nth 1))
-               {:modifier {:type :attack :name nil :effect {:health -7}} :id 0 :source nil :target ogre})))))
+               {:modifier {:type :attack :effect {:health -7}} :id 0 :source nil :target ogre})))))
 
   (testing "both minions kill each other"
     (let [board (-> fresh-board

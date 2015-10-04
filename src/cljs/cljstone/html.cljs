@@ -10,7 +10,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health get-base-attack has-taunt?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
@@ -101,11 +101,12 @@
 
 (defn draw-minion [minion board is-owners-turn mouse-event-chan]
   (let [minion-can-attack (and is-owners-turn
-                               (can-attack minion)
+                               (can-attack? minion)
                                (= (safe-get-in board [:mode :type]) :default))
         classes (str
                   "minion "
-                  (when minion-can-attack "can-attack")
+                  (when minion-can-attack " can-attack ")
+                  (when (has-taunt? minion) " taunt ")
                   (when (and (= (safe-get-in board [:mode :type]) :targeting)
                              (contains? (safe-get-in board [:mode :targets])
                                         (:id minion)))
@@ -216,12 +217,12 @@
                  (recur nil))
         :dragstart (do
                      (emit-selected-event msg)
-                     (recur (:character-id msg)))
-        :drop (do (if (= (first (path-to-character (:board msg) origin-character-id))
-                         (first (path-to-character (:board msg) (:character-id msg))))
-                    (>! game-event-chan {:type :cancel-mode})
-                    (emit-selected-event msg))
-                (recur nil))))))
+                     (recur nil))
+        :drop (do
+                (emit-selected-event msg)
+                (recur nil)
+                )
+        ))))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []

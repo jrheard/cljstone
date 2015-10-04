@@ -55,7 +55,7 @@
     (let [mouse-event-chan (chan)
           minion (draw-minion boulderfist-minion test-board true mouse-event-chan)
           props (nth minion 1)]
-      (is (= (trim (props :class)) "minion can-attack"))
+      (is (= (trim (props :class)) "minion  can-attack"))
       (is (= (props :data-character-id) 12345))
       (is (= (props :draggable) true))
 

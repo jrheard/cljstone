@@ -10,11 +10,12 @@
   {(s/optional-key :base-health) s/Int
    (s/optional-key :base-attack) s/Int
    (s/optional-key :health) s/Int
-   (s/optional-key :attack) s/Int})
+   (s/optional-key :attack) s/Int
+   (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
   {:type (s/enum :attack :damage-spell :buff)
-   :name (s/maybe s/Str)
+   (s/optional-key :name) s/Str
    :effect CharacterEffect})
 
 (s/defschema Character
@@ -69,8 +70,12 @@
   [character :- Character]
   (get-base-attack character))
 
-(s/defn can-attack :- s/Bool
+(s/defn can-attack? :- s/Bool
   [character :- Character]
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
        (> (get-attack character) 0)))
+
+(s/defn has-taunt? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))

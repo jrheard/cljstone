@@ -330,6 +330,11 @@ h3 {
 	display: table;
 }
 
+.board .minion-container .minion.taunt {
+	/* TODO - get some cool icons to draw on minions that have modifiers - make sure the icon set has a lightning bolt, shield, skull and crossbones */
+	background-color: pink;
+}
+
 .minion.can-attack,
 .board-half .hand .card.playable {
 	border: solid 3px #4CBB17;

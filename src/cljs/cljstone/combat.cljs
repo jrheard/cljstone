@@ -112,6 +112,9 @@
                   (filter has-taunt? enemy-characters)
                   enemy-characters)
         target-ids (apply hash-set (map :id targets))]
+    ; TODO - denote the character that's currently preparing to attack
+    ; encode this in the targeting-mode somehow?
+    ; definitely give that character a special css class so we can make it clear who's preparing to attack
     (assoc board :mode {:type :targeting
                         :targets target-ids
                         :continuation (fn [board target-character-id]

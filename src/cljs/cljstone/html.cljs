@@ -31,6 +31,11 @@
                          :character-id (get-character-id-from-event mouse-event)})
   nil)
 
+(defn is-targetable? [board character]
+  (and (= (safe-get-in board [:mode :type]) :targeting)
+       (contains? (safe-get-in board [:mode :targets])
+                  (:id character))))
+
 (s/defn draw-character-health [character :- Character]
   (let [health (get-health character)
         base-health (get-base-health character)
@@ -83,11 +88,15 @@
                                 (= (other-player (safe-get-in board [:mode :winner]))
                                    (first (path-to-character board (:id hero))))))]
     (if hero-is-alive
-      [:div.hero {:data-character-id (:id hero)
-                  :on-drag-over #(.preventDefault %)
-                  :on-drop (fn [e]
-                             (fire-character-selected-event game-event-chan e)
-                             (.preventDefault e)) }
+      [:div {:class (str
+                        "hero "
+                        (when (is-targetable? board hero) " targetable"))
+             :data-character-id (:id hero)
+             :on-click #(fire-character-selected-event game-event-chan %)
+             :on-drag-over #(.preventDefault %)
+             :on-drop (fn [e]
+                        (fire-character-selected-event game-event-chan e)
+                        (.preventDefault e))}
        [:div.name (:name hero)]
        (when (> (get-attack hero) 0)
          [:div.attack (get-attack hero)])
@@ -104,10 +113,7 @@
                   "minion "
                   (when minion-can-attack " can-attack ")
                   (when (has-taunt? minion) " taunt ")
-                  (when (and (= (safe-get-in board [:mode :type]) :targeting)
-                             (contains? (safe-get-in board [:mode :targets])
-                                        (:id minion)))
-                    " targetable"))
+                  (when (is-targetable? board minion) " targetable"))
         fire-selected-event #(fire-character-selected-event game-event-chan %)]
     [:div {:class classes
            :data-character-id (:id minion)

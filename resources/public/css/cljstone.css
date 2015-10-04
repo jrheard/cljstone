@@ -342,7 +342,8 @@ h3 {
 
 .minion.can-attack:hover,
 .board-half .hand .card.playable:hover,
-.board.targeting .minion.targetable:hover {
+.board.targeting .minion.targetable:hover,
+.board.targeting .hero.targetable:hover {
 	background-color: #CCC;
 	cursor: pointer;
 }

@@ -1,6 +1,5 @@
 * taunt
   * write tests for taunt
-  * get a shield icon for taunt
   * shore up html.cljs tests in general
 
 * summoning sickness

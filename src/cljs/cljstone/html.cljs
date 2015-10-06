@@ -225,12 +225,12 @@
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
           [:default :play-card] (swap! board-atom play-card (msg :player) (msg :index))
-          ; TODO - no matching clause :targeting :end-turn
-          [:default :end-turn] (swap! board-atom end-turn)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
           ; TODO at one when playing shattered sun, i got an error: "no clause matching :targeting :play-card". haven't been able to repro.
           [:targeting :character-selected] (when (contains? (safe-get-in @board-atom [:mode :targets]) (msg :character-id))
                                             (swap! board-atom run-continuation (msg :character-id)))
+          [_ :end-turn] (when (= board-mode :default)
+                          (swap! board-atom end-turn))
           [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))
         (recur)))))
 

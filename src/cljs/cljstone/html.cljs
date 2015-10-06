@@ -219,8 +219,8 @@
           [:default :end-turn] (swap! board-atom end-turn)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
           ; TODO at one when playing shattered sun, i got an error: "no clause matching :targeting :play-card". haven't been able to repro.
-          [:targeting :character-selected] (when (not= (contains? (safe-get-in @board-atom [:mode :targets]) (msg :character-id)))
-                                    (swap! board-atom run-continuation (msg :character-id)))
+          [:targeting :character-selected] (when (contains? (safe-get-in @board-atom [:mode :targets]) (msg :character-id))
+                                            (swap! board-atom run-continuation (msg :character-id)))
           [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))
         (recur)))))
 

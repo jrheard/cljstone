@@ -18,7 +18,7 @@
    (s/optional-key :name) s/Str
    :effect CharacterEffect})
 
-; TODO attacks-this-turn, attacks-perpturn
+; TODO attacks-this-turn, attacks-per-turn
 
 (s/defschema Character
   {:id s/Int

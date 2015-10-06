@@ -7,6 +7,7 @@
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [can-attack?]]
         [cljstone.combat :only [attack]]
+        [cljstone.minion :only [MinionSchematic minion-schematic->card]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
 
@@ -62,13 +63,18 @@
   ; Can't call run-continuation on a DefaultModed board.
   (is (thrown? js/Error (run-continuation fresh-board 123))))
 
+(s/defn find-simple-minion-with-mana-cost :- MinionSchematic
+  [mana-cost :- s/Int]
+  (first
+    (filter #(= (% :mana-cost) mana-cost) (vals all-minions))))
+
 (deftest getting-mana
   (let [make-test-board (s/fn [starting-mana :- s/Int
                                card-costs :- [s/Int]]
                   (let [board (assoc-in fresh-board [:player-1 :mana] starting-mana)]
                         (reduce (fn [board cost]
                                         (-> board
-                                            (assoc-in [:player-1 :hand 0 :mana-cost] cost)
+                                            (assoc-in [:player-1 :hand 0] (minion-schematic->card (find-simple-minion-with-mana-cost cost)))
                                             (play-card :player-1 0)))
                                       board
                                       card-costs)))]
@@ -94,6 +100,4 @@
           board (assoc-in fresh-board [:player-1 :hand 0] test-card)
           old-hand (get-in board [:player-1 :hand])]
       (is (= (play-card board :player-1 0)
-             (-> fresh-board
-                 (assoc-in [:player-1 :hand] (subvec old-hand 1))
-                 (update-in [:player-1 :mana-modifiers] conj -1)))))))
+             (assoc-in fresh-board [:player-1 :hand] (subvec old-hand 1)))))))

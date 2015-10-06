@@ -95,7 +95,7 @@
   (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
-                           :deck (vec (drop STARTING-HAND-SIZE deck))
+                           :deck []; (vec (drop STARTING-HAND-SIZE deck))
                            :mana 0
                            :mana-modifiers []
                            :minions []})]

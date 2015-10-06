@@ -22,6 +22,7 @@
    :chillwind-yeti {:name "Chillwind Yeti" :attack 4 :health 5 :mana-cost 4}
    :senjin-shieldmasta {:name "Sen'Jin Shieldmasta" :attack 3 :health 5 :mana-cost 4 :modifiers [{:type :buff :effect {:taunt true}}]}
    :oasis-snapjaw {:name "Oasis Snapjaw" :attack 2 :health 7 :mana-cost 4}
+   :pit-fighter {:name "Pit Fighter" :attack 5 :health 6 :mana-cost 5}
    :boulderfist-ogre {:name "Boulderfist Ogre" :attack 6 :health 7 :mana-cost 6}
    :war-golem {:name "War Golem" :attack 7 :health 7 :mana-cost 7}})
 

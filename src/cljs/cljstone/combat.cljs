@@ -103,6 +103,8 @@
   (concat [(safe-get-in board [(other-player player) :hero])]
           (get-enemy-minions board player)))
 
+; TODO - is there a compelling reason why we're dealing with ids here instead of Characters?
+; TODO - take a look at all functions that deal with ids and see if they should be dealing with Charaters instead
 (s/defn enter-targeting-mode-for-attack :- Board
   [board :- Board
    character-id :- s/Int]
@@ -112,11 +114,9 @@
                   (filter has-taunt? enemy-characters)
                   enemy-characters)
         target-ids (apply hash-set (map :id targets))]
-    ; TODO - denote the character that's currently preparing to attack
-    ; encode this in the targeting-mode somehow?
-    ; definitely give that character a special css class so we can make it clear who's preparing to attack
     (assoc board :mode {:type :targeting
                         :targets target-ids
+                        :attacker (safe-get-in board character-path)
                         :continuation (fn [board target-character-id]
                                         (-> board
                                             (assoc :mode {:type :default})

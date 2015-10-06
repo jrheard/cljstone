@@ -36,21 +36,24 @@
        (contains? (safe-get-in board [:mode :targets])
                   (:id character))))
 
-; TODO - if the character is currently attacking, draw it special (yellow or something)
 (s/defn character-properties
   [board :- Board
    character :- Character
    game-event-chan]
-  (let [is-owners-turn (= (board :whose-turn)
+  (let [board-mode-type (safe-get-in board [:mode :type])
+        is-owners-turn (= (board :whose-turn)
                           (first (path-to-character board (:id character))))
         can-attack (and is-owners-turn
                         (can-attack? character)
-                        (= (safe-get-in board [:mode :type]) :default))
+                        (= board-mode-type :default))
         can-be-selected (or can-attack
-                            (= (safe-get-in board [:mode :type]) :targeting))
+                            (= board-mode-type :targeting))
+        is-attacking (and (= board-mode-type :targeting)
+                          (= character (safe-get-in board [:mode :attacker])))
         classes (str
                   (name (character :type))
                   (when (is-targetable? board character) " targetable ")
+                  (when is-attacking " attacker ")
                   (when can-attack " can-attack "))
         fire-selected-event (partial fire-character-selected-event game-event-chan)]
     {:class classes

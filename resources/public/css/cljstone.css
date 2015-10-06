@@ -277,6 +277,10 @@ h3 {
 	cursor: default;
 }
 
+.board.targeting .board-half .attacker {
+	background-color: #FFFC00;
+}
+
 .minion,
 .board.targeting .minion.targetable {
 	border: solid 1px #AAA;

@@ -36,6 +36,7 @@
        (contains? (safe-get-in board [:mode :targets])
                   (:id character))))
 
+; TODO - if the character is currently attacking, draw it special (yellow or something)
 (s/defn character-properties
   [board :- Board
    character :- Character
@@ -50,7 +51,6 @@
         classes (str
                   (name (character :type))
                   (when (is-targetable? board character) " targetable ")
-                  (when (has-taunt? character) " taunt ")
                   (when can-attack " can-attack "))
         fire-selected-event (partial fire-character-selected-event game-event-chan)]
     {:class classes
@@ -130,6 +130,15 @@
           (minion :base-attack))
      [:div.attack.buffed (get-attack minion)]
      [:div.attack (get-attack minion)])
+   ; XXXX - weapons have deathrattles and powers too, so split this out into something that's reusable for them
+   [:div.minion-attributes
+    (when (has-taunt? minion)
+      [:i {:class "fa fa-shield fa-2x"}])
+    ; TODO - user-times for deathrattles
+    ; flash for powers/abilities
+    ; what for stealth?
+    ; what for divine shield?
+    ]
    [draw-character-health minion]])
 
 (s/defn draw-mana-tray
@@ -140,7 +149,7 @@
      ^{:key [player i]} [:div {:class (str
                                         "mana-crystal-container "
                                         (when (>= i (:actual (get-mana board-half))) "spent"))}
-                         [:div.mana-crystal]])])
+                         [:i {:class "fa fa-diamond"}]])])
 
 ; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
 ; make this more clear visually
@@ -216,6 +225,7 @@
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
           [:default :play-card] (swap! board-atom play-card (msg :player) (msg :index))
+          ; TODO - no matching clause :targeting :end-turn
           [:default :end-turn] (swap! board-atom end-turn)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
           ; TODO at one when playing shattered sun, i got an error: "no clause matching :targeting :play-card". haven't been able to repro.

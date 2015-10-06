@@ -118,7 +118,6 @@
     (assoc board :mode {:type :targeting
                         :targets target-ids
                         :continuation (fn [board target-character-id]
-                                        (let [board (assoc board :mode {:type :default})]
-                                          (if (contains? target-ids target-character-id)
-                                            (attack board character-id target-character-id)
-                                            board)))})))
+                                        (-> board
+                                            (assoc :mode {:type :default})
+                                            (attack character-id target-character-id)))})))

@@ -60,10 +60,9 @@
   [board
    player :- Player
    schematic :- MinionSchematic]
-  (update-in board
-             [player :minions]
-             conj
-             (make-minion schematic (get-next-character-id))))
+  (-> board
+      (update-in [player :minions] conj (make-minion schematic (get-next-character-id)))
+      (update-in [player :mana-modifiers] conj (- (:mana-cost schematic)))))
 
 (s/defn minion-schematic->card :- Card
   [schematic :- MinionSchematic]

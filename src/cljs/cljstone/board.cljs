@@ -132,6 +132,4 @@
   (let [hand (-> board player :hand)
         card (nth hand card-index)
         new-hand (vec (remove #(= (:id %) (:id card)) hand))]
-    (-> board
-        (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
-        ((card :effect) player new-hand))))
+    ((card :effect) board player new-hand)))

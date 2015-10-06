@@ -18,4 +18,5 @@
          (fn [board player new-hand]
            (-> board
                ((spell :effect) player)
+               (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
                (assoc-in [player :hand] new-hand)))))

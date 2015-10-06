@@ -10,20 +10,18 @@
   {(s/optional-key :base-health) s/Int
    (s/optional-key :base-attack) s/Int
    (s/optional-key :health) s/Int
-   (s/optional-key :attack) s/Int})
+   (s/optional-key :attack) s/Int
+   (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
   {:type (s/enum :attack :damage-spell :buff)
-   :name (s/maybe s/Str)
+   (s/optional-key :name) s/Str
    :effect CharacterEffect})
+
+; TODO attacks-this-turn, attacks-perpturn
 
 (s/defschema Character
   {:id s/Int
-   ; TODO this likely indicates that this system is a good candidate for protocols
-   ; i guess the key way to start is to figure out what things vary between implementations?
-   ; what character-things are implemented differently in heroes from how they're implemented in minions?
-   ; and then you create a protocol that defines an interface that's *that* set of things
-   ; everything else is just a function that takes/returns characters, doesn't have to be part of the protocol
    :type (s/enum :hero :minion)
    :base-health (s/conditional #(>= % 0) s/Int)
    :base-attack (s/conditional #(>= % 0) s/Int)
@@ -69,8 +67,12 @@
   [character :- Character]
   (get-base-attack character))
 
-(s/defn can-attack :- s/Bool
+(s/defn can-attack? :- s/Bool
   [character :- Character]
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
        (> (get-attack character) 0)))
+
+(s/defn has-taunt? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))

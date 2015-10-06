@@ -35,7 +35,8 @@
 
 (s/defschema TargetingMode
   {:type :targeting
-   :targets [Character]
+   :targets [Character] ; XXXX this is currently a set of ids!!!!!!!!
+   (s/optional-key :attacker) Character
    ; choose-one mode will also have an optional positioning-info
    ; this is because minions can be positioned and can then have targetable battlecries or choose-ones
    (s/optional-key :positioning-info) {:minion Minion

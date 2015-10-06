@@ -5,8 +5,9 @@
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [path-to-character end-turn run-continuation play-card get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [can-attack]]
+        [cljstone.character :only [can-attack?]]
         [cljstone.combat :only [attack]]
+        [cljstone.minion :only [MinionSchematic minion-schematic->card]]
         [cljstone.test-helpers :only [hero-1 hero-2 fresh-board three-minions-per-player-board]]
         [schema.test :only [validate-schemas]]))
 
@@ -39,15 +40,15 @@
                     (assoc-in [:player-1 :minions 0] (m/make-minion (:river-crocilisk all-minions) 123))
                     (assoc-in [:player-2 :minions 0] (m/make-minion (:river-crocilisk all-minions) 234)))]
       ; player 1 and player 2 each have a river croc.
-      (is (= true (can-attack (get-in board [:player-1 :minions 0]))))
+      (is (= true (can-attack? (get-in board [:player-1 :minions 0]))))
 
       (let [board (attack board 123 234)]
         ; player 1's croc attacks player 2's croc; it can only attack once per turn, so it can't attack again.
-        (is (= false (can-attack (get-in board [:player-1 :minions 0]))))
+        (is (= false (can-attack? (get-in board [:player-1 :minions 0]))))
 
         (let [board (end-turn board)]
           ; once player 1 hits "end turn", though, the croc can attack again the next time it's p1's turn.
-          (is (= true (can-attack (get-in board [:player-1 :minions 0])))))))))
+          (is (= true (can-attack? (get-in board [:player-1 :minions 0])))))))))
 
 (deftest running-continuations
   (let [board (assoc fresh-board :mode {:type :targeting
@@ -62,13 +63,18 @@
   ; Can't call run-continuation on a DefaultModed board.
   (is (thrown? js/Error (run-continuation fresh-board 123))))
 
+(s/defn find-simple-minion-with-mana-cost :- MinionSchematic
+  [mana-cost :- s/Int]
+  (first
+    (filter #(= (% :mana-cost) mana-cost) (vals all-minions))))
+
 (deftest getting-mana
   (let [make-test-board (s/fn [starting-mana :- s/Int
                                card-costs :- [s/Int]]
                   (let [board (assoc-in fresh-board [:player-1 :mana] starting-mana)]
                         (reduce (fn [board cost]
                                         (-> board
-                                            (assoc-in [:player-1 :hand 0 :mana-cost] cost)
+                                            (assoc-in [:player-1 :hand 0] (minion-schematic->card (find-simple-minion-with-mana-cost cost)))
                                             (play-card :player-1 0)))
                                       board
                                       card-costs)))]
@@ -94,6 +100,4 @@
           board (assoc-in fresh-board [:player-1 :hand 0] test-card)
           old-hand (get-in board [:player-1 :hand])]
       (is (= (play-card board :player-1 0)
-             (-> fresh-board
-                 (assoc-in [:player-1 :hand] (subvec old-hand 1))
-                 (update-in [:player-1 :mana-modifiers] conj -1)))))))
+             (assoc-in fresh-board [:player-1 :hand] (subvec old-hand 1)))))))

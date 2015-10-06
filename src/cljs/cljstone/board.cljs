@@ -55,6 +55,11 @@
       half-2-path (vec (concat [:player-2] half-2-path))
       :else nil)))
 
+(s/defn get-character-by-id :- Character
+  [board :- Board
+   character-id :- s/Int]
+  (safe-get-in board (path-to-character board character-id)))
+
 (s/defn add-modifier-to-character :- Board
   [board :- Board
    character-id :- s/Int
@@ -90,7 +95,7 @@
   (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
-                           :deck (vec (drop STARTING-HAND-SIZE deck))
+                           :deck []; (vec (drop STARTING-HAND-SIZE deck))
                            :mana 0
                            :mana-modifiers []
                            :minions []})]
@@ -127,6 +132,4 @@
   (let [hand (-> board player :hand)
         card (nth hand card-index)
         new-hand (vec (remove #(= (:id %) (:id card)) hand))]
-    (-> board
-        (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
-        ((card :effect) player new-hand))))
+    ((card :effect) board player new-hand)))

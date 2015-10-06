@@ -52,31 +52,28 @@
 
 (deftest drawing-minions
   (with-fn-validation
-    (let [mouse-event-chan (chan)
-          minion (draw-minion boulderfist-minion test-board true mouse-event-chan)
+    (let [game-event-chan (chan)
+          board (update-in test-board [:player-2 :minions] conj boulderfist-minion)
+          minion (draw-minion boulderfist-minion board true game-event-chan)
           props (nth minion 1)]
       (is (= (trim (props :class)) "minion can-attack"))
       (is (= (props :data-character-id) 12345))
       (is (= (props :draggable) true))
 
-      (let [fake-mouse-event (clj->js {"type" "foo"
-                                       "preventDefault" (fn [])})]
+      (let [fake-mouse-event (clj->js {"preventDefault" (fn [])})]
         ; fire all of the mouse events we support, verify that correct-looking events are emitted
         (with-redefs [get-character-id-from-event (fn [e] 12345)]
           ((props :on-click) fake-mouse-event)
           ((props :on-drag-start) fake-mouse-event)
-          ; on-drag-over just calls .preventDefault, doesn't put anything in mouse-event-chan
+          ; on-drag-over just calls .preventDefault, doesn't put anything in game-event-chan
           ((props :on-drag-over) fake-mouse-event)
           ((props :on-drop) fake-mouse-event)
 
           (async done
             (go
               (doseq [i (range 3)]
-                (is (= (<! mouse-event-chan)
-                       {:type :mouse-event
-                        :mouse-event-type :foo
-                        :board test-board
-                        :character-id 12345})))
+                (is (= (<! game-event-chan)
+                       {:type :character-selected :character-id 12345})))
               (done))))))))
 
 (deftest drawing-end-turn-button
@@ -112,5 +109,3 @@
           (is (= (<! game-event-chan)
                  {:type :cancel-mode}))
           (done))))))
-
-(deftest handling-mouse-events)

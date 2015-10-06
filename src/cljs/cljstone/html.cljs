@@ -10,14 +10,13 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [Character Player get-attack get-health can-attack other-player get-base-health get-base-attack]]
-        [cljstone.combat :only [attack]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health get-base-attack has-taunt?]]
+        [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema GameState
   {:board-atom ratom/RAtom
-   :game-event-chan Channel
-   :mouse-event-chan Channel})
+   :game-event-chan Channel})
 
 (defn get-character-id-from-event [event]
   (-> event
@@ -26,13 +25,46 @@
       .-characterId
       js/parseInt))
 
-(defn put-character-mouse-event-in-chan
-  [board mouse-event-chan event]
-  (put! mouse-event-chan {:type :mouse-event
-                          :mouse-event-type (keyword (.-type event))
-                          :board board
-                          :character-id (get-character-id-from-event event)})
+(defn fire-character-selected-event
+  [game-event-chan mouse-event]
+  (put! game-event-chan {:type :character-selected
+                         :character-id (get-character-id-from-event mouse-event)})
   nil)
+
+(defn is-targetable? [board character]
+  (and (= (safe-get-in board [:mode :type]) :targeting)
+       (contains? (safe-get-in board [:mode :targets])
+                  (:id character))))
+
+(s/defn character-properties
+  [board :- Board
+   character :- Character
+   game-event-chan]
+  (let [board-mode-type (safe-get-in board [:mode :type])
+        is-owners-turn (= (board :whose-turn)
+                          (first (path-to-character board (:id character))))
+        can-attack (and is-owners-turn
+                        (can-attack? character)
+                        (= board-mode-type :default))
+        can-be-selected (or can-attack
+                            (= board-mode-type :targeting))
+        is-attacking (and (= board-mode-type :targeting)
+                          (= character (safe-get-in board [:mode :attacker])))
+        classes (str
+                  (name (character :type))
+                  (when (is-targetable? board character) " targetable ")
+                  (when is-attacking " attacker ")
+                  (when can-attack " can-attack "))
+        fire-selected-event (partial fire-character-selected-event game-event-chan)]
+    {:class classes
+     :data-character-id (character :id)
+     :draggable can-attack
+     :on-click #(when can-be-selected (fire-selected-event %))
+     :on-drag-start #(when can-be-selected (fire-selected-event %))
+     :on-drag-over #(.preventDefault %)
+     :on-drop (fn [e]
+                (fire-selected-event e)
+                (.preventDefault e))}))
 
 (s/defn draw-character-health [character :- Character]
   (let [health (get-health character)
@@ -79,18 +111,13 @@
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
 
-(defn draw-hero [hero board mouse-event-chan]
-  ; TODO have a (character-props character) function that spits out the k/v pairs used by both heroes and minions
+(defn draw-hero [hero board game-event-chan]
   (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
                                    :game-over)
                                 (= (other-player (safe-get-in board [:mode :winner]))
                                    (first (path-to-character board (:id hero))))))]
     (if hero-is-alive
-      [:div.hero {:data-character-id (:id hero)
-                  :on-drag-over #(.preventDefault %)
-                  :on-drop (fn [e]
-                             (put-character-mouse-event-in-chan board mouse-event-chan e)
-                             (.preventDefault e)) }
+      [:div (character-properties board hero game-event-chan)
        [:div.name (:name hero)]
        (when (> (get-attack hero) 0)
          [:div.attack (get-attack hero)])
@@ -99,33 +126,23 @@
       [:div.hero
          [:div.loser "X"]])))
 
-(defn draw-minion [minion board is-owners-turn mouse-event-chan]
-  (let [minion-can-attack (and is-owners-turn
-                               (can-attack minion)
-                               (= (safe-get-in board [:mode :type]) :default))
-        classes (str
-                  "minion "
-                  (when minion-can-attack "can-attack")
-                  (when (and (= (safe-get-in board [:mode :type]) :targeting)
-                             (contains? (safe-get-in board [:mode :targets])
-                                        (:id minion)))
-                    " targetable"))
-        put-event-in-chan (partial put-character-mouse-event-in-chan board mouse-event-chan)]
-    [:div {:class classes
-           :data-character-id (:id minion)
-           :draggable minion-can-attack
-           :on-click put-event-in-chan
-           :on-drag-start put-event-in-chan
-           :on-drag-over #(.preventDefault %)
-           :on-drop (fn [e]
-                      (put-event-in-chan e)
-                      (.preventDefault e))}
-     [:div.name (:name minion)]
-     (if (> (get-attack minion)
-            (minion :base-attack))
-       [:div.attack.buffed (get-attack minion)]
-       [:div.attack (get-attack minion)])
-     [draw-character-health minion]]))
+(defn draw-minion [minion board is-owners-turn game-event-chan]
+  [:div (character-properties board minion game-event-chan)
+   [:div.name (:name minion)]
+   (if (> (get-attack minion)
+          (minion :base-attack))
+     [:div.attack.buffed (get-attack minion)]
+     [:div.attack (get-attack minion)])
+   ; XXXX - weapons have deathrattles and powers too, so split this out into something that's reusable for them
+   [:div.minion-attributes
+    (when (has-taunt? minion)
+      [:i {:class "fa fa-shield fa-2x"}])
+    ; TODO - user-times for deathrattles
+    ; flash for powers/abilities
+    ; what for stealth?
+    ; what for divine shield?
+    ]
+   [draw-character-health minion]])
 
 (s/defn draw-mana-tray
   [board-half :- BoardHalf
@@ -135,7 +152,7 @@
      ^{:key [player i]} [:div {:class (str
                                         "mana-crystal-container "
                                         (when (>= i (:actual (get-mana board-half))) "spent"))}
-                         [:div.mana-crystal]])])
+                         [:i {:class "fa fa-diamond"}]])])
 
 ; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
 ; make this more clear visually
@@ -148,11 +165,11 @@
       (for [[index card] (map-indexed vector (:hand board-half))]
         ^{:key (:id card)} [draw-card card index player board-half is-owners-turn (game-state :game-event-chan)])]
      [:div.body
-      [draw-hero (:hero board-half) board (game-state :mouse-event-chan)]
+      [draw-hero (:hero board-half) board (game-state :game-event-chan)]
       [draw-mana-tray board-half player]
       [:div.minion-container
         (for [minion (:minions board-half)]
-          ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :mouse-event-chan)])]]]))
+          ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :game-event-chan)])]]]))
 
 (defn draw-end-turn-button [game-state]
   [:div.end-turn {:on-click #(do
@@ -204,46 +221,27 @@
      [draw-combat-log board]
      [draw-board-mode board game-state]]))
 
-; TODO - eventually implement click->click attacking
-(defn handle-mouse-events [{:keys [mouse-event-chan game-event-chan]}]
-  (go-loop [origin-character-id nil]
-    (let [msg (<! mouse-event-chan)]
-      (condp = (msg :mouse-event-type)
-        :click (do
-                 (>! game-event-chan {:type :character-selected
-                                      :character-id (:character-id msg)})
-                 (recur nil))
-        :dragstart (recur (:character-id msg))
-        :drop (do
-                (when (not= (first (path-to-character (:board msg) origin-character-id))
-                            (first (path-to-character (:board msg) (:character-id msg))))
-                  (>! game-event-chan {:type :attack
-                                       :origin-id origin-character-id
-                                       :destination-id (:character-id msg)}))
-                (recur nil))))))
-
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
           board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
-          [:default :attack] (swap! board-atom attack (msg :origin-id) (msg :destination-id))
           [:default :play-card] (swap! board-atom play-card (msg :player) (msg :index))
-          [:default :end-turn] (swap! board-atom end-turn)
+          [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
           ; TODO at one when playing shattered sun, i got an error: "no clause matching :targeting :play-card". haven't been able to repro.
-          [_ :character-selected] (when (not= board-mode :default)
-                                    (swap! board-atom run-continuation (msg :character-id)))
+          [:targeting :character-selected] (when (contains? (safe-get-in @board-atom [:mode :targets]) (msg :character-id))
+                                            (swap! board-atom run-continuation (msg :character-id)))
+          [_ :end-turn] (when (= board-mode :default)
+                          (swap! board-atom end-turn))
           [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))
         (recur)))))
 
 (defn draw-board-atom [board-atom]
   (let [game-state {:board-atom board-atom
-                    :game-event-chan (chan)
-                    :mouse-event-chan (chan)}]
+                    :game-event-chan (chan)}]
 
     (r/render-component [draw-board game-state]
                         (js/document.getElementById "content"))
 
-    (handle-mouse-events game-state)
     (handle-game-events game-state)))

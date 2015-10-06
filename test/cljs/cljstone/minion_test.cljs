@@ -17,13 +17,13 @@
                      :boulderfist-ogre
                      (make-minion 123)
                      (update-in [:modifiers] conj {:type :buff :name "foo" :effect {:base-health 1}})
-                     (update-in [:modifiers] conj {:type :attack :name nil :effect {:health -2}}))]
+                     (update-in [:modifiers] conj {:type :attack :effect {:health -2}}))]
       (is (= (get-health minion) 6))))
 
   (testing "health after a couple of attacks"
     (let [minion (-> all-minions
                      :boulderfist-ogre
                      (make-minion 123)
-                     (update-in [:modifiers] conj {:type :attack :name nil :effect {:health -2}})
-                     (update-in [:modifiers] conj {:type :attack :name nil :effect {:health -3}}))]
+                     (update-in [:modifiers] conj {:type :attack :effect {:health -2}})
+                     (update-in [:modifiers] conj {:type :attack :effect {:health -3}}))]
       (is (= (get-health minion) 2)))))

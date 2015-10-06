@@ -1,7 +1,7 @@
 (ns cljstone.combat
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health]]
+        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health has-taunt?]]
         [cljstone.combat-log :only [log-an-item]]
         [cljstone.minion :only [Minion]]
         [plumbing.core :only [safe-get safe-get-in]]))
@@ -63,7 +63,6 @@
    c2 :- Character]
   ; TODO eventually take divine shield into account
   {:type :attack
-   :name nil
    :effect {:health (- (get-attack c1))}})
 
 ; TODO - when we get around to implementing secrets - what if get-down is up and bloodfen raptor attacks into something, and get-down kills it?
@@ -101,5 +100,24 @@
 (s/defn get-enemy-characters :- [Character]
   [board :- Board
    player :- Player]
-  ; TODO concat the enemy hero to the result of get-enemy-minions
-  (get-enemy-minions board player))
+  (concat [(safe-get-in board [(other-player player) :hero])]
+          (get-enemy-minions board player)))
+
+; TODO - is there a compelling reason why we're dealing with ids here instead of Characters?
+; TODO - take a look at all functions that deal with ids and see if they should be dealing with Charaters instead
+(s/defn enter-targeting-mode-for-attack :- Board
+  [board :- Board
+   character-id :- s/Int]
+  (let [character-path (path-to-character board character-id)
+        enemy-characters (get-enemy-characters board (first character-path))
+        targets (if (some has-taunt? enemy-characters)
+                  (filter has-taunt? enemy-characters)
+                  enemy-characters)
+        target-ids (apply hash-set (map :id targets))]
+    (assoc board :mode {:type :targeting
+                        :targets target-ids
+                        :attacker (safe-get-in board character-path)
+                        :continuation (fn [board target-character-id]
+                                        (-> board
+                                            (assoc :mode {:type :default})
+                                            (attack character-id target-character-id)))})))

@@ -18,7 +18,7 @@
                  :effect (s/fn [board :- Board caster :- Player]
                            (when-let [minions (get-enemy-minions board caster)]
                              (cause-damage board
-                                           (:id (rand-nth minions))
+                                           (rand-nth minions)
                                            {:type :damage-spell
                                             :name "Flamecannon"
                                             :effect {:health -4}})))}
@@ -33,7 +33,7 @@
                                ; can't think of any reason why not
                                (nth (iterate (fn [board]
                                               (cause-damage board
-                                                            (:id (rand-nth (get-enemy-characters board caster)))
+                                                            (rand-nth (get-enemy-characters board caster))
                                                             {:type :damage-spell
                                                              :name "Arcane Missiles"
                                                              :effect {:health -1}}))

@@ -43,13 +43,13 @@
 
 (s/defn cause-damage :- Board
   [board :- Board
-   character-id :- s/Int
+   character :- Character
    modifier :- CharacterModifier
    ; delay-death - if True, does *not* trim dead characters from the board after damage has been caused.
    ; Used when two characters are attacking each other - if two magma ragers fight each other, neither should
    ; die until both sides of the attack are complete, at which point both should die. Used by (attack).
    & [delay-death]]
-  (let [character-path (path-to-character board character-id)
+  (let [character-path (path-to-character board (:id character))
         modifiers-path (conj character-path :modifiers)]
     (let [board (-> board
                     (update-in modifiers-path conj modifier)
@@ -71,17 +71,13 @@
 ; on-before-attack could also work for eg explosive trap, lets you kill the minion before it actually causes any damage
 (s/defn attack :- Board
   [board :- Board
-   attacker-id :- s/Int
-   defender-id :- s/Int]
-  (let [[attacker defender] (map #(->> %
-                                       (path-to-character board)
-                                       (safe-get-in board))
-                                 [attacker-id defender-id])]
-    (-> board
-        (cause-damage defender-id (create-attack-modifier attacker defender) true)
-        (cause-damage attacker-id (create-attack-modifier defender attacker) true)
-        (update-in (conj (path-to-character board attacker-id) :attacks-this-turn) inc)
-        (#(reduce process-death % (find-dead-characters-in-board %))))))
+   attacker :- Character
+   defender :- Character]
+  (-> board
+      (cause-damage defender (create-attack-modifier attacker defender) true)
+      (cause-damage attacker (create-attack-modifier defender attacker) true)
+      (update-in (conj (path-to-character board (:id attacker)) :attacks-this-turn) inc)
+      (#(reduce process-death % (find-dead-characters-in-board %)))))
 
 
 ; ok ok ok
@@ -103,21 +99,18 @@
   (concat [(safe-get-in board [(other-player player) :hero])]
           (get-enemy-minions board player)))
 
-; TODO - is there a compelling reason why we're dealing with ids here instead of Characters?
-; TODO - take a look at all functions that deal with ids and see if they should be dealing with Charaters instead
 (s/defn enter-targeting-mode-for-attack :- Board
   [board :- Board
-   character-id :- s/Int]
-  (let [character-path (path-to-character board character-id)
+   character :- Character]
+  (let [character-path (path-to-character board (:id character))
         enemy-characters (get-enemy-characters board (first character-path))
         targets (if (some has-taunt? enemy-characters)
                   (filter has-taunt? enemy-characters)
-                  enemy-characters)
-        target-ids (apply hash-set (map :id targets))]
+                  enemy-characters)]
     (assoc board :mode {:type :targeting
-                        :targets target-ids
+                        :targets targets
                         :attacker (safe-get-in board character-path)
-                        :continuation (fn [board target-character-id]
+                        :continuation (fn [board target-character]
                                         (-> board
                                             (assoc :mode {:type :default})
-                                            (attack character-id target-character-id)))})))
+                                            (attack character target-character)))})))

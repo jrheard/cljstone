@@ -1,12 +1,12 @@
 (ns cljstone.combat-test
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]]
-            [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [play-card path-to-character]]
         [cljstone.character :only [get-health]]
         [cljstone.combat :only [attack find-dead-characters-in-board remove-minion enter-targeting-mode-for-attack]]
         [cljstone.combat-log :only [get-next-log-entry-id]]
+        [cljstone.minion :only [Minion make-minion minion-schematic->card]]
         [cljstone.test-helpers :only [fresh-board hero-1 hero-2 three-minions-per-player-board get-minion get-minion-card]]
         [plumbing.core :only [safe-get safe-get-in]]
         [schema.test :only [validate-schemas]]))
@@ -17,11 +17,11 @@
   (testing "two minions attacking each other"
     (with-redefs [get-next-log-entry-id (fn [] 0)]
       (let [board (-> fresh-board
-                      (update-in [:player-1 :minions] conj (m/make-minion (:boulderfist-ogre all-minions) 123))
-                      (update-in [:player-2 :minions] conj (m/make-minion (:war-golem all-minions) 234)))
+                      (update-in [:player-1 :minions] conj (make-minion (:boulderfist-ogre all-minions) 123))
+                      (update-in [:player-2 :minions] conj (make-minion (:war-golem all-minions) 234)))
             ogre (get-in board (path-to-character board 123))
             golem (get-in board (path-to-character board 234))
-            board (attack board 123 234)]
+            board (attack board ogre golem)]
         ; ogre dies, war golem survives with 1 health
         (is (= (get-in board [:player-1 :minions 0])
                nil))
@@ -36,11 +36,11 @@
 
   (testing "both minions kill each other"
     (let [board (-> fresh-board
-                      (update-in [:player-1 :minions] conj (m/make-minion (:war-golem all-minions) 123))
-                      (update-in [:player-2 :minions] conj (m/make-minion (:war-golem all-minions) 234)))
+                      (update-in [:player-1 :minions] conj (make-minion (:war-golem all-minions) 123))
+                      (update-in [:player-2 :minions] conj (make-minion (:war-golem all-minions) 234)))
             ogre (get-in board (path-to-character board 123))
             golem (get-in board (path-to-character board 234))
-            board (attack board 123 234)]
+            board (attack board ogre golem)]
         ; both die
         (is (= (get-in board [:player-1 :minions 0])
                nil))
@@ -49,7 +49,7 @@
 
 (deftest playing-cards
   (testing "playing a minion"
-    (let [card (m/minion-schematic->card (:wisp all-minions))
+    (let [card (minion-schematic->card (:wisp all-minions))
           board (-> fresh-board
                     (assoc-in [:player-1 :hand 0] card)
                     (play-card :player-1 0))]
@@ -107,24 +107,23 @@
                                                                                      :oasis-snapjaw
                                                                                      :chillwind-yeti
                                                                                      :wisp])))
-        get-minion-id-by-index (s/fn :- s/Int [board player index] (safe-get-in board [player :minions index :id]))]
+        get-minion-by-index (s/fn :- Minion [board player index] (safe-get-in board [player :minions index]))]
 
-    ; TODO rewrite targeting to not be based on ids, update this test
     (testing "one of player-1's minions should be able to attack any of player-2's minions, as well as player-2's hero"
-      (let [board (enter-targeting-mode-for-attack board (get-minion-id-by-index board :player-1 0))]
+      (let [board (enter-targeting-mode-for-attack board (get-minion-by-index board :player-1 0))]
         (is (= (safe-get-in board [:mode :type]) :targeting))
 
-        (is (= (safe-get-in board [:mode :targets])
-               (apply hash-set (map :id (concat (safe-get-in board [:player-2 :minions])
-                                                [(safe-get-in board [:player-2 :hero])])))))
+        (is (= (apply hash-set (safe-get-in board [:mode :targets]))
+               (apply hash-set (concat (safe-get-in board [:player-2 :minions])
+                                       [(safe-get-in board [:player-2 :hero])]))))
 
         (is (= (safe-get-in board [:mode :attacker :name]) "Boulderfist Ogre"))))
 
     (testing "player 2's minions should only be able to target the minions with taunt"
-      (let [board (enter-targeting-mode-for-attack board (get-minion-id-by-index board :player-2 0))]
+      (let [board (enter-targeting-mode-for-attack board (get-minion-by-index board :player-2 0))]
         (is (= (safe-get-in board [:mode :type]) :targeting))
 
-        (is (= (safe-get-in board [:mode :targets])
-               (hash-set (get-minion-id-by-index board :player-1 1) (get-minion-id-by-index board :player-1 2))))
+        (is (= (apply hash-set (safe-get-in board [:mode :targets]))
+               (hash-set (get-minion-by-index board :player-1 1) (get-minion-by-index board :player-1 2))))
 
         (is (= (safe-get-in board [:mode :attacker :name]) "Boulderfist Ogre"))))))

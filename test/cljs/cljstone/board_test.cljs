@@ -3,7 +3,7 @@
             [cljstone.minion :as m]
             [schema.core :as s])
   (:use [cljstone.bestiary :only [all-minions]]
-        [cljstone.board :only [path-to-character end-turn run-continuation play-card get-mana]]
+        [cljstone.board :only [path-to-character end-turn run-continuation play-card get-mana get-character-by-id]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [can-attack?]]
         [cljstone.combat :only [attack]]
@@ -42,7 +42,7 @@
       ; player 1 and player 2 each have a river croc.
       (is (= true (can-attack? (get-in board [:player-1 :minions 0]))))
 
-      (let [board (attack board 123 234)]
+      (let [board (attack board (get-character-by-id board 123) (get-character-by-id board 234))]
         ; player 1's croc attacks player 2's croc; it can only attack once per turn, so it can't attack again.
         (is (= false (can-attack? (get-in board [:player-1 :minions 0]))))
 

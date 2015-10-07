@@ -34,6 +34,7 @@
 
 (def STARTING-HAND-SIZE 7)
 
+; TODO - consider having this guy take an id *or* a character
 (s/defn path-to-character :- [s/Any]
   "Returns a vector like [:player-1 :minions 2] telling you where the given character is in the given board."
   [board :- Board
@@ -62,10 +63,10 @@
 
 (s/defn add-modifier-to-character :- Board
   [board :- Board
-   character-id :- s/Int
+   character :- Character
    modifier :- CharacterModifier]
   (update-in board
-             (concat (path-to-character board character-id) [:modifiers])
+             (concat (path-to-character board (:id character)) [:modifiers])
              conj
              modifier))
 
@@ -95,7 +96,8 @@
   (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand (vec (take STARTING-HAND-SIZE deck))
-                           :deck (vec (drop STARTING-HAND-SIZE deck))
+                           ;:deck [] ; useful for debugging (makes schema error messages much shorter)
+                           :deck  (vec (drop STARTING-HAND-SIZE deck))
                            :mana 0
                            :mana-modifiers []
                            :minions []})]

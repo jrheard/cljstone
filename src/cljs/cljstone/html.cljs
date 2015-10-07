@@ -8,10 +8,11 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health get-base-attack has-taunt?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
+        [cljstone.utils :only [in?]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema GameState
@@ -33,8 +34,8 @@
 
 (defn is-targetable? [board character]
   (and (= (safe-get-in board [:mode :type]) :targeting)
-       (contains? (safe-get-in board [:mode :targets])
-                  (:id character))))
+       (in? (safe-get-in board [:mode :targets])
+            character)))
 
 (s/defn character-properties
   [board :- Board
@@ -47,9 +48,9 @@
                         (can-attack? character)
                         (= board-mode-type :default))
         can-be-selected (or can-attack
-                            (= board-mode-type :targeting))
+                            (is-targetable? board character))
         is-attacking (and (= board-mode-type :targeting)
-                          (= character (safe-get-in board [:mode :attacker])))
+                          (= character (get-in board [:mode :attacker])))
         classes (str
                   (name (character :type))
                   (when (is-targetable? board character) " targetable ")
@@ -227,9 +228,8 @@
           board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
-          [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (msg :character-id))
-          [:targeting :character-selected] (when (contains? (safe-get-in @board-atom [:mode :targets]) (msg :character-id))
-                                            (swap! board-atom run-continuation (msg :character-id)))
+          [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (get-character-by-id @board-atom (msg :character-id)))
+          [:targeting :character-selected] (swap! board-atom run-continuation (get-character-by-id @board-atom (msg :character-id)))
           [_ :play-card] (when (= board-mode :default)
                            (swap! board-atom play-card (msg :player) (msg :index)))
           [_ :end-turn] (when (= board-mode :default)

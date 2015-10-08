@@ -1,6 +1,6 @@
 (ns tools.card-scraper
-  (:require [cheshire.core :refer [parse-string]]))
-
+  (:require [cheshire.core :refer [parse-string]]
+            [clojure.set :refer [rename-keys]]))
 
 (defonce contents (-> "http://hearthstonejson.com/json/AllSets.json"
                       slurp
@@ -8,6 +8,13 @@
 
 (defn parse-card [card]
   (select-keys card [:faction :name :type :mechanics :health :attack :cost :text :playerClass]))
+
+(defn parse-minion [minion]
+  (-> minion
+      (dissoc :type :faction)
+      (rename-keys {:attack :base-attack
+                    :health :base-health
+                    :cost :mana-cost})))
 
 (defn get-card-set [card-set-kw]
   (->> contents
@@ -20,7 +27,11 @@
 
 (def vanilla-basic (filter #(not (contains? % :text)) basic))
 
-(def basic-minions (filter #(= (:type %) "Minion") basic))
+(def basic-minions (->> basic
+                        (filter #(= (:type %) "Minion"))
+                        (map parse-minion)))
+
+(def simple-taunt-minions (filter #(= (:mechanics %) ["Taunt"]) basic-minions))
 
 
 (comment
@@ -30,7 +41,7 @@
 
   (take 10 (drop 10 basic))
 
-  (prn basic-minions)
+  (prn simple-taunt-minions)
 
   )
 

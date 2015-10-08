@@ -140,8 +140,7 @@
       [:i {:class "fa fa-shield fa-2x"}])
     ; TODO - user-times for deathrattles
     ; flash for powers/abilities
-    ; what for stealth?
-    ; what for divine shield?
+    ; TODO stealth, divine shield, windfury, enrage
     ]
    [draw-character-health minion]])
 

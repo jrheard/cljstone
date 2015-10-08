@@ -7,12 +7,14 @@
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.3.0-alpha4"]
+                 [cheshire "5.5.0"]
                  [prismatic/plumbing "0.5.0"]
                  [prismatic/schema "1.0.1"]
                  [reagent "0.5.1-rc"]]
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-doo "0.1.5-SNAPSHOT"]
             [lein-figwheel "0.4.0"]]
+  :source-paths ["src/clj"]
   :cljsbuild
     {:builds
       {:dev {:compiler
@@ -29,6 +31,6 @@
                :optimizations :whitespace
                :pretty-print true}
               :source-paths ["src/cljs" "test/cljs"]}}}
-  :figwheel { :css-dirs ["resources/public/css"] }
+  :figwheel {:css-dirs ["resources/public/css"]}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

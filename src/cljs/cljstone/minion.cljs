@@ -1,15 +1,14 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
   (:use [cljstone.card :only [Card get-next-card-id]]
-        [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]))
+        [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]
+        [cljstone.hero :only [HeroClass]]))
 
 (def MinionSchematic
   {:name s/Str
-   (s/optional-key :class) (s/enum :neutral :mage :shaman)
-   ; TODO imo the keystrokes we save by not naming these :base-attack and :base-health doesn't make up for the confusion these shorter keys cause
-   ; TODO standardize on :base-attack, :base-health
-   :attack s/Int
-   :health s/Int
+   (s/optional-key :class) HeroClass
+   :base-attack s/Int
+   :base-health s/Int
    :mana-cost s/Int
    (s/optional-key :battlecry) s/Any ; (Board, target-character-id) -> Board
    (s/optional-key :battlecry-targeting-fn) s/Any ; (Board, Player) -> [Character]
@@ -45,15 +44,13 @@
   ; the machinery that sets up those channels and hooks them up to those functions will live here.
   [schematic :- MinionSchematic
    id :- s/Int]
-  (into {:base-attack (:attack schematic)
-         :base-health (:health schematic)
-         :attacks-this-turn 0
+  (into {:attacks-this-turn 0
          :attacks-per-turn 1 ; TODO - turn into :base-attacks-per-turn, there'll be modifiers that can add 1 to this number (will freezing remove 1 from this number?)
          :id id
          :modifiers []
          :type :minion
          :class (:class schematic :neutral)}
-        (dissoc schematic :attack :health :battlecry :battlecry-targeting-fn :mana-cost)))
+        (dissoc schematic :battlecry :battlecry-targeting-fn :mana-cost)))
 
 
 (s/defn play-minion-card
@@ -71,8 +68,8 @@
    :mana-cost (:mana-cost schematic)
    :id (get-next-card-id)
    :class (:class schematic :neutral)
-   :attack (:attack schematic)
-   :health (:health schematic)
+   :attack (:base-attack schematic)
+   :health (:base-health schematic)
    ; TODO break this out into a separate function, write tests, refactor
    :effect (fn [board player new-hand]
              ; TODO implement positioning by associng :mode PositioningMode

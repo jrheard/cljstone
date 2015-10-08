@@ -14,6 +14,7 @@
       (dissoc :type :faction)
       (rename-keys {:attack :base-attack
                     :health :base-health
+                    :playerClass :class
                     :cost :mana-cost})))
 
 (defn get-card-set [card-set-kw]
@@ -42,6 +43,7 @@
   (take 10 (drop 10 basic))
 
   (prn simple-taunt-minions)
+
 
   )
 

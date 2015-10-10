@@ -68,8 +68,8 @@
    :mana-cost (:mana-cost schematic)
    :id (get-next-card-id)
    :class (:class schematic :neutral)
-   :attack (:base-attack schematic)
-   :health (:base-health schematic)
+   :base-attack (:base-attack schematic)
+   :base-health (:base-health schematic)
    ; TODO break this out into a separate function, write tests, refactor
    :effect (fn [board player new-hand]
              ; TODO implement positioning by associng :mode PositioningMode

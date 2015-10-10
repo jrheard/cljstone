@@ -82,8 +82,8 @@
    [:div.mana-cost
     [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]
-   [:div.attack (:attack card)]
-   [:div.health (:health card)]])
+   [:div.attack (:base-attack card)]
+   [:div.health (:base-health card)]])
 
 (defn draw-spell-card [card]
   [:div.content

@@ -15,8 +15,8 @@
    :id s/Int
    :class s/Any
    :effect s/Any ; a function that takes (board, player) and returns a new Board
-   (s/optional-key :attack) s/Int
-   (s/optional-key :health) s/Int
+   (s/optional-key :base-attack) s/Int
+   (s/optional-key :base-health) s/Int
    (s/optional-key :durability) s/Int})
 
 

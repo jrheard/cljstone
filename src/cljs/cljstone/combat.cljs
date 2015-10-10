@@ -1,9 +1,9 @@
 (ns cljstone.combat
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board path-to-character]]
-        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health has-taunt?]]
+        [cljstone.character :only [Character CharacterModifier Player other-player get-attack get-health]]
         [cljstone.combat-log :only [log-an-item]]
-        [cljstone.minion :only [Minion]]
+        [cljstone.minion :only [Minion has-taunt?]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defn find-dead-characters-in-board :- [Character]

@@ -3,7 +3,7 @@
   (:use [cljstone.board :only [add-modifier-to-character]]
         [plumbing.core :only [safe-get-in]]))
 
-(def taunt {:type :buff :effect {:taunt true}})
+(def taunt {:type :mechanic :effect {:taunt true}})
 
 (def all-minions
   {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :mana-cost 0}
@@ -21,7 +21,7 @@
                    :battlecry (fn [board target-minion]
                                 (add-modifier-to-character board
                                                            target-minion
-                                                           {:type :buff :name "Shattered Sun" :effect {:base-base-health 1 :base-attack 1}}))}
+                                                           {:type :enchantment :name "Shattered Sun" :effect {:base-base-health 1 :base-attack 1}}))}
    :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :mana-cost 3}
    :booty-bay {:name "Booty Bay Bodyguard", :base-attack 5, :base-health 4, :mana-cost 5, :modifiers [taunt]}
    :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :mana-cost 4}

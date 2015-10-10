@@ -10,7 +10,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health get-base-attack has-taunt?]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-taunt?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [cljstone.utils :only [in?]]
         [plumbing.core :only [safe-get safe-get-in]]))

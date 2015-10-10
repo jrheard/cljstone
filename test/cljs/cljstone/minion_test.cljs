@@ -16,7 +16,7 @@
     (let [minion (-> all-minions
                      :boulderfist-ogre
                      (make-minion 123)
-                     (update-in [:modifiers] conj {:type :buff :name "foo" :effect {:base-health 1}})
+                     (update-in [:modifiers] conj {:type :mechanic :name "foo" :effect {:base-health 1}})
                      (update-in [:modifiers] conj {:type :attack :effect {:health -2}}))]
       (is (= (get-health minion) 6))))
 

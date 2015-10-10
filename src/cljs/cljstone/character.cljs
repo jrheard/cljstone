@@ -11,11 +11,14 @@
    (s/optional-key :base-attack) s/Int
    (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int
+   (s/optional-key :cant-attack) (s/enum true)
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
-  {:type (s/enum :attack :damage-spell :buff)
+  {:type (s/enum :attack :damage-spell :enchantment :mechanic)
    (s/optional-key :name) s/Str
+   (s/optional-key :turn-begins) s/Int
+   (s/optional-key :turn-ends) s/Int
    :effect CharacterEffect})
 
 ; TODO attacks-this-turn, attacks-per-turn
@@ -41,11 +44,20 @@
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))
 
+(s/defn get-active-modifiers :- [CharacterModifier]
+  [character :- Character
+   current-turn :- s/Int]
+  (filter #(if (contains? % :turn-ends)
+             (< current-turn (:turn-ends %))
+             true)
+          (character :modifiers)))
+
 (s/defn sum-modifiers :- s/Int
   [character :- Character
    kw :- s/Keyword]
   (apply + (map (fn [modifier]
                   (kw (modifier :effect) 0))
+                ; TODO Thread active turn down
                 (character :modifiers))))
 
 (s/defn get-base-attack :- s/Int

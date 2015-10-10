@@ -20,6 +20,9 @@
    (s/optional-key :durability) s/Int})
 
 
+(s/defschema CardClass
+  (s/enum :neutral :druid :hunter :rogue :warlock :priest :mage :warrior :shaman :paladin))
+
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions
 ; no clue how molten giant, mountain giant, etc will work though.
 ; i mean there'll definitely have to be a (get-mana-cost card) function - perhaps it also takes the entire board? eg for clockwork giant

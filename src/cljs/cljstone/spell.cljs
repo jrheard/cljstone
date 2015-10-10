@@ -1,14 +1,13 @@
 (ns cljstone.spell
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card get-next-card-id]]
-        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]
-        [cljstone.hero :only [HeroClass]]))
+  (:use [cljstone.card :only [Card CardClass get-next-card-id]]
+        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]))
 
 (s/defschema Spell
   {:name s/Str
    :effect s/Any ; (board, player) -> board
    :mana-cost s/Int
-   :class HeroClass})
+   :class CardClass})
 
 (s/defn spell->card :- Card
   [spell :- Spell]

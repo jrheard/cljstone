@@ -1,6 +1,6 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card get-next-card-id]]
+  (:use [cljstone.card :only [Card CardClass get-next-card-id]]
         [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]
         [cljstone.hero :only [HeroClass]]))
 
@@ -16,7 +16,7 @@
 
 (s/defschema Minion
   {:name s/Str
-   :class (s/enum :neutral :mage :shaman)
+   :class CardClass
    :base-attack s/Int
    :base-health s/Int
    :attacks-this-turn s/Int

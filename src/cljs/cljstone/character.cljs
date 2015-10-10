@@ -84,7 +84,3 @@
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
        (> (get-attack character) 0)))
-
-(s/defn has-taunt? :- s/Bool
-  [character :- Character]
-  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))

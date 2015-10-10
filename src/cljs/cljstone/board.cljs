@@ -72,17 +72,18 @@
 
 (s/defn clear-inactive-modifiers :- Board
   [board :- Board]
-  ; TODO - for each hero and minion on the board, remove all :modifiers whose :turn-ends is <= this turn
-  (let [modifier-is-active? #(if (contains? % :turn-ends)
-                               (< (:turn board) (:turn-ends %))
-                               true)
+  (let [modifier-is-active? (s/fn :- s/Bool
+                              [modifier :- CharacterModifier]
+                              (if (contains? modifier :turn-ends)
+                                (< (:turn board) (:turn-ends modifier))
+                                true))
         remove-inactive-modifiers-for-character (s/fn :- Character
                                                   [character :- Character]
                                                   (update-in character [:modifiers] #(filter modifier-is-active? %)))
         clear-board-half-modifiers (fn [board-half]
                                      (-> board-half
                                          (update-in [:hero] remove-inactive-modifiers-for-character)
-                                         (update-in [:minions] #(map remove-inactive-modifiers-for-character %))))]
+                                         (update-in [:minions] #(mapv remove-inactive-modifiers-for-character %))))]
     (-> board
         (update-in [:player-1] clear-board-half-modifiers)
         (update-in [:player-2] clear-board-half-modifiers))))

@@ -314,6 +314,15 @@ h3 {
 	text-align: center;
 }
 
+.minion-attributes i {
+	padding: 0 5px;
+}
+
+.minion-attributes strong {
+	font-weight: bold;
+	font-size: 32px;
+}
+
 .name {
 	color: #666;
 	line-height: 20px;

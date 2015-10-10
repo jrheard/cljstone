@@ -100,3 +100,12 @@
 ; still need to figure out what happens when you silence something that's had its health buffed and has taken 1 damage, though.
 ; i guess silencing will involve recomputing base attack and health, and so you can figure it out at recompute-because-of-silence time.
 ; hm.
+
+(s/defn has-taunt? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))
+
+(s/defn has-summoning-sickness? :- s/Bool
+  [minion :- Minion]
+  (some #(= (:name %) "Summoning Sickness")
+        (minion :modifiers)))

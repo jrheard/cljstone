@@ -79,8 +79,23 @@
   [character :- Character]
   (get-base-attack character))
 
+(s/defn has-taunt? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))
+
+(s/defn has-charge? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :charge]) (character :modifiers))))
+
+(s/defn has-summoning-sickness? :- s/Bool
+  [character :- Character]
+  (boolean (some #(= (:name %) "Summoning Sickness")
+                 (character :modifiers))))
+
 (s/defn can-attack? :- s/Bool
   [character :- Character]
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
-       (> (get-attack character) 0)))
+       (> (get-attack character) 0)
+       (or (not (has-summoning-sickness? character))
+           (has-charge? character))))

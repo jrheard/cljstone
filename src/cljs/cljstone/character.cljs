@@ -12,6 +12,7 @@
    (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int
    (s/optional-key :cant-attack) (s/enum true)
+   (s/optional-key :charge) (s/enum true)
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier

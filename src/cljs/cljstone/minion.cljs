@@ -59,7 +59,6 @@
   (let [minion (-> schematic
                    (make-minion (get-next-character-id))
                    (update-in [:modifiers] (fn [modifiers]
-                                             (js/console.log (clj->js modifiers))
                                              (if (some #(get-in % [:effect :charge]) modifiers)
                                                modifiers
                                                (conj modifiers {:type :mechanic

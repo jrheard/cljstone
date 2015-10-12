@@ -13,6 +13,9 @@
    (s/optional-key :attack) s/Int
    (s/optional-key :cant-attack) (s/enum true)
    (s/optional-key :charge) (s/enum true)
+   (s/optional-key :divine-shield) (s/enum true)
+   (s/optional-key :frozen) (s/enum true) ; TODO
+   (s/optional-key :stealth) (s/enum true) ; TODO
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
@@ -79,6 +82,10 @@
   [character :- Character]
   (boolean (some #(get-in % [:effect :charge]) (character :modifiers))))
 
+(s/defn has-divine-shield? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :divine-shield]) (character :modifiers))))
+
 (s/defn has-summoning-sickness? :- s/Bool
   [character :- Character]
   (boolean (some #(= (:name %) "Summoning Sickness")
@@ -89,5 +96,8 @@
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
        (> (get-attack character) 0)
-       (not (some #(get-in % [:effect :cant-attack])
-                  (character :modifiers)))))
+       (not (or (some #(get-in % [:effect :cant-attack])
+                      (character :modifiers))
+                ; frozen differs from cant-attack in that it's drawn specially, and that it triggers bonus ice lance damage
+                (some #(get-in % [:effect :frozen])
+                      (character :modifiers))))))

@@ -32,19 +32,21 @@
                         (filter #(= (:type %) "Minion"))
                         (map parse-minion)))
 
-(def simple-charge-minions (filter #(= (:mechanics %) ["Charge"]) basic-minions))
+(def simple-shield-minions (filter #(= (:mechanics %) ["Divine Shield"]) basic-minions))
 
 (defn adapt-minions-for-bestiary [parsed-minions]
   (->> parsed-minions
        (map #(dissoc % :mechanics :text))
-       (map #(assoc % :modifiers [{:type :mechanic :effect {:charge true}}]))))
+       (map #(assoc % :modifiers '[divine-shield]))))
 
 (comment
   (prn (keys contents))
 
   (count basic)
 
-  (take 10 (drop 10 basic))
+  (take 20 (drop 60 basic-minions))
 
-  (prn simple-charge-minions)
+  (take 30 (drop 10 basic-minions))
+
+  (prn simple-shield-minions)
   )

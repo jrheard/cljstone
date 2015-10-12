@@ -10,7 +10,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt?]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [cljstone.utils :only [in?]]
         [plumbing.core :only [safe-get safe-get-in]]))
@@ -55,7 +55,9 @@
                   (name (character :type))
                   (when (is-targetable? board character) " targetable ")
                   (when is-attacking " attacker ")
-                  (when can-attack " can-attack "))
+                  (when can-attack " can-attack ")
+                  (when (has-divine-shield? character) " divine-shield ")
+                  )
         fire-selected-event (partial fire-character-selected-event game-event-chan)]
     {:class classes
      :data-character-id (character :id)

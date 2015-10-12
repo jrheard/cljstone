@@ -32,8 +32,12 @@
                         (filter #(= (:type %) "Minion"))
                         (map parse-minion)))
 
-(def simple-taunt-minions (filter #(= (:mechanics %) ["Taunt"]) basic-minions))
+(def simple-charge-minions (filter #(= (:mechanics %) ["Charge"]) basic-minions))
 
+(defn adapt-minions-for-bestiary [parsed-minions]
+  (->> parsed-minions
+       (map #(dissoc % :mechanics :text))
+       (map #(assoc % :modifiers [{:type :mechanic :effect {:charge true}}]))))
 
 (comment
   (prn (keys contents))
@@ -42,8 +46,5 @@
 
   (take 10 (drop 10 basic))
 
-  (prn simple-taunt-minions)
-
-
+  (prn simple-charge-minions)
   )
-

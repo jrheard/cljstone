@@ -52,6 +52,7 @@
          :class (:class schematic :neutral)}
         (dissoc schematic :battlecry :battlecry-targeting-fn :mana-cost)))
 
+; XXXX misnomer? takes a schematic, not a card
 (s/defn play-minion-card
   [board
    player :- Player

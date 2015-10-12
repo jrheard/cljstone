@@ -10,10 +10,10 @@
   {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :mana-cost 0}
    :shieldbearer {:name "Shieldbearer" :base-attack 0 :base-health 4 :mana-cost 1 :modifiers [taunt]}
    :goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :mana-cost 1 :modifiers [taunt]}
-   :stonetusk-boar {:name "Stonetusk Boar", :base-attack 1, :base-health 1, :mana-cost 1, :modifiers [taunt]}
+   :stonetusk-boar {:name "Stonetusk Boar", :base-attack 1, :base-health 1, :mana-cost 1, :modifiers [charge]}
    :voidwalker {:name "Voidwalker", :base-attack 1, :base-health 3, :class :warlock, :mana-cost 1}
    :bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :mana-cost 2}
-   :bluegill-warrior {:name "Bluegill Warrior", :base-attack 2, :base-health 1, :mana-cost 2, :modifiers [taunt]}
+   :bluegill-warrior {:name "Bluegill Warrior", :base-attack 2, :base-health 1, :mana-cost 2, :modifiers [charge]}
    :frostwolf-grunt {:name "Frostwolf Grunt", :base-attack 2, :base-health 2, :mana-cost 2, :modifiers [taunt]}
    :river-crocilisk {:name "River Crocilisk" :base-attack 2 :base-health 3 :mana-cost 2}
    :ironfur-grizzly {:name "Ironfur Grizzly", :base-attack 3, :base-health 3, :mana-cost 3, :modifiers [taunt]}
@@ -26,17 +26,17 @@
                                                            target-minion
                                                            {:type :enchantment :name "Shattered Sun" :effect {:base-base-health 1 :base-attack 1}}))}
    :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :mana-cost 3}
-   :wolfrider {:name "Wolfrider", :base-attack 3, :base-health 1, :mana-cost 3, :modifiers [taunt]}
+   :wolfrider {:name "Wolfrider", :base-attack 3, :base-health 1, :mana-cost 3, :modifiers [charge]}
    :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :mana-cost 4}
-   :korkron-elite {:name "Kor'kron Elite", :base-attack 4, :base-health 3, :class :warrior, :mana-cost 4, :modifiers [taunt]}
+   :korkron-elite {:name "Kor'kron Elite", :base-attack 4, :base-health 3, :class :warrior, :mana-cost 4, :modifiers [charge]}
    :oasis-snapjaw {:name "Oasis Snapjaw" :base-attack 2 :base-health 7 :mana-cost 4}
    :senjin-shieldmasta {:name "Sen'Jin Shieldmasta" :base-attack 3 :base-health 5 :mana-cost 4 :modifiers [taunt]}
-   :stormwind-knight {:name "Stormwind Knight", :base-attack 2, :base-health 5, :mana-cost 4, :modifiers [taunt]}
+   :stormwind-knight {:name "Stormwind Knight", :base-attack 2, :base-health 5, :mana-cost 4, :modifiers [charge]}
    :booty-bay {:name "Booty Bay Bodyguard", :base-attack 5, :base-health 4, :mana-cost 5, :modifiers [taunt]}
    :pit-fighter {:name "Pit Fighter" :base-attack 5 :base-health 6 :mana-cost 5}
    :lord-of-the-arena {:name "Lord of the Arena", :base-attack 6, :base-health 5, :mana-cost 6, :modifiers [taunt]}
    :boulderfist-ogre {:name "Boulderfist Ogre" :base-attack 6 :base-health 7 :mana-cost 6}
-   :reckless-rocketeer {:name "Reckless Rocketeer", :base-attack 5, :base-health 2, :mana-cost 6, :modifiers [taunt]}
+   :reckless-rocketeer {:name "Reckless Rocketeer", :base-attack 5, :base-health 2, :mana-cost 6, :modifiers [charge]}
    :war-golem {:name "War Golem" :base-attack 7 :base-health 7 :mana-cost 7}
    :ironbark-protector {:name "Ironbark Protector", :base-attack 8, :base-health 8, :class :druid, :mana-cost 8, :modifiers [taunt]}})
 

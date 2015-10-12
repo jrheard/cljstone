@@ -58,11 +58,15 @@
    schematic :- MinionSchematic]
   (let [minion (-> schematic
                    (make-minion (get-next-character-id))
-                   (update-in [:modifiers] conj {:type :mechanic
-                                                 :name "Summoning Sickness"
-                                                 :turn-begins (:turn board)
-                                                 :turn-ends (+ 2 (:turn board))
-                                                 :effect {:cant-attack true}}))]
+                   (update-in [:modifiers] (fn [modifiers]
+                                             (js/console.log (clj->js modifiers))
+                                             (if (some #(get-in % [:effect :charge]) modifiers)
+                                               modifiers
+                                               (conj modifiers {:type :mechanic
+                                                                :name "Summoning Sickness"
+                                                                :turn-begins (:turn board)
+                                                                :turn-ends (+ 2 (:turn board))
+                                                                :effect {:cant-attack true}})))))]
     (-> board
         (update-in [player :minions] conj minion)
         (update-in [player :mana-modifiers] conj (- (:mana-cost schematic))))))

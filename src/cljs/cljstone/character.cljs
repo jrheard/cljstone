@@ -45,20 +45,11 @@
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))
 
-(s/defn get-active-modifiers :- [CharacterModifier]
-  [character :- Character
-   current-turn :- s/Int]
-  (filter #(if (contains? % :turn-ends)
-             (< current-turn (:turn-ends %))
-             true)
-          (character :modifiers)))
-
 (s/defn sum-modifiers :- s/Int
   [character :- Character
    kw :- s/Keyword]
   (apply + (map (fn [modifier]
                   (kw (modifier :effect) 0))
-                ; TODO Thread active turn down
                 (character :modifiers))))
 
 (s/defn get-base-attack :- s/Int
@@ -98,5 +89,5 @@
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
        (> (get-attack character) 0)
-       (or (not (has-summoning-sickness? character))
-           (has-charge? character))))
+       (not (some #(get-in % [:effect :cant-attack])
+                  (character :modifiers)))))

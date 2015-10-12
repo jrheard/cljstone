@@ -17,8 +17,10 @@
    target :- Character]
   (update-in board
              [:combat-log]
-             conj
-             {:modifier modifier
-              :id (get-next-log-entry-id)
-              :source source
-              :target target}))
+             (fn [combat-log]
+               (if (< (get-in modifier [:effect :health]) 0)
+                 (conj combat-log {:modifier modifier
+                                   :id (get-next-log-entry-id)
+                                   :source source
+                                   :target target})
+                 combat-log))))

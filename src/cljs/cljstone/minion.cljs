@@ -52,14 +52,24 @@
          :class (:class schematic :neutral)}
         (dissoc schematic :battlecry :battlecry-targeting-fn :mana-cost)))
 
-
+; XXXX misnomer? takes a schematic, not a card
 (s/defn play-minion-card
   [board
    player :- Player
    schematic :- MinionSchematic]
-  (-> board
-      (update-in [player :minions] conj (make-minion schematic (get-next-character-id)))
-      (update-in [player :mana-modifiers] conj (- (:mana-cost schematic)))))
+  (let [minion (-> schematic
+                   (make-minion (get-next-character-id))
+                   (update-in [:modifiers] (fn [modifiers]
+                                             (if (some #(get-in % [:effect :charge]) modifiers)
+                                               modifiers
+                                               (conj modifiers {:type :mechanic
+                                                                :name "Summoning Sickness"
+                                                                :turn-begins (:turn board)
+                                                                :turn-ends (+ 2 (:turn board))
+                                                                :effect {:cant-attack true}})))))]
+    (-> board
+        (update-in [player :minions] conj minion)
+        (update-in [player :mana-modifiers] conj (- (:mana-cost schematic))))))
 
 (s/defn minion-schematic->card :- Card
   [schematic :- MinionSchematic]

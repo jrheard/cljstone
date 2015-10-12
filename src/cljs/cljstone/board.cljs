@@ -70,9 +70,28 @@
              conj
              modifier))
 
+(s/defn clear-inactive-modifiers :- Board
+  [board :- Board]
+  (let [modifier-is-active? (s/fn :- s/Bool
+                              [modifier :- CharacterModifier]
+                              (if (contains? modifier :turn-ends)
+                                (< (:turn board) (:turn-ends modifier))
+                                true))
+        remove-inactive-modifiers-for-character (s/fn :- Character
+                                                  [character :- Character]
+                                                  (update-in character [:modifiers] #(filter modifier-is-active? %)))
+        clear-board-half-modifiers (fn [board-half]
+                                     (-> board-half
+                                         (update-in [:hero] remove-inactive-modifiers-for-character)
+                                         (update-in [:minions] #(mapv remove-inactive-modifiers-for-character %))))]
+    (-> board
+        (update-in [:player-1] clear-board-half-modifiers)
+        (update-in [:player-2] clear-board-half-modifiers))))
+
 (s/defn begin-turn :- Board
   [board :- Board]
   (-> board
+      clear-inactive-modifiers
       ; TODO - when we implement eg wild growth, will need to split this out into a standalone increment-mana function
       ; it'll deal with eg giving you an "excess mana" card, etc
       (assoc-in [(board :whose-turn) :mana-modifiers] [])

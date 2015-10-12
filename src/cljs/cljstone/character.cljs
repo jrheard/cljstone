@@ -11,11 +11,15 @@
    (s/optional-key :base-attack) s/Int
    (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int
+   (s/optional-key :cant-attack) (s/enum true)
+   (s/optional-key :charge) (s/enum true)
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
-  {:type (s/enum :attack :damage-spell :buff)
+  {:type (s/enum :attack :damage-spell :enchantment :mechanic)
    (s/optional-key :name) s/Str
+   (s/optional-key :turn-begins) s/Int
+   (s/optional-key :turn-ends) s/Int
    :effect CharacterEffect})
 
 ; TODO attacks-this-turn, attacks-per-turn
@@ -67,12 +71,23 @@
   [character :- Character]
   (get-base-attack character))
 
+(s/defn has-taunt? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))
+
+(s/defn has-charge? :- s/Bool
+  [character :- Character]
+  (boolean (some #(get-in % [:effect :charge]) (character :modifiers))))
+
+(s/defn has-summoning-sickness? :- s/Bool
+  [character :- Character]
+  (boolean (some #(= (:name %) "Summoning Sickness")
+                 (character :modifiers))))
+
 (s/defn can-attack? :- s/Bool
   [character :- Character]
   (and (< (character :attacks-this-turn)
           (character :attacks-per-turn))
-       (> (get-attack character) 0)))
-
-(s/defn has-taunt? :- s/Bool
-  [character :- Character]
-  (boolean (some #(get-in % [:effect :taunt]) (character :modifiers))))
+       (> (get-attack character) 0)
+       (not (some #(get-in % [:effect :cant-attack])
+                  (character :modifiers)))))

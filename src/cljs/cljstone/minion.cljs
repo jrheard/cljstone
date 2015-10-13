@@ -4,14 +4,21 @@
         [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]
         [cljstone.hero :only [HeroClass]]))
 
-(def MinionSchematic
+; TODO - will have to move this somewhere (character.cljs?) where weapons can use it when we implement weapons
+(s/defschema Battlecry
+  {(s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
+   :effect s/Any
+   ; if :get-targets exists, :effect will be a function from (Board, target-character-id) -> Board
+   ; if :get-targets does not exist, :effect will be a function from Board -> Board
+   })
+
+(s/defschema MinionSchematic
   {:name s/Str
    (s/optional-key :class) HeroClass
    :base-attack s/Int
    :base-health s/Int
    :mana-cost s/Int
-   (s/optional-key :battlecry) s/Any ; (Board, target-character-id) -> Board
-   (s/optional-key :battlecry-targeting-fn) s/Any ; (Board, Player) -> [Character]
+   (s/optional-key :battlecry) Battlecry
    (s/optional-key :modifiers) [CharacterModifier]})
 
 (s/defschema Minion
@@ -50,7 +57,7 @@
          :modifiers []
          :type :minion
          :class (:class schematic :neutral)}
-        (dissoc schematic :battlecry :battlecry-targeting-fn :mana-cost)))
+        (dissoc schematic :battlecry :mana-cost)))
 
 ; XXXX misnomer? takes a schematic, not a card
 (s/defn play-minion-card
@@ -88,12 +95,12 @@
              ; *then* take the relevant card out of the player's hand
              (if-let [battlecry (:battlecry schematic)]
                (assoc board :mode {:type :targeting
-                                   :targets ((schematic :battlecry-targeting-fn) board player)
+                                   :targets ((battlecry :get-targets) board player)
                                    :continuation (fn [board target-character-id]
                                                    (-> board
                                                        (assoc :mode {:type :default})
                                                        (assoc-in [player :hand] new-hand)
-                                                       (#((schematic :battlecry) % target-character-id))
+                                                       (#((battlecry :effect) % target-character-id))
                                                        (play-minion-card player schematic)))})
                (-> board
                    (assoc-in [player :hand] new-hand)

@@ -19,13 +19,13 @@
    :river-crocilisk {:name "River Crocilisk" :base-attack 2 :base-health 3 :mana-cost 2}
    :ironfur-grizzly {:name "Ironfur Grizzly", :base-attack 3, :base-health 3, :mana-cost 3, :modifiers [taunt]}
    :silverback-patriarch {:name "Silverback Patriarch", :base-attack 1, :base-health 4, :mana-cost 3, :modifiers [taunt]}
-   :shattered-sun {:name "Shattered Sun Cleric" :base-attack 3 :base-health 2 :mana-cost 3
-                   :battlecry-targeting-fn (fn [board player]
+   :shattered-sun {:name "Shattered Sun Cleric", :base-attack 3, :base-health 2, :mana-cost 3,
+                   :battlecry {:get-targets (fn [board player]
                                              (safe-get-in board [player :minions]))
-                   :battlecry (fn [board target-minion]
+                               :effect (fn [board target-minion]
                                 (add-modifier-to-character board
                                                            target-minion
-                                                           {:type :enchantment :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}
+                                                           {:type :enchantment :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}}
    :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :mana-cost 3}
    :wolfrider {:name "Wolfrider", :base-attack 3, :base-health 1, :mana-cost 3, :modifiers [charge]}
    :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :mana-cost 4}

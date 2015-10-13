@@ -52,6 +52,15 @@ h3 {
 	padding: 0 3px;
 	z-index: 1;
 	top: 0;
+	padding: 0 25px;
+}
+
+.board-half.is-owners-turn .hand {
+	background-color: #EEE;
+}
+
+.board-half.is-owners-turn h3 {
+	color: green;
 }
 
 .board-half:nth-of-type(2) .hand {

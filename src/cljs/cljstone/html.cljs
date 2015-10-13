@@ -56,8 +56,7 @@
                   (when (is-targetable? board character) " targetable ")
                   (when is-attacking " attacker ")
                   (when can-attack " can-attack ")
-                  (when (has-divine-shield? character) " divine-shield ")
-                  )
+                  (when (has-divine-shield? character) " divine-shield "))
         fire-selected-event (partial fire-character-selected-event game-event-chan)]
     {:class classes
      :data-character-id (character :id)
@@ -158,12 +157,12 @@
                                         (when (>= i (:actual (get-mana board-half))) "spent"))}
                          [:i {:class "fa fa-diamond"}]])])
 
-; TODO it's currently super unclear whose turn it is, especially in the early game when you can't play anything
-; make this more clear visually
 (defn draw-board-half [board player game-state]
   (let [board-half (board player)
         is-owners-turn (= (board :whose-turn) player)]
-    [:div.board-half
+    [:div {:class (str
+                    "board-half "
+                    (when is-owners-turn "is-owners-turn"))}
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]

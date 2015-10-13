@@ -37,13 +37,6 @@
 
 ; IDs
 
-(def next-character-id (atom 0))
-
-(defn get-next-character-id []
-  (let [id-to-return @next-character-id]
-    (swap! next-character-id inc)
-    id-to-return))
-
 (s/defn other-player :- Player
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))

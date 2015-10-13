@@ -5,10 +5,10 @@
         [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [make-board play-card]]
         [cljstone.card :only [Card]]
-        [cljstone.character :only [get-next-character-id]]
         [cljstone.dealer :only [make-random-deck]]
         [cljstone.hero :only [make-hero]]
-        [cljstone.minion :only [Minion make-minion minion-schematic->card]]))
+        [cljstone.minion :only [Minion make-minion minion-schematic->card]]
+        [cljstone.utils :only [get-next-id]]))
 
 (use-fixtures :once validate-schemas)
 
@@ -23,7 +23,7 @@
 
 (s/defn get-minion :- Minion
   [minion-keyword]
-  (make-minion (all-minions minion-keyword) (get-next-character-id)))
+  (make-minion (all-minions minion-keyword) (get-next-id)))
 
 (def boulderfist-card (-> all-minions :boulderfist-ogre minion-schematic->card))
 (def boulderfist-minion (-> all-minions :boulderfist-ogre (make-minion 12345)))

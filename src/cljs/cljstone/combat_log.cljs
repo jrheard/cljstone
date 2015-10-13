@@ -1,14 +1,8 @@
 (ns cljstone.combat-log
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board]]
-        [cljstone.character :only [Character CharacterModifier]]))
-
-(def next-log-entry-id (atom 0))
-
-(defn get-next-log-entry-id []
-  (let [id-to-return @next-log-entry-id]
-    (swap! next-log-entry-id inc)
-    id-to-return))
+        [cljstone.character :only [Character CharacterModifier]]
+        [cljstone.utils :only [get-next-id]]))
 
 (s/defn log-an-item :- Board
   [board :- Board
@@ -20,7 +14,7 @@
              (fn [combat-log]
                (if (< (get-in modifier [:effect :health]) 0)
                  (conj combat-log {:modifier modifier
-                                   :id (get-next-log-entry-id)
+                                   :id (get-next-id)
                                    :source source
                                    :target target})
                  combat-log))))

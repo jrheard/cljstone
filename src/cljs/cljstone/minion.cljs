@@ -1,8 +1,9 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card CardClass get-next-card-id]]
-        [cljstone.character :only [Player Character CharacterModifier get-next-character-id]]
-        [cljstone.hero :only [HeroClass]]))
+  (:use [cljstone.card :only [Card CardClass]]
+        [cljstone.character :only [Player Character CharacterModifier]]
+        [cljstone.hero :only [HeroClass]]
+        [cljstone.utils :only [get-next-id]]))
 
 ; TODO - will have to move this somewhere (character.cljs?) where weapons can use it when we implement weapons
 (s/defschema Battlecry
@@ -65,7 +66,7 @@
    player :- Player
    schematic :- MinionSchematic]
   (let [minion (-> schematic
-                   (make-minion (get-next-character-id))
+                   (make-minion (get-next-id))
                    (update-in [:modifiers] (fn [modifiers]
                                              (if (some #(get-in % [:effect :charge]) modifiers)
                                                modifiers
@@ -83,7 +84,7 @@
   {:type :minion
    :name (:name schematic)
    :mana-cost (:mana-cost schematic)
-   :id (get-next-card-id)
+   :id (get-next-id)
    :class (:class schematic :neutral)
    :base-attack (:base-attack schematic)
    :base-health (:base-health schematic)

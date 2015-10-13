@@ -2,12 +2,12 @@
   (:require [cljs.test :refer-macros [deftest testing is use-fixtures]])
   (:use [schema.test :only [validate-schemas]]
         [cljstone.bestiary :only [all-minions]]
-        [cljstone.combat-log :only [get-next-log-entry-id]]
         [cljstone.test-helpers :only [three-minions-per-player-board]]
         [cljstone.board :only [make-board play-card]]
         [cljstone.minion :only [make-minion]]
         [cljstone.spell :only [spell->card]]
-        [cljstone.spellbook :only [all-spells]]))
+        [cljstone.spellbook :only [all-spells]]
+        [cljstone.utils :only [get-next-id]]))
 
 (use-fixtures :once validate-schemas)
 
@@ -17,7 +17,7 @@
                         (spell->card (all-spells :flamecannon)))
         board (assoc-in board [:player-2 :minions 0] (make-minion (:war-golem all-minions) 123))]
     (with-redefs [rand-nth first
-                  get-next-log-entry-id (fn [] 0)]
+                  get-next-id (fn [] 0)]
       (let [minion (get-in board [:player-2 :minions 0])
             board (play-card board :player-1 0)]
         (is (= (get-in board [:player-2 :minions 0 :modifiers])

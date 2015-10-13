@@ -1,7 +1,8 @@
 (ns cljstone.spell
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card CardClass get-next-card-id]]
-        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]))
+  (:use [cljstone.card :only [Card CardClass]]
+        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]
+        [cljstone.utils :only [get-next-id]]))
 
 (s/defschema Spell
   {:name s/Str
@@ -12,7 +13,7 @@
 (s/defn spell->card :- Card
   [spell :- Spell]
   (assoc (into {:type :spell
-                :id (get-next-card-id)}
+                :id (get-next-id)}
                spell)
          :effect
          (fn [board player new-hand]

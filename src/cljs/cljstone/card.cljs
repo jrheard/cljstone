@@ -1,13 +1,6 @@
 (ns cljstone.card
   (:require [schema.core :as s]))
 
-(def next-card-id (atom 0))
-
-(s/defn get-next-card-id :- s/Int []
-  (let [id-to-return @next-card-id]
-    (swap! next-card-id inc)
-    id-to-return))
-
 (s/defschema Card
   {:type (s/enum :minion :spell :weapon)
    :name s/Str

@@ -1,6 +1,7 @@
 (ns cljstone.hero
   (:require [schema.core :as s])
-  (:use [cljstone.character :only [CharacterModifier get-next-character-id]]))
+  (:use [cljstone.character :only [CharacterModifier]]
+        [cljstone.utils :only [get-next-id]]))
 
 (s/defschema HeroClass
   (s/enum :druid :hunter :rogue :warlock :priest :mage :warrior :shaman :paladin))
@@ -26,4 +27,4 @@
    :base-attack 0
    :modifiers []
    :type :hero
-   :id (get-next-character-id)})
+   :id (get-next-id)})

@@ -83,6 +83,7 @@
    [:div.mana-cost
     [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]
+   ; TODO - draw card text like "battlecry. charge. taunt." when relevant
    [:div.attack (:base-attack card)]
    [:div.health (:base-health card)]])
 

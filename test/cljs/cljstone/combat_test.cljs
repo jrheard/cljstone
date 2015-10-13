@@ -5,7 +5,6 @@
         [cljstone.board :only [play-card path-to-character]]
         [cljstone.character :only [get-health]]
         [cljstone.combat :only [attack find-dead-characters-in-board remove-minion enter-targeting-mode-for-attack]]
-        [cljstone.combat-log :only [get-next-log-entry-id]]
         [cljstone.minion :only [Minion make-minion minion-schematic->card]]
         [cljstone.test-helpers :only [fresh-board hero-1 hero-2 three-minions-per-player-board get-minion get-minion-card]]
         [plumbing.core :only [safe-get safe-get-in]]
@@ -15,7 +14,6 @@
 
 (deftest attacking
   (testing "two minions attacking each other"
-    (with-redefs [get-next-log-entry-id (fn [] 0)]
       (let [board (-> fresh-board
                       (update-in [:player-1 :minions] conj (make-minion (:boulderfist-ogre all-minions) 123))
                       (update-in [:player-2 :minions] conj (make-minion (:war-golem all-minions) 234)))
@@ -30,9 +28,10 @@
 
         ; combat log recorded both of those damages
         (is (= (-> board :combat-log first)
+               ; TODO - find some equivalent of ANY for these ids
                {:modifier {:type :attack :effect {:health -6}} :id 0 :source nil :target golem}))
         (is (= (-> board :combat-log (nth 1))
-               {:modifier {:type :attack :effect {:health -7}} :id 0 :source nil :target ogre})))))
+               {:modifier {:type :attack :effect {:health -7}} :id 0 :source nil :target ogre}))))
 
   (testing "both minions kill each other"
     (let [board (-> fresh-board

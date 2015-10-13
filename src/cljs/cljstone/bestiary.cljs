@@ -45,6 +45,15 @@
    :stormwind-knight {:name "Stormwind Knight", :base-attack 2, :base-health 5, :mana-cost 4, :modifiers [charge]}
    :booty-bay {:name "Booty Bay Bodyguard", :base-attack 5, :base-health 4, :mana-cost 5, :modifiers [taunt]}
    :pit-fighter {:name "Pit Fighter" :base-attack 5 :base-health 6 :mana-cost 5}
+   :fire-elemental {:name "Fire Elemental", :base-attack 6, :base-health 5, :class :shaman, :mana-cost 6,
+                    :battlecry {:get-targets (fn [board player]
+                                             (all-characters board))
+                                :effect (fn [board target-character]
+                                          (cause-damage board
+                                                        target-character
+                                                        {:type :attack
+                                                         :name "Fire Elemental"
+                                                         :effect {:health -3}}))}}
    :lord-of-the-arena {:name "Lord of the Arena", :base-attack 6, :base-health 5, :mana-cost 6, :modifiers [taunt]}
    :boulderfist-ogre {:name "Boulderfist Ogre" :base-attack 6 :base-health 7 :mana-cost 6}
    :reckless-rocketeer {:name "Reckless Rocketeer", :base-attack 5, :base-health 2, :mana-cost 6, :modifiers [charge]}
@@ -57,6 +66,7 @@
 
 (comment
   unconverted minions from basic card set below
+   ; TODO - implement a minion whose battlecry takes no targets (nightblade!!!!)
 
    {:name "Acidic Swamp Ooze", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Destroy your opponent's weapon.", :base-attack 3, :base-health 2, :mana-cost 2}
    {:name "Archmage", :mechanics ["Spellpower"], :text "<b>Spell Damage +1</b>", :base-attack 4, :base-health 7, :mana-cost 6}
@@ -64,7 +74,6 @@
    {:name "Darkscale Healer", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Restore 2 Health to all friendly characters.", :base-attack 4, :base-health 5, :mana-cost 5}
    {:name "Dragonling Mechanic", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Summon a 2/1 Mechanical Dragonling.", :base-attack 2, :base-health 4, :mana-cost 4}
    {:name "Dread Infernal", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 1 damage to ALL other characters.", :base-attack 6, :base-health 6, :class "Warlock", :mana-cost 6}
-   {:name "Fire Elemental", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 3 damage.", :base-attack 6, :base-health 5, :class "Shaman", :mana-cost 6}
    {:name "Flametongue Totem", :mechanics ["AdjacentBuff" "Aura"], :text "Adjacent minions have +2 Attack.", :base-attack 0, :base-health 3, :class "Shaman", :mana-cost 2}
    {:name "Frostwolf Grunt", :mechanics ["Taunt"], :text "<b>Taunt</b>", :base-attack 2, :base-health 2, :mana-cost 2}
    {:name "Frostwolf Warlord", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Gain +1/+1 for each other friendly minion on the battlefield.", :base-attack 4, :base-health 4, :mana-cost 5}

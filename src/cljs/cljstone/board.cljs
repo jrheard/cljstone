@@ -88,8 +88,7 @@
         (update-in [:player-1] clear-board-half-modifiers)
         (update-in [:player-2] clear-board-half-modifiers))))
 
-; tempted to name this draw-card-from-deck in order to prevent confusing it with some an html.cljs function about drawing things on the screen
-(s/defn draw-card :- Board
+(s/defn draw-a-card :- Board
   [board :- Board
    player :- Player]
   (-> board
@@ -106,7 +105,7 @@
       clear-inactive-modifiers
       ; TODO - when we implement eg wild growth, will need to split this out into a standalone increment-mana function
       ; it'll deal with eg giving you an "excess mana" card, etc
-      (draw-card (board :whose-turn))
+      (draw-a-card (board :whose-turn))
       (assoc-in [(board :whose-turn) :mana-modifiers] [])
       (update-in [(board :whose-turn) :mana] #(if (< % 10) (inc %) %))))
 

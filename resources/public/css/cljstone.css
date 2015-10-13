@@ -372,11 +372,13 @@ h3 {
 	padding: 5px 10px;
 }
 
+.hero .health.damaged,
 .minion .health.damaged {
 	color: #C92623;
 	text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
 }
 
+.hero .health.buffed,
 .minion .health.buffed {
 	color: #1BD919;
 	text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;

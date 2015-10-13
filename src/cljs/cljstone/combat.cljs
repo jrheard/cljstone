@@ -6,15 +6,18 @@
         [cljstone.minion :only [Minion]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
+(s/defn all-characters :- [Character]
+  [board :- Board]
+  (concat (safe-get-in board [:player-1 :minions])
+          [(safe-get-in board [:player-1 :hero])]
+          (safe-get-in board [:player-2 :minions])
+          [(safe-get-in board [:player-2 :hero])]))
+
 (s/defn find-dead-characters-in-board :- [Character]
   [board :- Board]
   ; TODO sort characters by :id ascending
-  (let [characters (concat (safe-get-in board [:player-1 :minions])
-                           [(safe-get-in board [:player-1 :hero])]
-                           (safe-get-in board [:player-2 :minions])
-                           [(safe-get-in board [:player-2 :hero])])]
-    (let [dead-characters (filter #(<= (get-health %) 0) characters)]
-      (or dead-characters []))))
+  (let [dead-characters (filter #(<= (get-health %) 0) (all-characters board))]
+    (or dead-characters [])))
 
 ; TODO have a separate kill-minion function: fires deathrattle, on-minion-death [eg flesheating ghoul, cult master], and calls remove-minion
 ; also will be used by twisting nether, assassinate, etc

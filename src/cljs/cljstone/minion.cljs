@@ -8,7 +8,7 @@
 (s/defschema Battlecry
   {(s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
    :effect s/Any
-   ; if :get-targets exists, :effect will be a function from (Board, target-character-id) -> Board
+   ; if :get-targets exists, :effect will be a function from (Board, target-character) -> Board
    ; if :get-targets does not exist, :effect will be a function from Board -> Board
    })
 
@@ -94,6 +94,9 @@
              ; *then* play the minion at the right position in the board
              ; *then* take the relevant card out of the player's hand
              (if-let [battlecry (:battlecry schematic)]
+               ; TODO - handle a few cases we don't currently handle
+               ; 1) battlecry has no :get-targets function (in which case just go straight to the :effect function)
+               ; 2) battlecry *has* a :get-targets, but it returns [] - in which case we should behave the same as in 1)
                (assoc board :mode {:type :targeting
                                    :targets ((battlecry :get-targets) board player)
                                    :continuation (fn [board target-character-id]

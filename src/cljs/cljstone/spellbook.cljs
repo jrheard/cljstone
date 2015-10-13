@@ -26,11 +26,7 @@
                      :mana-cost 1
                      :class :mage
                      :effect (fn [board caster]
-                               ; xxxxxxxxxxxxxxxx this won't work
-                               ; grim-reaper only exists on the board *atom*
-                               ; so i guess we just update get-enemy-characters to filter out 0-health ones?
-                               ; xxxxx i guess cause-damage can *also* invoke grim-reaper
-                               ; can't think of any reason why not
+                               ; TODO finish+test
                                (nth (iterate (fn [board]
                                               (cause-damage board
                                                             (rand-nth (get-enemy-characters board caster))

@@ -1,6 +1,7 @@
 (ns cljstone.bestiary
   (:require [schema.core :as s])
   (:use [cljstone.board :only [add-modifier-to-character]]
+        [cljstone.combat :only [all-characters cause-damage]]
         [plumbing.core :only [safe-get-in]]))
 
 (def taunt {:type :mechanic :effect {:taunt true}})
@@ -8,6 +9,15 @@
 
 (def all-minions
   {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :mana-cost 0}
+   :elven-archer {:name "Elven Archer", :base-attack 1, :base-health 1, :mana-cost 1,
+                  :battlecry {:get-targets (fn [board player]
+                                             (all-characters board))
+                              :effect (fn [board target-character]
+                                        (cause-damage board
+                                                      target-character
+                                                      {:type :attack
+                                                       :name "Elven Archer"
+                                                       :effect {:health -1}}))}}
    :murloc-raider {:name "Murloc Raider", :base-attack 2, :base-health 1, :mana-cost 1}
    :shieldbearer {:name "Shieldbearer" :base-attack 0 :base-health 4 :mana-cost 1 :modifiers [taunt]}
    :goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :mana-cost 1 :modifiers [taunt]}
@@ -54,7 +64,6 @@
    {:name "Darkscale Healer", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Restore 2 Health to all friendly characters.", :base-attack 4, :base-health 5, :mana-cost 5}
    {:name "Dragonling Mechanic", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Summon a 2/1 Mechanical Dragonling.", :base-attack 2, :base-health 4, :mana-cost 4}
    {:name "Dread Infernal", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 1 damage to ALL other characters.", :base-attack 6, :base-health 6, :class "Warlock", :mana-cost 6}
-   {:name "Elven Archer", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 1 damage.", :base-attack 1, :base-health 1, :mana-cost 1}
    {:name "Fire Elemental", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 3 damage.", :base-attack 6, :base-health 5, :class "Shaman", :mana-cost 6}
    {:name "Flametongue Totem", :mechanics ["AdjacentBuff" "Aura"], :text "Adjacent minions have +2 Attack.", :base-attack 0, :base-health 3, :class "Shaman", :mana-cost 2}
    {:name "Frostwolf Grunt", :mechanics ["Taunt"], :text "<b>Taunt</b>", :base-attack 2, :base-health 2, :mana-cost 2}

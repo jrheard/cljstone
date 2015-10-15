@@ -1,6 +1,7 @@
 (ns tools.card-scraper
   (:require [cheshire.core :refer [parse-string]]
-            [clojure.set :refer [rename-keys]]))
+            [clojure.set :refer [rename-keys]]
+            [clojure.string :refer [lower-case]]))
 
 (defonce contents (-> "http://hearthstonejson.com/json/AllSets.json"
                       slurp
@@ -42,6 +43,18 @@
 (def basic-weapons (->> basic
                         (filter #(= (:type %) "Weapon"))))
 
+(defn parse-spell [spell]
+  (-> spell
+      (dissoc :faction :type)
+      (rename-keys {:playerClass :class
+                    :cost :mana-cost})
+      (update-in [:class] (comp keyword lower-case))
+      ))
+
+(def basic-spells (->> basic
+                       (filter #(= (:type %) "Spell"))
+                       (map parse-spell)))
+
 (comment
   (prn (keys contents))
 
@@ -52,5 +65,6 @@
   (take 30 (drop 10 basic-minions))
 
   (prn simple-shield-minions)
+
 
   )

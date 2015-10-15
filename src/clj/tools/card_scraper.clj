@@ -39,6 +39,9 @@
        (map #(dissoc % :mechanics :text))
        (map #(assoc % :modifiers '[divine-shield]))))
 
+(def basic-weapons (->> basic
+                        (filter #(= (:type %) "Weapon"))))
+
 (comment
   (prn (keys contents))
 
@@ -49,4 +52,5 @@
   (take 30 (drop 10 basic-minions))
 
   (prn simple-shield-minions)
+
   )

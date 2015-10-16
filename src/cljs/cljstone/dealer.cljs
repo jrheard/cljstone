@@ -16,5 +16,5 @@
   []
   (-> (mapv minion-schematic->card
             (repeatedly NUM-CARDS-IN-DECK #(rand-nth vanilla-minions)))
-      (assoc 4 (spell->card (all-spells :flamecannon)))
+      (assoc 4 (spell->card (all-spells :arcane-intellect)))
       (assoc 6 (minion-schematic->card (all-minions :shattered-sun)))))

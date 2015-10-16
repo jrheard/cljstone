@@ -18,6 +18,6 @@
          :effect
          (fn [board player new-hand]
            (-> board
+               (assoc-in [player :hand] new-hand)
                ((spell :effect) player)
-               (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
-               (assoc-in [player :hand] new-hand)))))
+               (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))))))

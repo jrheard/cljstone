@@ -1,6 +1,6 @@
 (ns cljstone.spellbook
   (:require [schema.core :as s])
-  (:use [cljstone.board :only [Board]]
+  (:use [cljstone.board :only [Board draw-a-card]]
         [cljstone.character :only [Player]]
         [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]))
 
@@ -34,7 +34,14 @@
                                                              :name "Arcane Missiles"
                                                              :effect {:health -1}}))
                                             board)
-                                    3))}})
+                                    3))}
+   :arcane-intellect {:name "Arcane Intellect"
+                      :mana-cost 3
+                      :class :mage
+                      :effect (fn [board caster]
+                                (-> board
+                                    (draw-a-card caster)
+                                    (draw-a-card caster)))}})
 
 
 (comment

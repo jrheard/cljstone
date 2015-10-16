@@ -5,7 +5,7 @@
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [path-to-character end-turn run-continuation play-card get-mana get-character-by-id]]
         [cljstone.board-mode :only [DefaultMode]]
-        [cljstone.card :only [remove-card-from-hand]]
+        [cljstone.card :only [remove-card-from-list]]
         [cljstone.character :only [can-attack?]]
         [cljstone.combat :only [attack]]
         [cljstone.minion :only [MinionSchematic minion-schematic->card]]
@@ -97,7 +97,7 @@
                      :id 123
                      :class :warrior
                      :effect (fn [board player card]
-                               (update-in board [player :hand] remove-card-from-hand card))}
+                               (update-in board [player :hand] remove-card-from-list card))}
           board (assoc-in fresh-board [:player-1 :hand 0] test-card)
           old-hand (get-in board [:player-1 :hand])]
       (is (= (play-card board :player-1 0)

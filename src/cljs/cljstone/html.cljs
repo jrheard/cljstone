@@ -221,6 +221,7 @@
     [:div {:class classes}
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
+     ; TODO only draw this button if we're in defaultmode
      [draw-end-turn-button game-state]
      [draw-combat-log board]
      [draw-board-mode board game-state]]))

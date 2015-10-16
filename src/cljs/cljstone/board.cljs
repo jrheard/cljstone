@@ -30,6 +30,8 @@
    :whose-turn Player
    :turn s/Int
    :mode BoardMode
+   ; TODO - strongly consider making :combat-log just be a list of strings, and having log-entry-adding callsites do their own string formatting
+   ; so we end up with entries like ":player-1 drew Frostbolt", "fire elemental's battlecry did 3 damage to acolyte of pain", etc
    :combat-log [LogEntry]})
 
 (def STARTING-HAND-SIZE 7)

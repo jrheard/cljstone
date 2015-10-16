@@ -7,7 +7,7 @@
 (def taunt {:type :mechanic :effect {:taunt true}})
 (def charge {:type :mechanic :effect {:charge true}})
 
-(def all-minions
+(def playable-minions
   {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :mana-cost 0}
    :elven-archer {:name "Elven Archer", :base-attack 1, :base-health 1, :mana-cost 1,
                   :battlecry {:get-targets (fn [board player]
@@ -102,3 +102,5 @@
   {:name "Water Elemental", :mechanics ["Freeze"], :text "<b>Freeze</b> any character damaged by this minion.", :base-attack 3, :base-health 6, :class "Mage", :mana-cost 4}
   {:name "Windspeaker", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Give a friendly minion <b>Windfury</b>.", :base-attack 3, :base-health 3, :class "Shaman", :mana-cost 4}
   )
+
+(def all-minions playable-minions)

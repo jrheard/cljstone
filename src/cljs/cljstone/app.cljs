@@ -13,12 +13,6 @@
 
 (defonce board-atom
   (-> (make-board jaina (make-random-deck) thrall (make-random-deck))
-      (play-card :player-1 0)
-      (play-card :player-1 0)
-      (play-card :player-1 0)
-      (play-card :player-2 0)
-      (play-card :player-2 0)
-      (play-card :player-2 0)
       r/atom))
 
 (defn ^:export main []

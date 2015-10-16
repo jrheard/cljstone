@@ -12,11 +12,13 @@
    :modifiers [WeaponModifier]
    :class (s/enum :warrior :rogue :paladin)})
 
-(def all-weapons
+(def playable-weapons
   {:arcanite-reaper {:name "Arcanite Reaper", :attack 5, :durability 2, :mana-cost 5, :class :warrior}
    :assassins-blade {:name "Assassin's Blade", :attack 3, :durability 4, :mana-cost 5, :class :rogue}
    :fiery-win-axe {:name "Fiery War Axe", :attack 3, :durability 2, :mana-cost 2, :class :warrior}
    :lights-justice {:name "Light's Justice", :attack 1, :durability 4, :mana-cost 1, :class :paladin}
-   :wicked-knife {:name "Wicked Knife", :attack 1, :durability 2, :mana-cost 2, :class :rogue}
    ; XXXX TODO :truesilver-champion {:name "Truesilver Champion", :attack 4, :durability 2, :mana-cost 4, :class :paladin}
-   })
+   } 
+  )
+
+(def wicked-knife {:name "Wicked Knife", :attack 1, :durability 2, :mana-cost 2, :class :rogue})

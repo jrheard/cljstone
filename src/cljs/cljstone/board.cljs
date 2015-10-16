@@ -34,7 +34,7 @@
    ; so we end up with entries like ":player-1 drew Frostbolt", "fire elemental's battlecry did 3 damage to acolyte of pain", etc
    :combat-log [LogEntry]})
 
-(def STARTING-HAND-SIZE 7)
+(def STARTING-HAND-SIZE 3)
 
 ; TODO - consider having this guy take an id *or* a character
 (s/defn path-to-character :- [s/Any]

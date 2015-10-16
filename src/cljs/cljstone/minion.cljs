@@ -1,6 +1,6 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card CardClass]]
+  (:use [cljstone.card :only [Card CardClass remove-card-from-hand]]
         [cljstone.character :only [Player Character CharacterModifier]]
         [cljstone.hero :only [HeroClass]]
         [cljstone.utils :only [get-next-id]]))
@@ -89,7 +89,7 @@
    :base-attack (:base-attack schematic)
    :base-health (:base-health schematic)
    ; TODO break this out into a separate function, write tests, refactor
-   :effect (fn [board player new-hand]
+   :effect (fn [board player card]
              ; TODO implement positioning by associng :mode PositioningMode
              ; *then* do battlecries/targeting if applicable
              ; *then* play the minion at the right position in the board
@@ -103,11 +103,11 @@
                                    :continuation (fn [board target-character-id]
                                                    (-> board
                                                        (assoc :mode {:type :default})
-                                                       (assoc-in [player :hand] new-hand)
+                                                       (update-in [player :hand] remove-card-from-hand card)
                                                        (#((battlecry :effect) % target-character-id))
                                                        (play-minion-card player schematic)))})
                (-> board
-                   (assoc-in [player :hand] new-hand)
+                   (update-in [player :hand] remove-card-from-hand card)
                    (play-minion-card player schematic))))})
 
 

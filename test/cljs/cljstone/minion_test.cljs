@@ -35,7 +35,7 @@
 (s/defn play-and-get :- Minion
   [card :- Card]
   (-> fresh-board
-      ((:effect card) :player-1 [])
+      ((:effect card) :player-1 card)
       (safe-get-in [:player-1 :minions 0])))
 
 (deftest summoning-sickness

@@ -12,9 +12,13 @@
    (s/optional-key :base-health) s/Int
    (s/optional-key :durability) s/Int})
 
-
 (s/defschema CardClass
   (s/enum :neutral :druid :hunter :rogue :warlock :priest :mage :warrior :shaman :paladin))
+
+(s/defn remove-card-from-hand :- [Card]
+  [hand :- [Card]
+   card :- Card]
+  (vec (remove #(= (:id %) (:id card)) hand)))
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions
 ; no clue how molten giant, mountain giant, etc will work though.

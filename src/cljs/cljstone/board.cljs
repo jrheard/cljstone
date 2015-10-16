@@ -165,6 +165,5 @@
             (count (safe-get-in board [player :hand])))]}
 
   (let [hand (-> board player :hand)
-        card (nth hand card-index)
-        new-hand (vec (remove #(= (:id %) (:id card)) hand))]
-    ((card :effect) board player new-hand)))
+        card (nth hand card-index)]
+    ((card :effect) board player card)))

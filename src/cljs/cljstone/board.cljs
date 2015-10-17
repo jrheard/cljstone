@@ -102,6 +102,12 @@
                                       hand))))
       (update-in [player :deck] rest)))
 
+(s/defn toggle-mulligan-card-selected
+  [board :- Board
+   index :- s/Int]
+
+  )
+
 (s/defn handle-mulligan-mode :- Board
   [board :- Board]
   (assoc board :mode {:type :mulligan

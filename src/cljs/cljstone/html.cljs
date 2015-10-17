@@ -8,7 +8,7 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id toggle-mulligan-card-selected]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
@@ -36,6 +36,8 @@
   (and (= (safe-get-in board [:mode :type]) :targeting)
        (in? (safe-get-in board [:mode :targets])
             character)))
+
+; TODO - inventory all the data attributes we're using, see if we actually need any of them
 
 (s/defn character-properties
   [board :- Board
@@ -108,7 +110,8 @@
            :on-click (fn [e]
                        (when playable
                          ; XXX replace with select-card?
-                         (put! game-event-chan {:type :play-card
+                         (put! game-event-chan {:type :select-card
+                                                ; XXXX is player necessary? can just use whose-turn, right?
                                                 :player player
                                                 :index index}))
                        nil)}
@@ -209,7 +212,7 @@
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
 ; XXXXXXXX copypasted most of this from draw-card, fixup
-(defn draw-mulligan-card [card game-event-chan]
+(defn draw-mulligan-card [card index game-event-chan]
   (let [classes (str
                   "card "
                   (clj->js (:class card))
@@ -217,7 +220,7 @@
     [:div {:class classes
            :on-click (fn [e]
                        (put! game-event-chan {:type :select-card
-                                              :card card})
+                                              :index index})
                        nil)}
      (condp = (:type card)
        :minion [draw-minion-card card]
@@ -225,9 +228,10 @@
 
 ; XXXX draw "ok" button, wire it up to fire an event, run continuation
 (defn draw-mulligan [board game-state]
-  [:div.mulligan
-    (for [card (map :card (safe-get-in board [:mode :cards]))]
-      ^{:key (str "mulligan" (:id card))} [draw-mulligan-card card (game-state :game-event-chan)])])
+  [:div.mulligan-container
+   ; XXX why can't we map-indexed :card?
+    (for [[index card] (map-indexed vector (map :card (safe-get-in board [:mode :cards])))]
+      ^{:key (str "mulligan" (:id card))} [draw-mulligan-card card index (game-state :game-event-chan)])])
 
 (defn draw-board-mode [board game-state]
   (condp = (:type (board :mode))
@@ -257,11 +261,11 @@
           board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
-          [:mulligan :select-card] (swap! board-atom TODO)
+          [:mulligan :select-card] (swap! board-atom toggle-mulligan-card-selected (:index msg))
           [:mulligan :accept-mulligan] (swap! board-atom run-continuation)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (get-character-by-id @board-atom (msg :character-id)))
           [:targeting :character-selected] (swap! board-atom run-continuation (get-character-by-id @board-atom (msg :character-id)))
-          [_ :play-card] (when (= board-mode :default)
+          [_ :select-card] (when (= board-mode :default)
                            (swap! board-atom play-card (msg :player) (msg :index)))
           [_ :end-turn] (when (= board-mode :default)
                           (swap! board-atom end-turn))

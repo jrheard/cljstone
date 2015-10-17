@@ -68,6 +68,13 @@ h3 {
 	top: -500px;
 }
 
+.mulligan-container {
+	position: absolute;
+	top: 400px;
+	left: 550px;
+	width: 800px;
+}
+
 .board-half .hand .card {
 	float: left;
 	width: 200px;

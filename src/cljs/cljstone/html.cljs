@@ -212,8 +212,9 @@
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
 ; XXXXXXXX copypasted most of this from draw-card, fixup
-(defn draw-mulligan-card [card index game-event-chan]
-  (let [classes (str
+(defn draw-mulligan-card [mulligan-card index game-event-chan]
+  (let [card (mulligan-card :card)
+        classes (str
                   "card "
                   (clj->js (:class card))
                   (condp = (:type card) :minion " minion " :spell " spell "))]
@@ -222,6 +223,7 @@
                        (put! game-event-chan {:type :select-card
                                               :index index})
                        nil)}
+     (js/console.log (clj->js (mulligan-card :selected)))
      (condp = (:type card)
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
@@ -229,9 +231,8 @@
 ; XXXX draw "ok" button, wire it up to fire an event, run continuation
 (defn draw-mulligan [board game-state]
   [:div.mulligan-container
-   ; XXX why can't we map-indexed :card?
-    (for [[index card] (map-indexed vector (map :card (safe-get-in board [:mode :cards])))]
-      ^{:key (str "mulligan" (:id card))} [draw-mulligan-card card index (game-state :game-event-chan)])])
+    (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
+      ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])])
 
 (defn draw-board-mode [board game-state]
   (condp = (:type (board :mode))

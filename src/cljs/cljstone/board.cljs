@@ -105,14 +105,13 @@
 (s/defn toggle-mulligan-card-selected
   [board :- Board
    index :- s/Int]
-
-  )
+  (update-in board [:mode :cards index :selected] not))
 
 (s/defn handle-mulligan-mode :- Board
   [board :- Board]
   (assoc board :mode {:type :mulligan
-                      :cards (for [card (take STARTING-HAND-SIZE (safe-get-in board [(:whose-turn board) :deck]))]
-                               {:card card :selected true})
+                      :cards (vec (for [card (take STARTING-HAND-SIZE (safe-get-in board [(:whose-turn board) :deck]))]
+                                    {:card card :selected true}))
                       :continuation (s/fn :- Board
                                       [board :- Board]
                                       (let [cards (->> (safe-get-in board [:mode :cards])

@@ -74,7 +74,7 @@ h3 {
 
 .mulligan-container {
 	position: absolute;
-	top: 400px;
+	top: 250px;
 	left: 550px;
 	width: 1000px;
 }
@@ -83,6 +83,10 @@ h3 {
 	margin-right: 75px;
 }
 
+.mulligan-container .card:hover {
+	background-color: #CCC;
+	cursor: pointer;
+}
 
 .card {
 	float: left;
@@ -247,13 +251,19 @@ h3 {
 	border-bottom: 0;
 }
 
+.unselected-mulligan-card,
 .hero .loser {
 	position: absolute;
 	width: 100%;
 	height: 100%;
 	font-size: 200px;
 	color: #cc0000;
+	text-align: center;
 	background-color: #EEE;
+}
+
+.unselected-mulligan-card {
+	background-color: initial;
 }
 
 .end-turn,

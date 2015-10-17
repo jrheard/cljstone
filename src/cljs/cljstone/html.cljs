@@ -223,7 +223,8 @@
                        (put! game-event-chan {:type :select-card
                                               :index index})
                        nil)}
-     (js/console.log (clj->js (mulligan-card :selected)))
+     (when (not (mulligan-card :selected))
+       [:div.unselected-mulligan-card "X"])
      (condp = (:type card)
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))

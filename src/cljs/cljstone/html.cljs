@@ -103,9 +103,11 @@
                   (condp = (:type card) :minion " minion " :spell " spell ")
                   (when playable "playable"))]
     [:div {:class classes
+           ; XXX no reason to do this data-card-index business, just send a :select-card with :card -> card
            :data-card-index index
            :on-click (fn [e]
                        (when playable
+                         ; XXX replace with select-card?
                          (put! game-event-chan {:type :play-card
                                                 :player player
                                                 :index index}))
@@ -206,9 +208,31 @@
   [:div.game-over
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
+; XXXXXXXX copypasted most of this from draw-card, fixup
+(defn draw-mulligan-card [card game-event-chan]
+  (let [classes (str
+                  "card "
+                  (clj->js (:class card))
+                  (condp = (:type card) :minion " minion " :spell " spell "))]
+    [:div {:class classes
+           :on-click (fn [e]
+                       (put! game-event-chan {:type :select-card
+                                              :card card})
+                       nil)}
+     (condp = (:type card)
+       :minion [draw-minion-card card]
+       :spell [draw-spell-card card])]))
+
+; XXXX draw "ok" button, wire it up to fire an event, run continuation
+(defn draw-mulligan [board game-state]
+  [:div.mulligan
+    (for [card (map :card (safe-get-in board [:mode :cards]))]
+      ^{:key (str "mulligan" (:id card))} [draw-mulligan-card card (game-state :game-event-chan)])])
+
 (defn draw-board-mode [board game-state]
   (condp = (:type (board :mode))
     :default nil
+    :mulligan (draw-mulligan board game-state)
     :targeting (draw-cancel-button board game-state "Cancel Targeting")
     :positioning (draw-cancel-button board game-state "Cancel Positioning")
     :game-over (draw-game-over (:winner (board :mode)))))
@@ -218,11 +242,12 @@
         classes (str
                   "board "
                   (name (safe-get-in board [:mode :type])))]
+    ; TODO draw modal-style overlay if we're in mulligan or tracking
     [:div {:class classes}
      [draw-board-half board :player-1 game-state]
      [draw-board-half board :player-2 game-state]
-     ; TODO only draw this button if we're in defaultmode
-     [draw-end-turn-button game-state]
+     (when (= (safe-get-in board [:mode :type]) :default)
+       [draw-end-turn-button game-state])
      [draw-combat-log board]
      [draw-board-mode board game-state]]))
 
@@ -232,6 +257,8 @@
           board-mode (safe-get-in @board-atom [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
+          [:mulligan :select-card] (swap! board-atom TODO)
+          [:mulligan :accept-mulligan] (swap! board-atom run-continuation)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (get-character-by-id @board-atom (msg :character-id)))
           [:targeting :character-selected] (swap! board-atom run-continuation (get-character-by-id @board-atom (msg :character-id)))
           [_ :play-card] (when (= board-mode :default)

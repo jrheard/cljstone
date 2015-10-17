@@ -108,9 +108,8 @@
                       :cards (for [card (take STARTING-HAND-SIZE (safe-get-in board [(:whose-turn board) :deck]))]
                                {:card card :selected true})
                       :continuation (s/fn :- Board
-                                      [board :- Board
-                                       mulligan-cards :- [MulliganCard]]
-                                      (let [cards (->> mulligan-cards
+                                      [board :- Board]
+                                      (let [cards (->> (safe-get-in board [:mode :cards])
                                                        (filter :selected)
                                                        (map :card))
                                             num-cards-to-draw (- STARTING-HAND-SIZE (count cards))
@@ -119,10 +118,11 @@
                                                          (take num-cards-to-draw (difference
                                                                                    (set deck)
                                                                                    (set cards))))
-                                            deck (reduce remove-card-from-list deck hand)]
+                                            new-deck (reduce remove-card-from-list deck hand)]
+                                        ; TODO implement selecting/unselecting mulligan cards
                                         (-> board
                                             (assoc-in [(:whose-turn board) :hand] hand)
-                                            (assoc-in [(:whose-turn board) :deck] deck)
+                                            (assoc-in [(:whose-turn board) :deck] new-deck)
                                             (assoc :mode DefaultMode))))}))
 
 (s/defn begin-turn :- Board

@@ -234,7 +234,7 @@
    [:div.accept-mulligan {:on-click #(do
                                       (put! (game-state :game-event-chan) {:type :accept-mulligan})
                                       nil)}
-    "OK"]
+    "Accept Mulligan"]
    [:div.mulligan-container
      (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
        ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])]])

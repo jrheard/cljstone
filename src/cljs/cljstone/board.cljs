@@ -166,7 +166,8 @@
                            :minions []})]
         (begin-turn {:player-1 (make-board-half hero-1 deck-1)
                      :player-2 (make-board-half hero-2 deck-2)
-                     :whose-turn (rand-nth [:player-1 :player-2])
+                     :whose-turn :player-1
+                     ;:whose-turn (rand-nth [:player-1 :player-2])
                      :turn 0
                      :mode DefaultMode
                      :combat-log []})))

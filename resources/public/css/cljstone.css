@@ -75,7 +75,7 @@ h3 {
 .mulligan-container {
 	position: absolute;
 	top: 250px;
-	left: 550px;
+	left: 525px;
 	width: 1000px;
 }
 
@@ -266,6 +266,7 @@ h3 {
 	background-color: initial;
 }
 
+.accept-mulligan,
 .end-turn,
 .cancel-mode {
 	position: absolute;
@@ -278,14 +279,19 @@ h3 {
 	z-index: 5;
 }
 
+.accept-mulligan {
+	left: 49%;
+}
+
 .cancel-mode {
-	left: 43%;
+	left: 44%;
 }
 
 .end-turn {
 	right: 299px;
 }
 
+.accept-mulligan:hover,
 .end-turn:hover,
 .cancel-mode:hover {
 	background-color: #CCC;

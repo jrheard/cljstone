@@ -229,11 +229,15 @@
        :minion [draw-minion-card card]
        :spell [draw-spell-card card])]))
 
-; XXXX draw "ok" button, wire it up to fire an event, run continuation
 (defn draw-mulligan [board game-state]
-  [:div.mulligan-container
-    (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
-      ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])])
+  [:div
+   [:div.accept-mulligan {:on-click #(do
+                                      (put! (game-state :game-event-chan) {:type :accept-mulligan})
+                                      nil)}
+    "OK"]
+   [:div.mulligan-container
+     (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
+       ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])]])
 
 (defn draw-board-mode [board game-state]
   (condp = (:type (board :mode))

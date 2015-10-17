@@ -133,7 +133,7 @@
 (s/defn begin-turn :- Board
   [board :- Board]
   (let [board (clear-inactive-modifiers board)]
-    (if (<= (:turn board) 2)
+    (if (<= (:turn board) 1)
       (handle-mulligan-mode board)
       (-> board
           (draw-a-card (board :whose-turn))

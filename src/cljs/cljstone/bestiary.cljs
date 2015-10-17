@@ -9,6 +9,7 @@
 
 (def playable-minions
   {:wisp {:name "Wisp" :base-attack 1 :base-health 1 :mana-cost 0}
+   ; TOOD - when a minion's battlecry has put us into targeting mode, highlight the minion's card even though it's still in the player's hand
    :elven-archer {:name "Elven Archer", :base-attack 1, :base-health 1, :mana-cost 1,
                   :battlecry {:get-targets (fn [board player]
                                              (all-characters board))

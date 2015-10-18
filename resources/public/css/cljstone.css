@@ -39,6 +39,15 @@ h3 {
 	width: 1000px;
 }
 
+.overlay {
+	width: 100%;
+	top: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.2);
+	position: absolute;
+	z-index: 2;
+}
+
 .board {
 	width: 1800px;
 	margin: 0 auto;
@@ -77,6 +86,7 @@ h3 {
 	top: 550px;
 	left: 525px;
 	width: 1000px;
+	z-index: 3;
 }
 
 .mulligan-container .card {

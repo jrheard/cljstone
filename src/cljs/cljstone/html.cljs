@@ -253,13 +253,16 @@
                   "board "
                   (name (safe-get-in board [:mode :type])))]
     ; TODO draw modal-style overlay if we're in mulligan or tracking
-    [:div {:class classes}
-     [draw-board-half board :player-1 game-state]
-     [draw-board-half board :player-2 game-state]
-     (when (= (safe-get-in board [:mode :type]) :default)
-       [draw-end-turn-button game-state])
-     [draw-combat-log board]
-     [draw-board-mode board game-state]]))
+    [:div
+     (when (contains? #{:mulligan :tracking :choose-one} (safe-get-in board [:mode :type]))
+       [:div.overlay])
+     [:div {:class classes}
+      [draw-board-half board :player-1 game-state]
+      [draw-board-half board :player-2 game-state]
+      (when (= (safe-get-in board [:mode :type]) :default)
+        [draw-end-turn-button game-state])
+      [draw-combat-log board]
+      [draw-board-mode board game-state]]]))
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []

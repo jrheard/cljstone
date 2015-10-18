@@ -252,7 +252,6 @@
         classes (str
                   "board "
                   (name (safe-get-in board [:mode :type])))]
-    ; TODO draw modal-style overlay if we're in mulligan or tracking
     [:div
      (when (contains? #{:mulligan :tracking :choose-one} (safe-get-in board [:mode :type]))
        [:div.overlay])
@@ -264,6 +263,8 @@
       [draw-combat-log board]
       [draw-board-mode board game-state]]]))
 
+; XXXXX taunt isn't working correctly somewhere - i'm able to attack the enemy hero even though they have a taunt minion up
+; ok it's specifically happening in drag-drop attacking, not a problem in click->click attacking
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)

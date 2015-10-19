@@ -67,7 +67,8 @@
      :on-drag-start #(when can-be-selected (fire-selected-event %))
      :on-drag-over #(.preventDefault %)
      :on-drop (fn [e]
-                (fire-selected-event e)
+                (when can-be-selected
+                  (fire-selected-event e))
                 (.preventDefault e))}))
 
 (s/defn draw-character-health [character :- Character]
@@ -109,10 +110,7 @@
            :data-card-index index
            :on-click (fn [e]
                        (when playable
-                         ; XXX replace with select-card?
                          (put! game-event-chan {:type :select-card
-                                                ; XXXX is player necessary? can just use whose-turn, right?
-                                                :player player
                                                 :index index}))
                        nil)}
      (condp = (:type card)
@@ -234,7 +232,7 @@
    [:div.accept-mulligan {:on-click #(do
                                       (put! (game-state :game-event-chan) {:type :accept-mulligan})
                                       nil)}
-    "Accept Mulligan"]
+    "Complete Mulligan"]
    [:div.mulligan-container
      (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
        ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])]])
@@ -263,12 +261,17 @@
       [draw-combat-log board]
       [draw-board-mode board game-state]]]))
 
-; XXXXX taunt isn't working correctly somewhere - i'm able to attack the enemy hero even though they have a taunt minion up
-; ok it's specifically happening in drag-drop attacking, not a problem in click->click attacking
+; XXXXX saw a situation where jaina had two cards instead of three in opening hand
+; js console had this message
+; Warning: flattenChildren(...): Encountered two children with the same key, `.1:$26`. Child keys must be unique; when two children share a key, only the first child will be used.
+
+; looks like she wound up with two copies of the same sen'jin shieldmasta, both with id 26. how?
+
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
-          board-mode (safe-get-in @board-atom [:mode :type])]
+          board @board-atom
+          board-mode (safe-get-in board [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
           [:mulligan :select-card] (swap! board-atom toggle-mulligan-card-selected (:index msg))
@@ -276,7 +279,7 @@
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (get-character-by-id @board-atom (msg :character-id)))
           [:targeting :character-selected] (swap! board-atom run-continuation (get-character-by-id @board-atom (msg :character-id)))
           [_ :select-card] (when (= board-mode :default)
-                           (swap! board-atom play-card (msg :player) (msg :index)))
+                           (swap! board-atom play-card (:whose-turn board) (msg :index)))
           [_ :end-turn] (when (= board-mode :default)
                           (swap! board-atom end-turn))
           [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))

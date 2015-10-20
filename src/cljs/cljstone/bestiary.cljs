@@ -23,7 +23,7 @@
    :shieldbearer {:name "Shieldbearer" :base-attack 0 :base-health 4 :mana-cost 1 :modifiers [taunt]}
    :goldshire-footman {:name "Goldshire Footman" :base-attack 1 :base-health 2 :mana-cost 1 :modifiers [taunt]}
    :stonetusk-boar {:name "Stonetusk Boar", :base-attack 1, :base-health 1, :mana-cost 1, :modifiers [charge]}
-   :voidwalker {:name "Voidwalker", :base-attack 1, :base-health 3, :class :warlock, :mana-cost 1}
+   :voidwalker {:name "Voidwalker", :base-attack 1, :base-health 3, :class :warlock, :mana-cost 1, :modifiers [taunt]}
    :bloodfen-raptor {:name "Bloodfen Raptor" :base-attack 3 :base-health 2 :mana-cost 2}
    :bluegill-warrior {:name "Bluegill Warrior", :base-attack 2, :base-health 1, :mana-cost 2, :modifiers [charge]}
    :frostwolf-grunt {:name "Frostwolf Grunt", :base-attack 2, :base-health 2, :mana-cost 2, :modifiers [taunt]}

@@ -74,6 +74,8 @@
              modifier))
 
 (s/defn clear-inactive-modifiers :- Board
+  "Characters can have modifiers (eg 'frozen', 'summoning sickness') that expire on a specific turn.
+  Goes through all of the characters on the board, and clears any modifiers whose time it is to expire."
   [board :- Board]
   (let [modifier-is-active? (s/fn :- s/Bool
                               [modifier :- CharacterModifier]

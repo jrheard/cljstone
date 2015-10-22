@@ -56,8 +56,7 @@
         half-2-path (find-in-board-half (:player-2 board))]
     (cond
       half-1-path (vec (concat [:player-1] half-1-path))
-      half-2-path (vec (concat [:player-2] half-2-path))
-      :else nil)))
+      half-2-path (vec (concat [:player-2] half-2-path)))))
 
 (s/defn get-character-by-id :- Character
   [board :- Board

@@ -51,8 +51,6 @@
  {:name "Ancestral Healing", :text "Restore a minion to full Health and give it <b>Taunt</b>.", :class :shaman, :mana-cost 0}
  {:name "Animal Companion", :text "Summon a random Beast Companion.", :class :hunter, :mana-cost 3}
  {:name "Arcane Explosion", :text "Deal $1 damage to all enemy minions.", :class :mage, :mana-cost 2}
- {:name "Arcane Intellect", :text "Draw 2 cards.", :class :mage, :mana-cost 3}
- {:name "Arcane Missiles", :mechanics ["ImmuneToSpellpower"], :text "Deal $3 damage randomly split among all enemies.", :class :mage, :mana-cost 1}
  {:name "Arcane Shot", :text "Deal $2 damage.", :class :hunter, :mana-cost 1}
  {:name "Assassinate", :text "Destroy an enemy minion.", :class :rogue, :mana-cost 5}
  {:name "Backstab", :text "Deal $2 damage to an undamaged minion.", :class :rogue, :mana-cost 0}

@@ -1,3 +1,7 @@
+/* XXX this css is very haphazard, don't judge me.
+ * TODO: see if figwheel supports automatically running css preprocessors.
+ * converting to sass or whatever could be a good excuse for fixing up this file */
+
 body {
 	font-family: Helvetica, sans-serif;
 	-webkit-user-select: none;
@@ -35,6 +39,15 @@ h3 {
 	width: 1000px;
 }
 
+.overlay {
+	width: 100%;
+	top: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.2);
+	position: absolute;
+	z-index: 2;
+}
+
 .board {
 	width: 1800px;
 	margin: 0 auto;
@@ -68,7 +81,24 @@ h3 {
 	top: -500px;
 }
 
-.board-half .hand .card {
+.mulligan-container {
+	position: absolute;
+	top: 550px;
+	left: 525px;
+	width: 1000px;
+	z-index: 3;
+}
+
+.mulligan-container .card {
+	margin-right: 75px;
+}
+
+.mulligan-container .card:hover {
+	background-color: #CCC;
+	cursor: pointer;
+}
+
+.card {
 	float: left;
 	width: 200px;
 	height: 200px;
@@ -76,11 +106,17 @@ h3 {
 	background-color: #EEE;
 	font-size: 10px;
 	margin-bottom: 17px;
-	posiiton: relative;
+	position: relative;
 }
 
 .board-half .hand .card .content {
 	position: relative;
+}
+
+.card .content {
+	width: 100%;
+	height: 100%;
+	display: table;
 }
 
 .mana-cost {
@@ -225,15 +261,22 @@ h3 {
 	border-bottom: 0;
 }
 
+.unselected-mulligan-card,
 .hero .loser {
 	position: absolute;
 	width: 100%;
 	height: 100%;
 	font-size: 200px;
 	color: #cc0000;
+	text-align: center;
 	background-color: #EEE;
 }
 
+.unselected-mulligan-card {
+	background-color: initial;
+}
+
+.accept-mulligan,
 .end-turn,
 .cancel-mode {
 	position: absolute;
@@ -246,14 +289,19 @@ h3 {
 	z-index: 5;
 }
 
+.accept-mulligan {
+	left: 44%;
+}
+
 .cancel-mode {
-	left: 43%;
+	left: 44%;
 }
 
 .end-turn {
 	right: 299px;
 }
 
+.accept-mulligan:hover,
 .end-turn:hover,
 .cancel-mode:hover {
 	background-color: #CCC;

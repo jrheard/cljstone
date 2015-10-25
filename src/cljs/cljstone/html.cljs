@@ -8,7 +8,7 @@
   (:use [cljs.core.async :only [chan <! >! put!]]
         [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
-        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id]]
+        [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id toggle-mulligan-card-selected]]
         [cljstone.board-mode :only [DefaultMode]]
         [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
@@ -36,6 +36,8 @@
   (and (= (safe-get-in board [:mode :type]) :targeting)
        (in? (safe-get-in board [:mode :targets])
             character)))
+
+; TODO - inventory all the data attributes we're using, see if we actually need any of them
 
 (s/defn character-properties
   [board :- Board
@@ -65,7 +67,8 @@
      :on-drag-start #(when can-be-selected (fire-selected-event %))
      :on-drag-over #(.preventDefault %)
      :on-drop (fn [e]
-                (fire-selected-event e)
+                (when can-be-selected
+                  (fire-selected-event e))
                 (.preventDefault e))}))
 
 (s/defn draw-character-health [character :- Character]
@@ -103,11 +106,11 @@
                   (condp = (:type card) :minion " minion " :spell " spell ")
                   (when playable "playable"))]
     [:div {:class classes
+           ; XXX no reason to do this data-card-index business, just send a :select-card with :card -> card
            :data-card-index index
            :on-click (fn [e]
                        (when playable
-                         (put! game-event-chan {:type :play-card
-                                                :player player
+                         (put! game-event-chan {:type :select-card
                                                 :index index}))
                        nil)}
      (condp = (:type card)
@@ -206,9 +209,38 @@
   [:div.game-over
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
+; XXXXXXXX copypasted most of this from draw-card, fixup
+(defn draw-mulligan-card [mulligan-card index game-event-chan]
+  (let [card (mulligan-card :card)
+        classes (str
+                  "card "
+                  (clj->js (:class card))
+                  (condp = (:type card) :minion " minion " :spell " spell "))]
+    [:div {:class classes
+           :on-click (fn [e]
+                       (put! game-event-chan {:type :select-card
+                                              :index index})
+                       nil)}
+     (when (not (mulligan-card :selected))
+       [:div.unselected-mulligan-card "X"])
+     (condp = (:type card)
+       :minion [draw-minion-card card]
+       :spell [draw-spell-card card])]))
+
+(defn draw-mulligan [board game-state]
+  [:div
+   [:div.accept-mulligan {:on-click #(do
+                                      (put! (game-state :game-event-chan) {:type :accept-mulligan})
+                                      nil)}
+    "Complete Mulligan"]
+   [:div.mulligan-container
+     (for [[index card] (map-indexed vector (safe-get-in board [:mode :cards]))]
+       ^{:key (str "mulligan" (:id (:card card)))} [draw-mulligan-card card index (game-state :game-event-chan)])]])
+
 (defn draw-board-mode [board game-state]
   (condp = (:type (board :mode))
     :default nil
+    :mulligan (draw-mulligan board game-state)
     :targeting (draw-cancel-button board game-state "Cancel Targeting")
     :positioning (draw-cancel-button board game-state "Cancel Positioning")
     :game-over (draw-game-over (:winner (board :mode)))))
@@ -218,23 +250,36 @@
         classes (str
                   "board "
                   (name (safe-get-in board [:mode :type])))]
-    [:div {:class classes}
-     [draw-board-half board :player-1 game-state]
-     [draw-board-half board :player-2 game-state]
-     [draw-end-turn-button game-state]
-     [draw-combat-log board]
-     [draw-board-mode board game-state]]))
+    [:div
+     (when (contains? #{:mulligan :tracking :choose-one} (safe-get-in board [:mode :type]))
+       [:div.overlay])
+     [:div {:class classes}
+      [draw-board-half board :player-1 game-state]
+      [draw-board-half board :player-2 game-state]
+      (when (= (safe-get-in board [:mode :type]) :default)
+        [draw-end-turn-button game-state])
+      [draw-combat-log board]
+      [draw-board-mode board game-state]]]))
+
+; XXXXX saw a situation where jaina had two cards instead of three in opening hand
+; js console had this message
+; Warning: flattenChildren(...): Encountered two children with the same key, `.1:$26`. Child keys must be unique; when two children share a key, only the first child will be used.
+
+; looks like she wound up with two copies of the same sen'jin shieldmasta, both with id 26. how?
 
 (defn handle-game-events [{:keys [game-event-chan board-atom]}]
   (go-loop []
     (let [msg (<! game-event-chan)
-          board-mode (safe-get-in @board-atom [:mode :type])]
+          board @board-atom
+          board-mode (safe-get-in board [:mode :type])]
       (when (not= board-mode :game-over)
         (match [board-mode (:type msg)]
+          [:mulligan :select-card] (swap! board-atom toggle-mulligan-card-selected (:index msg))
+          [:mulligan :accept-mulligan] (swap! board-atom run-continuation)
           [:default :character-selected] (swap! board-atom enter-targeting-mode-for-attack (get-character-by-id @board-atom (msg :character-id)))
           [:targeting :character-selected] (swap! board-atom run-continuation (get-character-by-id @board-atom (msg :character-id)))
-          [_ :play-card] (when (= board-mode :default)
-                           (swap! board-atom play-card (msg :player) (msg :index)))
+          [_ :select-card] (when (= board-mode :default)
+                           (swap! board-atom play-card (:whose-turn board) (msg :index)))
           [_ :end-turn] (when (= board-mode :default)
                           (swap! board-atom end-turn))
           [(_ :guard #(not= :default %)) :cancel-mode] (swap! board-atom assoc :mode DefaultMode))

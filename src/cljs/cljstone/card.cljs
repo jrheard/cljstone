@@ -15,7 +15,7 @@
 (s/defschema CardClass
   (s/enum :neutral :druid :hunter :rogue :warlock :priest :mage :warrior :shaman :paladin))
 
-(s/defn remove-card-from-hand :- [Card]
+(s/defn remove-card-from-list :- [Card]
   [hand :- [Card]
    card :- Card]
   (vec (remove #(= (:id %) (:id card)) hand)))

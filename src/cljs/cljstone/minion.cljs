@@ -1,6 +1,6 @@
 (ns cljstone.minion
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card CardClass remove-card-from-hand]]
+  (:use [cljstone.card :only [Card CardClass remove-card-from-list]]
         [cljstone.character :only [Player Character CharacterModifier]]
         [cljstone.hero :only [HeroClass]]
         [cljstone.utils :only [get-next-id]]))
@@ -103,11 +103,11 @@
                                    :continuation (fn [board target-character-id]
                                                    (-> board
                                                        (assoc :mode {:type :default})
-                                                       (update-in [player :hand] remove-card-from-hand card)
+                                                       (update-in [player :hand] remove-card-from-list card)
                                                        (#((battlecry :effect) % target-character-id))
                                                        (play-minion-card player schematic)))})
                (-> board
-                   (update-in [player :hand] remove-card-from-hand card)
+                   (update-in [player :hand] remove-card-from-list card)
                    (play-minion-card player schematic))))})
 
 

@@ -1,6 +1,6 @@
 (ns cljstone.spell
   (:require [schema.core :as s])
-  (:use [cljstone.card :only [Card CardClass remove-card-from-hand]]
+  (:use [cljstone.card :only [Card CardClass remove-card-from-list]]
         [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]
         [cljstone.utils :only [get-next-id]]))
 
@@ -20,4 +20,4 @@
            (-> board
                ((spell :effect) player)
                (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
-               (update-in [player :hand] remove-card-from-hand card)))))
+               (update-in [player :hand] remove-card-from-list card)))))

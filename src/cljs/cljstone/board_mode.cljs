@@ -43,9 +43,13 @@
                                        :index s/Int}
    :continuation s/Any})
 
+(s/defschema MulliganCard
+  {:card Card
+   :selected s/Bool})
+
 (s/defschema MulliganMode
   {:type :mulligan
-   :cards [Card]
+   :cards [MulliganCard]
    :continuation s/Any})
 
 (s/defschema GameOverMode

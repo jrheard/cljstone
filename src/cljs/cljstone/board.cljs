@@ -1,7 +1,8 @@
 (ns cljstone.board
   (:require [schema.core :as s])
-  (:use [cljstone.board-mode :only [BoardMode DefaultMode]]
-        [cljstone.card :only [Card]]
+  (:use [clojure.set :only [difference]]
+        [cljstone.board-mode :only [BoardMode DefaultMode]]
+        [cljstone.card :only [Card remove-card-from-list]]
         [cljstone.character :only [Character CharacterModifier Player other-player]]
         [cljstone.hero :only [Hero]]
         [cljstone.minion :only [Minion]]
@@ -55,8 +56,7 @@
         half-2-path (find-in-board-half (:player-2 board))]
     (cond
       half-1-path (vec (concat [:player-1] half-1-path))
-      half-2-path (vec (concat [:player-2] half-2-path))
-      :else nil)))
+      half-2-path (vec (concat [:player-2] half-2-path)))))
 
 (s/defn get-character-by-id :- Character
   [board :- Board
@@ -73,6 +73,8 @@
              modifier))
 
 (s/defn clear-inactive-modifiers :- Board
+  "Characters can have modifiers (eg 'frozen', 'summoning sickness') that expire on a specific turn.
+  Goes through all of the characters on the board, and clears any modifiers whose time it is to expire."
   [board :- Board]
   (let [modifier-is-active? (s/fn :- s/Bool
                               [modifier :- CharacterModifier]
@@ -101,15 +103,44 @@
                                       hand))))
       (update-in [player :deck] rest)))
 
+(s/defn toggle-mulligan-card-selected
+  [board :- Board
+   index :- s/Int]
+  (update-in board [:mode :cards index :selected] not))
+
+(s/defn handle-mulligan-mode :- Board
+  [board :- Board]
+  (assoc board :mode {:type :mulligan
+                      :cards (vec (for [card (take STARTING-HAND-SIZE (safe-get-in board [(:whose-turn board) :deck]))]
+                                    {:card card :selected true}))
+                      :continuation (s/fn :- Board
+                                      [board :- Board]
+                                      (let [cards (->> (safe-get-in board [:mode :cards])
+                                                       (filter :selected)
+                                                       (map :card))
+                                            num-cards-to-draw (- STARTING-HAND-SIZE (count cards))
+                                            deck (safe-get-in board [(:whose-turn board) :deck])
+                                            hand (vec (concat cards
+                                                              (take num-cards-to-draw (difference
+                                                                                        (set deck)
+                                                                                        (set cards)))))
+                                            new-deck (reduce remove-card-from-list deck hand)]
+                                        (-> board
+                                            (assoc-in [(:whose-turn board) :hand] hand)
+                                            (assoc-in [(:whose-turn board) :deck] new-deck)
+                                            (assoc :mode DefaultMode))))}))
+
 (s/defn begin-turn :- Board
   [board :- Board]
-  (-> board
-      clear-inactive-modifiers
-      ; TODO - when we implement eg wild growth, will need to split this out into a standalone increment-mana function
-      ; it'll deal with eg giving you an "excess mana" card, etc
-      (draw-a-card (board :whose-turn))
-      (assoc-in [(board :whose-turn) :mana-modifiers] [])
-      (update-in [(board :whose-turn) :mana] #(if (< % 10) (inc %) %))))
+  (let [board (clear-inactive-modifiers board)]
+    (if (<= (:turn board) 1)
+      (handle-mulligan-mode board)
+      (-> board
+          (draw-a-card (board :whose-turn))
+          ; TODO - when we implement eg wild growth, will need to split this out into a standalone increment-mana function
+          ; it'll deal with eg giving you an "excess mana" card, etc
+          (assoc-in [(board :whose-turn) :mana-modifiers] [])
+          (update-in [(board :whose-turn) :mana] #(if (< % 10) (inc %) %))))))
 
 (s/defn end-turn :- Board
   [board :- Board]
@@ -128,15 +159,15 @@
    deck-2 :- [Card]]
   (let [make-board-half (fn [hero deck]
                           {:hero hero
-                           :hand (vec (take STARTING-HAND-SIZE deck))
-                           ;:deck [] ; useful for debugging (makes schema error messages much shorter)
-                           :deck  (vec (drop STARTING-HAND-SIZE deck))
-                           :mana 0
+                           :hand []
+                           :deck (vec deck)
+                           :mana 1
                            :mana-modifiers []
                            :minions []})]
         (begin-turn {:player-1 (make-board-half hero-1 deck-1)
                      :player-2 (make-board-half hero-2 deck-2)
-                     :whose-turn (rand-nth [:player-1 :player-2])
+                     :whose-turn :player-1
+                     ;:whose-turn (rand-nth [:player-1 :player-2])
                      :turn 0
                      :mode DefaultMode
                      :combat-log []})))
@@ -164,6 +195,6 @@
             card-index
             (count (safe-get-in board [player :hand])))]}
 
-  (let [hand (-> board player :hand)
+  (let [hand (safe-get-in board [player :hand])
         card (nth hand card-index)]
     ((card :effect) board player card)))

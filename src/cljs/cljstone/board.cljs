@@ -120,10 +120,10 @@
                                                        (map :card))
                                             num-cards-to-draw (- STARTING-HAND-SIZE (count cards))
                                             deck (safe-get-in board [(:whose-turn board) :deck])
-                                            hand (concat cards
-                                                         (take num-cards-to-draw (difference
-                                                                                   (set deck)
-                                                                                   (set cards))))
+                                            hand (vec (concat cards
+                                                              (take num-cards-to-draw (difference
+                                                                                        (set deck)
+                                                                                        (set cards)))))
                                             new-deck (reduce remove-card-from-list deck hand)]
                                         ; TODO implement selecting/unselecting mulligan cards
                                         (-> board
@@ -161,7 +161,7 @@
   (let [make-board-half (fn [hero deck]
                           {:hero hero
                            :hand []
-                           :deck deck
+                           :deck (vec deck)
                            :mana 1
                            :mana-modifiers []
                            :minions []})]
@@ -196,6 +196,6 @@
             card-index
             (count (safe-get-in board [player :hand])))]}
 
-  (let [hand (-> board player :hand)
+  (let [hand (safe-get-in board [player :hand])
         card (nth hand card-index)]
     ((card :effect) board player card)))

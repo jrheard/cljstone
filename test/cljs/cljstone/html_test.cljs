@@ -27,8 +27,7 @@
       (async done
          (go
            (is (= (<! game-event-chan)
-                  {:type :play-card
-                   :player :player-2
+                  {:type :select-card
                    :index 0}))
            (done))))))
 

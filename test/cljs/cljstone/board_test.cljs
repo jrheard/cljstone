@@ -28,7 +28,7 @@
 
 (deftest turns
   (testing "turns existing"
-    (is (= (:turn fresh-board) 0))
+    (is (= (:turn fresh-board) 2))
 
     (let [board (assoc fresh-board :whose-turn :player-1)
           board (end-turn board)]

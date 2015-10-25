@@ -125,7 +125,6 @@
                                                                                         (set deck)
                                                                                         (set cards)))))
                                             new-deck (reduce remove-card-from-list deck hand)]
-                                        ; TODO implement selecting/unselecting mulligan cards
                                         (-> board
                                             (assoc-in [(:whose-turn board) :hand] hand)
                                             (assoc-in [(:whose-turn board) :deck] new-deck)

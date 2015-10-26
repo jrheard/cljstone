@@ -10,6 +10,7 @@
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id toggle-mulligan-card-selected]]
         [cljstone.board-mode :only [DefaultMode]]
+        [cljstone.card :only [Card]]
         [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [cljstone.utils :only [in?]]
@@ -96,20 +97,17 @@
     [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]])
 
-(defn draw-card [card index player board-half is-owners-turn game-event-chan]
-  (let [playable (and is-owners-turn
-                      (>= (:actual (get-mana board-half))
-                          (:mana-cost card)))
-        classes (str
+(defn draw-card [card index selectable game-event-chan]
+  (let [classes (str
                   "card "
                   (clj->js (:class card))
                   (condp = (:type card) :minion " minion " :spell " spell ")
-                  (when playable "playable"))]
+                  (when selectable "playable"))]
     [:div {:class classes
            ; XXX no reason to do this data-card-index business, just send a :select-card with :card -> card
            :data-card-index index
            :on-click (fn [e]
-                       (when playable
+                       (when selectable
                          (put! game-event-chan {:type :select-card
                                                 :index index}))
                        nil)}
@@ -161,6 +159,15 @@
                                         (when (>= i (:actual (get-mana board-half))) "spent"))}
                          [:i {:class "fa fa-diamond"}]])])
 
+(s/defn owner-can-play-card :- s/Bool
+  [card :- Card
+   board :- Board
+   owner :- Player]
+  (and (= (board :whose-turn)
+          owner)
+       (>= (:actual (get-mana (board owner)))
+           (:mana-cost card))))
+
 (defn draw-board-half [board player game-state]
   (let [board-half (board player)
         is-owners-turn (= (board :whose-turn) player)]
@@ -170,7 +177,7 @@
      [:div.hand
       [:h3 (:name (:hero board-half))]
       (for [[index card] (map-indexed vector (:hand board-half))]
-        ^{:key (:id card)} [draw-card card index player board-half is-owners-turn (game-state :game-event-chan)])]
+        ^{:key (:id card)} [draw-card card index (owner-can-play-card card board player) (game-state :game-event-chan)])]
      [:div.body
       [draw-hero (:hero board-half) board (game-state :game-event-chan)]
       [draw-mana-tray board-half player]

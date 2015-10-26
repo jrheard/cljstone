@@ -15,7 +15,7 @@
 (deftest draw-playable-card
   (with-fn-validation
     (let [game-event-chan (chan)
-          card (draw-card goldshire-card 0 :player-2 (test-board :player-2) true game-event-chan)
+          card (draw-card goldshire-card 0 true game-event-chan)
           props (nth card 1)]
       (is (= (trim (props :class)) "card neutral minion playable"))
       (is (= (props :data-card-index) 0))
@@ -33,7 +33,7 @@
 
 (deftest draw-unplayable-card
     (let [game-event-chan (chan)
-          card (draw-card boulderfist-card 0 :player-2 (test-board :player-2) true game-event-chan)
+          card (draw-card boulderfist-card 0 false game-event-chan)
           props (nth card 1)]
       ; boulderfist ogre's too expensive for us to play on turn 1, so it should be unplayable
       (is (= (trim (props :class)) "card neutral minion"))

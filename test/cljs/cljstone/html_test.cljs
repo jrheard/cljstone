@@ -1,5 +1,6 @@
 (ns cljstone.html-test
   (:require [cljs.test :refer-macros [async deftest is use-fixtures]]
+            [reagent.core :as r]
             [schema.core :refer-macros [with-fn-validation]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [cljs.core.async :only [chan <! >! put! timeout alts!]]
@@ -77,7 +78,8 @@
 (deftest drawing-end-turn-button
   (with-fn-validation
     (let [game-event-chan (chan)
-          button (draw-end-turn-button {:game-event-chan game-event-chan})
+          button (draw-end-turn-button {:game-event-chan game-event-chan
+                                        :board-atom (r/atom test-board)})
           props (nth button 1) ]
 
       ; fire a click event, see if game-event-chan gets the message we expect

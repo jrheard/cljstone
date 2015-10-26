@@ -6,21 +6,22 @@
             [schema.core :as s])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:use [cljs.core.async :only [chan <! >! put!]]
-        [cljs.core.async.impl.protocols :only [Channel]]
         [cljs.pprint :only [pprint]]
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id toggle-mulligan-card-selected]]
-        [cljstone.board-mode :only [DefaultMode]]
+        [cljstone.board-mode :only [DefaultMode MulliganCard]]
         [cljstone.card :only [Card]]
         [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
+        [cljstone.hero :only [Hero]]
         [cljstone.utils :only [in?]]
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (s/defschema GameState
   {:board-atom ratom/RAtom
-   :game-event-chan Channel})
+   :game-event-chan s/Any})
 
-(defn get-character-id-from-event [event]
+(s/defn get-character-id-from-event :- s/Int
+  [event]
   (-> event
       .-currentTarget
       .-dataset
@@ -33,12 +34,12 @@
                          :character-id (get-character-id-from-event mouse-event)})
   nil)
 
-(defn is-targetable? [board character]
+(s/defn is-targetable? :- s/Bool
+  [board :- Board
+   character :- Character]
   (and (= (safe-get-in board [:mode :type]) :targeting)
        (in? (safe-get-in board [:mode :targets])
             character)))
-
-; TODO - inventory all the data attributes we're using, see if we actually need any of them
 
 (s/defn character-properties
   [board :- Board
@@ -82,7 +83,7 @@
                        :else "")]
     [:div {:class (str "health " health-class)} health]))
 
-(defn draw-minion-card [card]
+(s/defn draw-minion-card [card :- Card]
   [:div.content
    [:div.mana-cost
     [:div.mana-content (:mana-cost card)]]
@@ -91,7 +92,7 @@
    [:div.attack (:base-attack card)]
    [:div.health (:base-health card)]])
 
-(defn draw-spell-card [card]
+(s/defn draw-spell-card [card :- Card]
   [:div.content
    [:div.mana-cost
     [:div.mana-content (:mana-cost card)]]
@@ -111,13 +112,20 @@
                                           :index index}))
                  nil)}))
 
-(defn draw-card [card index selectable game-event-chan]
+(s/defn draw-card
+  [card :- Card
+   index :- s/Int
+   selectable :- s/Bool
+   game-event-chan]
   [:div (card-props card index selectable game-event-chan)
    (condp = (:type card)
      :minion [draw-minion-card card]
      :spell [draw-spell-card card])])
 
-(defn draw-hero [hero board game-event-chan]
+(s/defn draw-hero
+  [hero :- Hero
+   board :- Board
+   game-event-chan]
   (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
                                    :game-over)
                                 (= (other-player (safe-get-in board [:mode :winner]))
@@ -145,7 +153,7 @@
       [:i {:class "fa fa-shield fa-2x"}])
     (when (has-summoning-sickness? minion)
       [:strong "Z"])
-    ; TODO - user-times for deathrattles
+    ; TODO - icon classes - user-times for deathrattles
     ; flash for powers/abilities
     ; TODO stealth, divine shield, windfury, enrage
     ]
@@ -170,7 +178,10 @@
        (>= (:actual (get-mana (board owner)))
            (:mana-cost card))))
 
-(defn draw-board-half [board player game-state]
+(s/defn draw-board-half
+  [board :- Board
+   player :- Player
+   game-state :- GameState]
   (let [board-half (board player)
         is-owners-turn (= (board :whose-turn) player)]
     [:div {:class (str
@@ -187,7 +198,7 @@
         (for [minion (:minions board-half)]
           ^{:key (:id minion)} [draw-minion minion board is-owners-turn (game-state :game-event-chan)])]]]))
 
-(defn draw-end-turn-button [game-state]
+(s/defn draw-end-turn-button [game-state :- GameState]
   [:div.end-turn {:on-click #(do
                                (put! (game-state :game-event-chan) {:type :end-turn})
                                nil)}
@@ -218,7 +229,10 @@
   [:div.game-over
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
-(defn draw-mulligan-card [mulligan-card index game-event-chan]
+(s/defn draw-mulligan-card
+  [mulligan-card :- MulliganCard
+   index :- s/Int
+   game-event-chan]
   (let [card (mulligan-card :card)]
     [:div (card-props (mulligan-card :card) index true game-event-chan)
      (when (not (mulligan-card :selected))
@@ -245,7 +259,7 @@
     :positioning (draw-cancel-button board game-state "Cancel Positioning")
     :game-over (draw-game-over (:winner (board :mode)))))
 
-(defn draw-board [game-state]
+(s/defn draw-board [game-state :- GameState]
   (let [board @(game-state :board-atom)
         classes (str
                   "board "

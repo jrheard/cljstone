@@ -35,8 +35,6 @@
    :modifiers [CharacterModifier]
    s/Any s/Any})
 
-; IDs
-
 (s/defn other-player :- Player
   [player :- Player]
   (first (difference #{:player-1 :player-2} #{player})))

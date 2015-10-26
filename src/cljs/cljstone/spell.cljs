@@ -6,8 +6,12 @@
 
 (s/defschema Spell
   {:name s/Str
-   :effect s/Any ; (board, player) -> board
    :mana-cost s/Int
+   (s/optional-key :castable?) s/Any ; (Board, Player) -> Bool
+   (s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
+   :effect s/Any
+   ; if :get-targets exists, :effect will be a function from (Board, target-character) -> Board
+   ; if :get-targets does not exist, :effect will be a function from Board -> Board
    :class CardClass})
 
 (s/defn spell->card :- Card

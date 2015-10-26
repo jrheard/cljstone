@@ -8,8 +8,12 @@
    :id s/Int
    :class s/Any
    :effect s/Any ; a function that takes (board, player) and returns a new Board
+   ; minion-specific attributes - code smell imo
    (s/optional-key :base-attack) s/Int
    (s/optional-key :base-health) s/Int
+   ; spell-specific attributes - similarly smelly
+   (s/optional-key :castable?) s/Any
+   ; XXX not sure why :durability is here. reconsider.
    (s/optional-key :durability) s/Int})
 
 (s/defschema CardClass
@@ -19,6 +23,25 @@
   [hand :- [Card]
    card :- Card]
   (vec (remove #(= (:id %) (:id card)) hand)))
+
+(s/defn spell-card-is-playable? :- s/Bool
+  [card :- Card
+   board
+   player]
+  (or (not (contains? card :castable?))
+      ((card :castable?) board player)))
+
+(s/defn card-is-playable? :- s/Bool
+  [card :- Card
+   available-mana
+   board
+   player]
+  (and (= (board :whose-turn)
+          player)
+       (>= available-mana
+           (:mana-cost card))
+       (or (not= (card :type) :spell)
+           (spell-card-is-playable? card board player))))
 
 ; TODO: to implement thaurissan, freezing trap, etc, add a :modifiers list to Cards too, just like minions
 ; no clue how molten giant, mountain giant, etc will work though.

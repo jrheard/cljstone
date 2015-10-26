@@ -98,6 +98,7 @@
                ; TODO - handle a few cases we don't currently handle
                ; 1) battlecry has no :get-targets function (in which case just go straight to the :effect function)
                ; 2) battlecry *has* a :get-targets, but it returns [] - in which case we should behave the same as in 1)
+               ; right now if you try to play a shattered sun cleric and have no minions, the game crashes
                (assoc board :mode {:type :targeting
                                    :targets ((battlecry :get-targets) board player)
                                    :continuation (fn [board target-character-id]

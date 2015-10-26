@@ -1,20 +1,17 @@
 (ns cljstone.spellbook
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board draw-a-card]]
-        [cljstone.character :only [Player]]
-        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]))
-
-; TODO utility functions
-; let's have a defspell macro that emits like (s/fn :- Board [board :- Board caster :- Player])
+        [cljstone.character :only [Player other-player]]
+        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]
+        [plumbing.core :only [safe-get-in]]))
 
 (def all-spells
   {:flamecannon {:name "Flamecannon"
                  :mana-cost 2
                  :class :mage
-                 ; XXXXXXXX can't cast flamecannon when opponent has an empty board!
-                 ; how do we encode this?
-                 ; how about a :castable -> Board -> bool predicate fn?
-                 ; currently the game crashes if you play flamecannon on an empty board
+                 :castable? (s/fn :- s/Bool [board :- Board caster :- Player]
+                             (> (count (get-enemy-minions board caster))
+                                0))
                  :effect (s/fn [board :- Board caster :- Player]
                            (when-let [minions (get-enemy-minions board caster)]
                              (cause-damage board
@@ -26,7 +23,6 @@
                      :mana-cost 1
                      :class :mage
                      :effect (fn [board caster]
-                               ; TODO finish+test
                                (nth (iterate (fn [board]
                                               (cause-damage board
                                                             (rand-nth (get-enemy-characters board caster))

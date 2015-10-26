@@ -97,23 +97,25 @@
     [:div.mana-content (:mana-cost card)]]
    [:div.name (:name card)]])
 
-(defn draw-card [card index selectable game-event-chan]
+(defn card-props [card index selectable game-event-chan]
   (let [classes (str
                   "card "
                   (clj->js (:class card))
                   (condp = (:type card) :minion " minion " :spell " spell ")
+                  ; XXX rename css class to selectable
                   (when selectable "playable"))]
-    [:div {:class classes
-           ; XXX no reason to do this data-card-index business, just send a :select-card with :card -> card
-           :data-card-index index
-           :on-click (fn [e]
-                       (when selectable
-                         (put! game-event-chan {:type :select-card
-                                                :index index}))
-                       nil)}
-     (condp = (:type card)
-       :minion [draw-minion-card card]
-       :spell [draw-spell-card card])]))
+    {:class classes
+     :on-click (fn [e]
+                 (when selectable
+                   (put! game-event-chan {:type :select-card
+                                          :index index}))
+                 nil)}))
+
+(defn draw-card [card index selectable game-event-chan]
+  [:div (card-props card index selectable game-event-chan)
+   (condp = (:type card)
+     :minion [draw-minion-card card]
+     :spell [draw-spell-card card])])
 
 (defn draw-hero [hero board game-event-chan]
   (let [hero-is-alive (not (and (= (safe-get-in board [:mode :type])
@@ -216,18 +218,9 @@
   [:div.game-over
    (str "HOLY SHIT " winner " WON!!!!!!")])
 
-; XXXXXXXX copypasted most of this from draw-card, fixup
 (defn draw-mulligan-card [mulligan-card index game-event-chan]
-  (let [card (mulligan-card :card)
-        classes (str
-                  "card "
-                  (clj->js (:class card))
-                  (condp = (:type card) :minion " minion " :spell " spell "))]
-    [:div {:class classes
-           :on-click (fn [e]
-                       (put! game-event-chan {:type :select-card
-                                              :index index})
-                       nil)}
+  (let [card (mulligan-card :card)]
+    [:div (card-props (mulligan-card :card) index true game-event-chan)
      (when (not (mulligan-card :selected))
        [:div.unselected-mulligan-card "X"])
      (condp = (:type card)

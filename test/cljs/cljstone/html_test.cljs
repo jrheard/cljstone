@@ -18,7 +18,6 @@
           card (draw-card goldshire-card 0 true game-event-chan)
           props (nth card 1)]
       (is (= (trim (props :class)) "card neutral minion playable"))
-      (is (= (props :data-card-index) 0))
       (is (= (nth card 2) [draw-minion-card goldshire-card]))
 
       ; fire a click event, test to see if something was put in game-event-chan

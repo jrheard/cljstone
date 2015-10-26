@@ -12,18 +12,17 @@
 (use-fixtures :once validate-schemas)
 
 (deftest card-playability
-  (testing "flamecannon"
-    ; the enemy player has no minions, so you can't play flamecannon.
-    (is (= (card-is-playable? (-> :flamecannon all-spells spell->card)
-                              (:actual (get-mana (fresh-board :player-1)))
-                              fresh-board
-                              :player-1)
-           false))
+  (let [is-playable? (fn [card board player]
+                       (card-is-playable? card
+                                          (:actual (get-mana (board player)))
+                                          board
+                                          player))]
+    (testing "flamecannon"
+      ; the enemy player has no minions, so you can't play flamecannon.
+      (is (= (is-playable? (-> :flamecannon all-spells spell->card) fresh-board :player-1)
+             false))
 
-    (let [board (play-card fresh-board :player-2 0)]
-      ; if the enemy player has minions, though, you're good to go!
-      (is (= (card-is-playable? (-> :flamecannon all-spells spell->card)
-                                (:actual (get-mana (board :player-1)))
-                                board
-                                :player-1)
-             true)))))
+      (let [board (play-card fresh-board :player-2 0)]
+        ; if the enemy player has minions, though, you're good to go!
+        (is (= (is-playable? (-> :flamecannon all-spells spell->card) board :player-1)
+               true))))))

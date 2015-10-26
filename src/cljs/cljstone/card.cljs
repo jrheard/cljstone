@@ -34,11 +34,9 @@
 
 (s/defn card-is-playable? :- s/Bool
   [card :- Card
-   available-mana
+   available-mana :- s/Int
    board
    player]
-  ; XXXX would prefer to not have to take 'available-mana', but we can't import get-mana from board.cljs because that'd be circular.
-  ; is there a better place for get-mana to live? ...probably not :/
   (and (= (board :whose-turn)
           player)
        (>= available-mana

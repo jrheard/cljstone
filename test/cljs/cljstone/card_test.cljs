@@ -39,7 +39,19 @@
         (is (= (is-playable? :arcane-intellect board :player-1)
                true))))
 
-    ; TODO test that arcane missiles is always castable
+    (testing "arcane missiles"
+      (is (= (is-playable? :arcane-missiles fresh-board :player-1))
+          true))
 
-    (testing "fireball")
+    (testing "fireball"
+      ; fireball is always castable whenever you've got the mana for it, since it can target heroes and there are always heroes.
+      (is (= (is-playable? :fireball fresh-board :player-1)
+             false))
+
+      (let [board (assoc-in fresh-board [:player-1 :mana] 4)]
+        (is (= (is-playable? :fireball board :player-1)
+               true))))
+
+    ; TODO implement a targetable spell that only has targets some of the time, and test it.
+    ; an example is... flame lance
     ))

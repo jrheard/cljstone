@@ -20,9 +20,18 @@
                 :id (get-next-id)}
                spell)
          :effect
-         ; TODO implement checking for a :get-targets function, and putting the board in targeting mode if one exists
+         ; TODO actually test this logic.
          (fn [board player card]
-           (-> board
-               ((spell :effect) player)
-               (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
-               (update-in [player :hand] remove-card-from-list card)))))
+           (if-let [targeting-fn (:get-targets card)]
+             (assoc board :mode {:type :targeting
+                                 :targets (targeting-fn board player)
+                                 :continuation (fn [board target-character-id]
+                                                 (-> board
+                                                     (assoc :mode {:type :default})
+                                                     (#((spell :effect) % target-character-id))
+                                                     (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
+                                                     (update-in [player :hand] remove-card-from-list card)))})
+             (-> board
+                 ((spell :effect) player)
+                 (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
+                 (update-in [player :hand] remove-card-from-list card))))))

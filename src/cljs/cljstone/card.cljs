@@ -28,6 +28,7 @@
   [card :- Card
    board
    player]
+  ; XXXX take :get-targets function into account
   (or (not (contains? card :castable?))
       ((card :castable?) board player)))
 
@@ -36,6 +37,8 @@
    available-mana
    board
    player]
+  ; XXXX would prefer to not have to take 'available-mana', but we can't import get-mana from board.cljs because that'd be circular.
+  ; is there a better place for get-mana to live? ...probably not :/
   (and (= (board :whose-turn)
           player)
        (>= available-mana

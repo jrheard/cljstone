@@ -11,7 +11,7 @@
    (s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
    :effect s/Any
    ; if :get-targets exists, :effect will be a function from (Board, target-character) -> Board
-   ; if :get-targets does not exist, :effect will be a function from Board -> Board
+   ; if :get-targets does not exist, :effect will be a function from (Board, caster) -> Board
    :class CardClass})
 
 (s/defn spell->card :- Card
@@ -20,6 +20,7 @@
                 :id (get-next-id)}
                spell)
          :effect
+         ; TODO implement checking for a :get-targets function, and putting the board in targeting mode if one exists
          (fn [board player card]
            (-> board
                ((spell :effect) player)

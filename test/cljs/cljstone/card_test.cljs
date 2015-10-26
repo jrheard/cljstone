@@ -37,5 +37,9 @@
 
       (let [board (assoc-in fresh-board [:player-1 :mana] 3)]
         (is (= (is-playable? :arcane-intellect board :player-1)
-               true)))
-      )))
+               true))))
+
+    ; TODO test that arcane missiles is always castable
+
+    (testing "fireball")
+    ))

@@ -4,4 +4,4 @@
 
 a fun card game
 
-clone this repo, run `lein cljsbuild once`, and open the generated `resources/public/index.html`
+clone this repo, run `lein cljsbuild once`, and then open `resources/public/index.html`

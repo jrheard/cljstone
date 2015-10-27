@@ -20,15 +20,14 @@
                 :id (get-next-id)}
                spell)
          :effect
-         ; TODO actually test this logic.
          (fn [board player card]
            (if-let [targeting-fn (:get-targets card)]
              (assoc board :mode {:type :targeting
                                  :targets (targeting-fn board player)
-                                 :continuation (fn [board target-character-id]
+                                 :continuation (fn [board target-character]
                                                  (-> board
                                                      (assoc :mode {:type :default})
-                                                     (#((spell :effect) % target-character-id))
+                                                     (#((spell :effect) % target-character))
                                                      (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
                                                      (update-in [player :hand] remove-card-from-list card)))})
              (-> board

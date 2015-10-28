@@ -13,6 +13,14 @@
 
 (use-fixtures :once validate-schemas)
 
+(deftest arcane-intellect
+  (let [original-hand-size (count (safe-get-in fresh-board [:player-1 :hand]))
+        board (-> fresh-board
+                  (assoc-in [:player-1 :hand 0] (spell->card (all-spells :arcane-intellect)))
+                  (play-card :player-1 0))]
+    (is (= (count (safe-get-in board [:player-1 :hand]))
+           (+ original-hand-size 1)))))
+
 (deftest flamecannon
   (let [board (assoc-in three-minions-per-player-board
                         [:player-1 :hand 0]

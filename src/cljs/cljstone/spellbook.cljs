@@ -18,19 +18,30 @@
                                                              :effect {:health -1}}))
                                             board)
                                     3))}
+   :holy-smite {:name "Holy Smite"
+                :mana-cost 1
+                :class :priest
+                :get-targets (fn [board caster]
+                               (all-characters board))
+                :effect (fn [board target-character]
+                          (cause-damage board
+                                        target-character
+                                        {:type :damage-spell
+                                         :name "Holy Smite"
+                                         :effect {:health -2}}))}
   :flamecannon {:name "Flamecannon"
-                   :mana-cost 2
-                   :class :mage
-                   :castable? (s/fn :- s/Bool [board :- Board caster :- Player]
-                               (> (count (get-enemy-minions board caster))
-                                  0))
-                   :effect (s/fn [board :- Board caster :- Player]
-                             (when-let [minions (get-enemy-minions board caster)]
-                               (cause-damage board
-                                             (rand-nth minions)
-                                             {:type :damage-spell
-                                              :name "Flamecannon"
-                                              :effect {:health -4}})))}
+                :mana-cost 2
+                :class :mage
+                :castable? (s/fn :- s/Bool [board :- Board caster :- Player]
+                             (> (count (get-enemy-minions board caster))
+                                0))
+                :effect (s/fn [board :- Board caster :- Player]
+                          (when-let [minions (get-enemy-minions board caster)]
+                            (cause-damage board
+                                          (rand-nth minions)
+                                          {:type :damage-spell
+                                           :name "Flamecannon"
+                                           :effect {:health -4}})))}
    :arcane-intellect {:name "Arcane Intellect"
                       :mana-cost 3
                       :class :mage

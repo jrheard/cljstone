@@ -17,4 +17,4 @@
   (let [minions (mapv minion-schematic->card (vals all-minions))
         spells (mapv spell->card (vals all-spells))
         all-cards (concat minions spells)]
-    (repeatedly NUM-CARDS-IN-DECK #(rand-nth all-cards))))
+    (take NUM-CARDS-IN-DECK (shuffle all-cards))))

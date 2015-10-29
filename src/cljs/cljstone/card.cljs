@@ -13,7 +13,8 @@
    (s/optional-key :base-health) s/Int
    ; spell-specific attributes - similarly smelly
    (s/optional-key :castable?) s/Any
-   ; XXX not sure why :durability is here. reconsider.
+   (s/optional-key :get-targets) s/Any
+   ; weapon-specific, see above
    (s/optional-key :durability) s/Int})
 
 (s/defschema CardClass
@@ -28,9 +29,11 @@
   [card :- Card
    board
    player]
-  ; XXXX take :get-targets function into account
-  (or (not (contains? card :castable?))
-      ((card :castable?) board player)))
+  (cond
+    (contains? card :castable?) ((card :castable?) board player)
+    (contains? card :get-targets) (> (count ((card :get-targets) board player))
+                                     0)
+    :else true))
 
 (s/defn card-is-playable? :- s/Bool
   [card :- Card

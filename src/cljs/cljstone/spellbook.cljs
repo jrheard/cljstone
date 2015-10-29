@@ -2,24 +2,11 @@
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board draw-a-card]]
         [cljstone.character :only [Player other-player]]
-        [cljstone.combat :only [cause-damage get-enemy-characters get-enemy-minions]]
+        [cljstone.combat :only [all-characters cause-damage get-enemy-characters get-enemy-minions]]
         [plumbing.core :only [safe-get-in]]))
 
 (def all-spells
-  {:flamecannon {:name "Flamecannon"
-                 :mana-cost 2
-                 :class :mage
-                 :castable? (s/fn :- s/Bool [board :- Board caster :- Player]
-                             (> (count (get-enemy-minions board caster))
-                                0))
-                 :effect (s/fn [board :- Board caster :- Player]
-                           (when-let [minions (get-enemy-minions board caster)]
-                             (cause-damage board
-                                           (rand-nth minions)
-                                           {:type :damage-spell
-                                            :name "Flamecannon"
-                                            :effect {:health -4}})))}
-   :arcane-missiles {:name "Arcane Missiles"
+  {:arcane-missiles {:name "Arcane Missiles"
                      :mana-cost 1
                      :class :mage
                      :effect (fn [board caster]
@@ -31,13 +18,37 @@
                                                              :effect {:health -1}}))
                                             board)
                                     3))}
+  :flamecannon {:name "Flamecannon"
+                   :mana-cost 2
+                   :class :mage
+                   :castable? (s/fn :- s/Bool [board :- Board caster :- Player]
+                               (> (count (get-enemy-minions board caster))
+                                  0))
+                   :effect (s/fn [board :- Board caster :- Player]
+                             (when-let [minions (get-enemy-minions board caster)]
+                               (cause-damage board
+                                             (rand-nth minions)
+                                             {:type :damage-spell
+                                              :name "Flamecannon"
+                                              :effect {:health -4}})))}
    :arcane-intellect {:name "Arcane Intellect"
                       :mana-cost 3
                       :class :mage
                       :effect (fn [board caster]
                                 (-> board
                                     (draw-a-card caster)
-                                    (draw-a-card caster)))}})
+                                    (draw-a-card caster)))}
+   :fireball {:name "Fireball"
+              :mana-cost 4
+              :class :mage
+              :get-targets (fn [board caster]
+                             (all-characters board))
+              :effect (fn [board target-character]
+                        (cause-damage board
+                                      target-character
+                                      {:type :damage-spell
+                                       :name "Fireball"
+                                       :effect {:health -6}}))}})
 
 
 (comment

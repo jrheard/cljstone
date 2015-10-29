@@ -11,7 +11,7 @@
    (s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
    :effect s/Any
    ; if :get-targets exists, :effect will be a function from (Board, target-character) -> Board
-   ; if :get-targets does not exist, :effect will be a function from Board -> Board
+   ; if :get-targets does not exist, :effect will be a function from (Board, caster) -> Board
    :class CardClass})
 
 (s/defn spell->card :- Card
@@ -20,8 +20,19 @@
                 :id (get-next-id)}
                spell)
          :effect
+         ; TODO this is hairy, and bears a lot of resemblance to minions' :effect function (which will only get hairier once
+         ; i implement positioning-mode). i'm gonna leave it like this for now, and at positioning-mode time i'll refactor both places.
          (fn [board player card]
-           (-> board
-               ((spell :effect) player)
-               (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
-               (update-in [player :hand] remove-card-from-list card)))))
+           (if-let [targeting-fn (:get-targets card)]
+             (assoc board :mode {:type :targeting
+                                 :targets (targeting-fn board player)
+                                 :continuation (fn [board target-character]
+                                                 (-> board
+                                                     (assoc :mode {:type :default})
+                                                     (#((spell :effect) % target-character))
+                                                     (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
+                                                     (update-in [player :hand] remove-card-from-list card)))})
+             (-> board
+                 ((spell :effect) player)
+                 (update-in [player :mana-modifiers] conj (- (:mana-cost spell)))
+                 (update-in [player :hand] remove-card-from-list card))))))

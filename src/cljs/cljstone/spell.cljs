@@ -20,6 +20,8 @@
                 :id (get-next-id)}
                spell)
          :effect
+         ; TODO this is hairy, and bears a lot of resemblance to minions' :effect function (which will only get hairier once
+         ; i implement positioning-mode). i'm gonna leave it like this for now, and at positioning-mode time i'll refactor both places.
          (fn [board player card]
            (if-let [targeting-fn (:get-targets card)]
              (assoc board :mode {:type :targeting

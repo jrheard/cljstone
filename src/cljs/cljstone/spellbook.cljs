@@ -59,8 +59,16 @@
                                       target-character
                                       {:type :damage-spell
                                        :name "Fireball"
-                                       :effect {:health -6}}))}})
-
+                                       :effect {:health -6}}))}
+   :sprint {:name "Sprint"
+            :mana-cost 7
+            :class :rogue
+            :effect (fn [board caster]
+                      (-> board
+                          (draw-a-card caster)
+                          (draw-a-card caster)
+                          (draw-a-card caster)
+                          (draw-a-card caster)))}})
 
 (comment
   ; unconverted spells below
@@ -124,7 +132,6 @@
  {:name "Shiv", :text "Deal $1 damage. Draw a card.", :class :rogue, :mana-cost 2}
  {:name "Sinister Strike", :text "Deal $3 damage to the enemy hero.", :class :rogue, :mana-cost 1}
  {:name "Soulfire", :text "Deal $4 damage. Discard a random card.", :class :warlock, :mana-cost 1}
- {:name "Sprint", :text "Draw 4 cards.", :class :rogue, :mana-cost 7}
  {:name "Starfire", :text "Deal $5 damage.\nDraw a card.", :class :druid, :mana-cost 6}
  {:name "Swipe", :text "Deal $4 damage to an enemy and $1 damage to all other enemies.", :class :druid, :mana-cost 4}
  {:name "Totemic Might", :text "Give your Totems +2 Health.", :class :shaman, :mana-cost 0}

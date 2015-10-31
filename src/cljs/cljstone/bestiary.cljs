@@ -85,7 +85,6 @@
    {:name "Dragonling Mechanic", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Summon a 2/1 Mechanical Dragonling.", :base-attack 2, :base-health 4, :mana-cost 4}
    {:name "Dread Infernal", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 1 damage to ALL other characters.", :base-attack 6, :base-health 6, :class "Warlock", :mana-cost 6}
    {:name "Flametongue Totem", :mechanics ["AdjacentBuff" "Aura"], :text "Adjacent minions have +2 Attack.", :base-attack 0, :base-health 3, :class "Shaman", :mana-cost 2}
-   {:name "Frostwolf Grunt", :mechanics ["Taunt"], :text "<b>Taunt</b>", :base-attack 2, :base-health 2, :mana-cost 2}
    {:name "Frostwolf Warlord", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Gain +1/+1 for each other friendly minion on the battlefield.", :base-attack 4, :base-health 4, :mana-cost 5}
    {:name "Gnomish Inventor", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Draw a card.", :base-attack 2, :base-health 4, :mana-cost 4}
    {:name "Grimscale Oracle", :text "ALL other Murlocs have +1 Attack.", :base-attack 1, :base-health 1, :mana-cost 1}

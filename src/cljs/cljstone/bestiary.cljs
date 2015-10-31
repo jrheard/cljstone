@@ -28,6 +28,15 @@
    :bluegill-warrior {:name "Bluegill Warrior", :base-attack 2, :base-health 1, :mana-cost 2, :modifiers [charge]}
    :frostwolf-grunt {:name "Frostwolf Grunt", :base-attack 2, :base-health 2, :mana-cost 2, :modifiers [taunt]}
    :river-crocilisk {:name "River Crocilisk" :base-attack 2 :base-health 3 :mana-cost 2}
+   :ironforge-rifleman {:name "Ironforge Rifleman", :base-attack 2, :base-health 2, :mana-cost 3,
+                        :battlecry {:get-targets (fn [board player]
+                                                   (all-characters board))
+                                    :effect (fn [board target-character]
+                                              (cause-damage board
+                                                            target-character
+                                                            {:type :attack
+                                                             :name "Ironforge Rifleman"
+                                                             :effect {:health -1}}))}}
    :ironfur-grizzly {:name "Ironfur Grizzly", :base-attack 3, :base-health 3, :mana-cost 3, :modifiers [taunt]}
    :silverback-patriarch {:name "Silverback Patriarch", :base-attack 1, :base-health 4, :mana-cost 3, :modifiers [taunt]}
    :shattered-sun {:name "Shattered Sun Cleric", :base-attack 3, :base-health 2, :mana-cost 3,
@@ -83,7 +92,6 @@
    {:name "Guardian of Kings", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Restore 6 Health to your hero.", :base-attack 5, :base-health 6, :class "Paladin", :mana-cost 7}
   {:name "Gurubashi Berserker", :text "Whenever this minion takes damage, gain +3 Attack.", :base-attack 2, :base-health 7, :mana-cost 5}
   {:name "Houndmaster", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Give a friendly Beast +2/+2 and <b>Taunt</b>.", :base-attack 4, :base-health 3, :class "Hunter", :mana-cost 4}
-  {:name "Ironforge Rifleman", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Deal 1 damage.", :base-attack 2, :base-health 2, :mana-cost 3}
   {:name "Kobold Geomancer", :mechanics ["Spellpower"], :text "<b>Spell Damage +1</b>", :base-attack 2, :base-health 2, :mana-cost 2}
   {:name "Murloc Tidehunter", :mechanics ["Battlecry"], :text "<b>Battlecry:</b> Summon a 1/1 Murloc Scout.", :base-attack 2, :base-health 1, :mana-cost 2}
   {:name "Nightblade", :mechanics ["Battlecry"], :text "<b>Battlecry: </b>Deal 3 damage to the enemy hero.", :base-attack 4, :base-health 4, :mana-cost 5}

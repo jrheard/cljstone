@@ -6,7 +6,16 @@
         [plumbing.core :only [safe-get-in]]))
 
 (def all-spells
-  {:arcane-missiles {:name "Arcane Missiles"
+  {:moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
+              :get-targets (fn [board caster]
+                             (all-characters board))
+              :effect (fn [board target-character]
+                        (cause-damage board
+                                        target-character
+                                        {:type :damage-spell
+                                         :name "Moonfire"
+                                         :effect {:health -1}}))}
+   :arcane-missiles {:name "Arcane Missiles"
                      :mana-cost 1
                      :class :mage
                      :effect (fn [board caster]
@@ -23,6 +32,7 @@
                 :class :priest
                 :get-targets (fn [board caster]
                                (all-characters board))
+                ; TODO need caster too, for eg shiv
                 :effect (fn [board target-character]
                           (cause-damage board
                                         target-character
@@ -42,6 +52,7 @@
                                           {:type :damage-spell
                                            :name "Flamecannon"
                                            :effect {:health -4}})))}
+   ;:shiv {:name "Shiv" :class :rogue :mana-cost 2 :effect (fn [board caster]) }
    :arcane-intellect {:name "Arcane Intellect"
                       :mana-cost 3
                       :class :mage
@@ -116,7 +127,6 @@
  {:name "Mind Control", :text "Take control of an enemy minion.", :class :priest, :mana-cost 10}
  {:name "Mind Vision", :text "Put a copy of a random card in your opponent's hand into your hand.", :class :priest, :mana-cost 1}
  {:name "Mirror Image", :text "Summon two 0/2 minions with <b>Taunt</b>.", :class :mage, :mana-cost 1}
- {:name "Moonfire", :text "Deal $1 damage.", :class :druid, :mana-cost 0}
  {:name "Mortal Coil", :text "Deal $1 damage to a minion. If that kills it, draw a card.", :class :warlock, :mana-cost 1}
  {:name "Multi-Shot", :text "Deal $3 damage to two random enemy minions.", :class :hunter, :mana-cost 4}
  {:name "Polymorph", :text "Transform a minion into a 1/1 Sheep.", :class :mage, :mana-cost 4}
@@ -129,7 +139,6 @@
  {:name "Shadow Word: Death", :text "Destroy a minion with an Attack of 5 or more.", :class :priest, :mana-cost 3}
  {:name "Shadow Word: Pain", :text "Destroy a minion with 3 or less Attack.", :class :priest, :mana-cost 2}
  {:name "Shield Block", :text "Gain 5 Armor.\nDraw a card.", :class :warrior, :mana-cost 3}
- {:name "Shiv", :text "Deal $1 damage. Draw a card.", :class :rogue, :mana-cost 2}
  {:name "Sinister Strike", :text "Deal $3 damage to the enemy hero.", :class :rogue, :mana-cost 1}
  {:name "Soulfire", :text "Deal $4 damage. Discard a random card.", :class :warlock, :mana-cost 1}
  {:name "Starfire", :text "Deal $5 damage.\nDraw a card.", :class :druid, :mana-cost 6}

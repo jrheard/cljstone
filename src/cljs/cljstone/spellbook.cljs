@@ -104,7 +104,6 @@
  {:name "Drain Life", :text "Deal $2 damage. Restore #2 Health to your hero.", :class :warlock, :mana-cost 3}
  {:name "Execute", :text "Destroy a damaged enemy minion.", :class :warrior, :mana-cost 1}
  {:name "Fan of Knives", :text "Deal $1 damage to all enemy minions. Draw a card.", :class :rogue, :mana-cost 3}
- {:name "Fireball", :text "Deal $6 damage.", :class :mage, :mana-cost 4}
  {:name "Flamestrike", :text "Deal $4 damage to all enemy minions.", :class :mage, :mana-cost 7}
  {:name "Frost Nova", :mechanics ["Freeze"], :text "<b>Freeze</b> all enemy minions.", :class :mage, :mana-cost 3}
  {:name "Frost Shock", :mechanics ["Freeze"], :text "Deal $1 damage to an enemy character and <b>Freeze</b> it.", :class :shaman, :mana-cost 1}

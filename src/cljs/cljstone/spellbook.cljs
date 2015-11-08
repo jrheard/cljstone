@@ -9,7 +9,7 @@
   {:moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
               :get-targets (fn [board caster]
                              (all-characters board))
-              :effect (fn [board target-character]
+              :effect (fn [board target-character caster]
                         (cause-damage board
                                         target-character
                                         {:type :damage-spell
@@ -32,8 +32,7 @@
                 :class :priest
                 :get-targets (fn [board caster]
                                (all-characters board))
-                ; TODO need caster too, for eg shiv
-                :effect (fn [board target-character]
+                :effect (fn [board target-character caster]
                           (cause-damage board
                                         target-character
                                         {:type :damage-spell
@@ -52,7 +51,16 @@
                                           {:type :damage-spell
                                            :name "Flamecannon"
                                            :effect {:health -4}})))}
-   ;:shiv {:name "Shiv" :class :rogue :mana-cost 2 :effect (fn [board caster]) }
+   :shiv {:name "Shiv" :class :rogue :mana-cost 2
+          :get-targets (fn [board caster]
+                         (all-characters board))
+          :effect (fn [board target-character caster]
+                    (-> board
+                        (cause-damage target-character
+                                      {:type :damage-spell
+                                       :name "Shiv"
+                                       :effect {:health -2}})
+                        (draw-a-card caster)))}
    :arcane-intellect {:name "Arcane Intellect"
                       :mana-cost 3
                       :class :mage
@@ -65,7 +73,7 @@
               :class :mage
               :get-targets (fn [board caster]
                              (all-characters board))
-              :effect (fn [board target-character]
+              :effect (fn [board target-character caster]
                         (cause-damage board
                                       target-character
                                       {:type :damage-spell

@@ -10,7 +10,7 @@
    (s/optional-key :castable?) s/Any ; (Board, Player) -> Bool
    (s/optional-key :get-targets) s/Any ; (Board, Player) -> [Character]
    :effect s/Any
-   ; if :get-targets exists, :effect will be a function from (Board, target-character) -> Board
+   ; if :get-targets exists, :effect will be a function from (Board, target-character, caster) -> Board
    ; if :get-targets does not exist, :effect will be a function from (Board, caster) -> Board
    :class CardClass})
 
@@ -29,7 +29,7 @@
                                  :continuation (fn [board target-character]
                                                  (-> board
                                                      (assoc :mode {:type :default})
-                                                     (#((spell :effect) % target-character))
+                                                     (#((spell :effect) % target-character player))
                                                      (update-in [player :mana-modifiers] conj (- (:mana-cost card)))
                                                      (update-in [player :hand] remove-card-from-list card)))})
              (-> board

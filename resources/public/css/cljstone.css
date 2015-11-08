@@ -172,6 +172,10 @@ h3 {
 	background-color: #9BDBFF;
 }
 
+.board-half .hand .card.rogue {
+	background-color: #777;
+}
+
 .board-half .hand .card .content {
 	background-color: #EEE;
 	width: 90%;

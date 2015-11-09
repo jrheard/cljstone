@@ -21,7 +21,6 @@
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
-  ; XXXXX
   {:type (s/enum :attack :damage-spell :enchantment :mechanic :aura)
   (s/optional-key :name) s/Str
   (s/optional-key :turn-begins) s/Int
@@ -65,11 +64,10 @@
 
 (s/defn get-base-attack :- s/Int
   [character :- Character]
-  ; humility is an enchantment, adds a :base-attack-value 1 k/v pair
   (if-let [value-modifier (last (filter #(contains? (safe-get % :effect)
                                                     :base-attack-value)
                                          (safe-get character :modifiers)))]
-    (value-modifier :base-attack-value)
+    (safe-get-in value-modifier [:effect :base-attack-value])
     (+ (:base-attack character)
        (sum-modifiers character :base-attack))))
 

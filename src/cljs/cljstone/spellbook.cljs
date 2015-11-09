@@ -1,16 +1,22 @@
 (ns cljstone.spellbook
   (:require [schema.core :as s])
-  (:use [cljstone.board :only [Board draw-a-card]]
+  (:use [cljstone.board :only [Board draw-a-card path-to-character]]
         [cljstone.character :only [Player other-player]]
         [cljstone.combat :only [all-characters get-all-minions cause-damage get-enemy-characters get-enemy-minions]]
-        [plumbing.core :only [safe-get-in]]))
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 (def all-spells
-  {:hunters-mark {:name "Hunter's Mark", :class :hunter, :mana-cost 0,
+  {:humility {:name "Humility", :class :paladin, :mana-cost 0,
                   :get-targets (fn [board caster]
                                  (get-all-minions board))
                   :effect (fn [board target-character caster]
-                            board) }
+                            (update-in board
+                                       (conj (path-to-character board (safe-get target-character :id))
+                                             :modifiers)
+                                       conj
+                                       {:type :enchantment
+                                        :name "Humility"
+                                        :effect {:base-attack-value 1}}))}
    :moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
               :get-targets (fn [board caster]
                              (all-characters board))

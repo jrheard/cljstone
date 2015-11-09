@@ -1,6 +1,7 @@
 (ns cljstone.character
   (:require [schema.core :as s])
-  (:use [clojure.set :only [difference]]))
+  (:use [clojure.set :only [difference]]
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 ; Schemas
 
@@ -9,6 +10,7 @@
 (s/defschema CharacterEffect
   {(s/optional-key :base-health) s/Int
    (s/optional-key :base-attack) s/Int
+   (s/optional-key :base-attack-value) s/Int
    (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int
    (s/optional-key :cant-attack) (s/enum true)
@@ -19,11 +21,12 @@
    (s/optional-key :taunt) (s/enum true)})
 
 (s/defschema CharacterModifier
-  {:type (s/enum :attack :damage-spell :enchantment :mechanic)
-   (s/optional-key :name) s/Str
-   (s/optional-key :turn-begins) s/Int
-   (s/optional-key :turn-ends) s/Int
-   :effect CharacterEffect})
+  ; XXXXX
+  {:type (s/enum :attack :damage-spell :enchantment :mechanic :aura)
+  (s/optional-key :name) s/Str
+  (s/optional-key :turn-begins) s/Int
+  (s/optional-key :turn-ends) s/Int
+  :effect CharacterEffect})
 
 ; TODO attacks-this-turn, attacks-per-turn
 
@@ -62,8 +65,13 @@
 
 (s/defn get-base-attack :- s/Int
   [character :- Character]
-  (+ (:base-attack character)
-     (sum-modifiers character :base-attack)))
+  ; humility is an enchantment, adds a :base-attack-value 1 k/v pair
+  (if-let [value-modifier (last (filter #(contains? (safe-get % :effect)
+                                                    :base-attack-value)
+                                         (safe-get character :modifiers)))]
+    (value-modifier :base-attack-value)
+    (+ (:base-attack character)
+       (sum-modifiers character :base-attack))))
 
 (s/defn get-base-health :- s/Int
   [character :- Character]
@@ -77,6 +85,9 @@
 
 (s/defn get-attack :- s/Int
   [character :- Character]
+  ; TODO:
+  ; one-turn effects like abusive sergeant
+  ; aura effects like dire wolf alpha buff
   (get-base-attack character))
 
 (s/defn has-taunt? :- s/Bool

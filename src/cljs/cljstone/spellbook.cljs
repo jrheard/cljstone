@@ -2,14 +2,15 @@
   (:require [schema.core :as s])
   (:use [cljstone.board :only [Board draw-a-card]]
         [cljstone.character :only [Player other-player]]
-        [cljstone.combat :only [all-characters all-minions cause-damage get-enemy-characters get-enemy-minions]]
+        [cljstone.combat :only [all-characters get-all-minions cause-damage get-enemy-characters get-enemy-minions]]
         [plumbing.core :only [safe-get-in]]))
 
 (def all-spells
   {:hunters-mark {:name "Hunter's Mark", :class :hunter, :mana-cost 0,
                   :get-targets (fn [board caster]
-                                 (all-characters board))
-                  }
+                                 (get-all-minions board))
+                  :effect (fn [board target-character caster]
+                            board) }
    :moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
               :get-targets (fn [board caster]
                              (all-characters board))

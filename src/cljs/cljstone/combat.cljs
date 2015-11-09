@@ -91,6 +91,11 @@
 ; and then it does (when (look up attacker in board) actually perform attack)
 ; because the attacker may have died in the meantime
 
+(s/defn get-all-minions :- [Minion]
+  [board :- Board]
+  (concat (safe-get-in board [:player-1 :minions])
+          (safe-get-in board [:player-2 :minions])))
+
 (s/defn get-enemy-minions :- [Minion]
   [board :- Board
    player :- Player]

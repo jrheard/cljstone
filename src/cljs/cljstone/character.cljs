@@ -46,6 +46,20 @@
                   (kw (modifier :effect) 0))
                 (character :modifiers))))
 
+; XXXX this is about to get more complicated.
+; talking about implementing hunter's mark.
+; change buffs like shattered sun to be :base-attack-modifier
+; when hunter's mark is applied, remove all base attack modifiers, add a :base-attack
+; XXXXXXXXX BUT THEN REAPPLY BUFFS FOR STORMWIND CHAMPION, DIRE WOLF ALPHA, ETC - FUCK
+;
+; ok so certain buffs can be applied by auras.
+; mainly base attack, base health, and cant-be-targeted-by-spells.
+; we have two main options on how to implement auras
+; 1) modify all these get-base-attack, etc functions to take [minion minions-list] (i do not like this)
+; 2) give affected minions an aura-modifier, and recalculate all aura modifiers whenever a minion enters or leaves the board
+; so if a harvest golem is next to a dire wolf alpha, it will have a {:base-attack-aura-modifier 1}
+; aura modifiers are *not* removed when minions are silenced, or have their attack or health set to 1, etc.
+
 (s/defn get-base-attack :- s/Int
   [character :- Character]
   (+ (:base-attack character)

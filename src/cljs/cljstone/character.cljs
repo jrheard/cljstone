@@ -67,7 +67,7 @@
   (if-let [base-attack-modifier (last (filter #(contains? (safe-get % :effect)
                                                     :base-attack)
                                          (safe-get character :modifiers)))]
-    (safe-get-in value-modifier [:effect :base-attack])
+    (safe-get-in base-attack-modifier [:effect :base-attack])
     (:base-attack character)))
 
 (s/defn get-base-health :- s/Int

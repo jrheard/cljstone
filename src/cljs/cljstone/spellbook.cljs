@@ -16,7 +16,7 @@
                                        conj
                                        {:type :enchantment
                                         :name "Humility"
-                                        :effect {:base-attack-value 1}}))}
+                                        :effect {:base-attack 1}}))}
    :moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
               :get-targets (fn [board caster]
                              (all-characters board))

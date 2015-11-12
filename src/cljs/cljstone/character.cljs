@@ -10,7 +10,6 @@
 (s/defschema CharacterEffect
   {(s/optional-key :base-health) s/Int
    (s/optional-key :base-attack) s/Int
-   (s/optional-key :base-attack-value) s/Int
    (s/optional-key :health) s/Int
    (s/optional-key :attack) s/Int
    (s/optional-key :cant-attack) (s/enum true)
@@ -64,12 +63,11 @@
 
 (s/defn get-base-attack :- s/Int
   [character :- Character]
-  (if-let [value-modifier (last (filter #(contains? (safe-get % :effect)
-                                                    :base-attack-value)
+  (if-let [base-attack-modifier (last (filter #(contains? (safe-get % :effect)
+                                                    :base-attack)
                                          (safe-get character :modifiers)))]
-    (safe-get-in value-modifier [:effect :base-attack-value])
-    (+ (:base-attack character)
-       (sum-modifiers character :base-attack))))
+    (safe-get-in value-modifier [:effect :base-attack])
+    (:base-attack character)))
 
 (s/defn get-base-health :- s/Int
   [character :- Character]
@@ -81,12 +79,23 @@
   (+ (get-base-health character)
      (sum-modifiers character :health)))
 
+(s/defn get-max-health :- s/Int
+  [character :- Character]
+  (+ (get-base-health character)
+     (->> character
+          :modifiers
+          (filter #(= (:type %) :enchantment))
+          (map (fn [modifier]
+                 (:health (modifier :effect) 0)))
+          (apply +))))
+
 (s/defn get-attack :- s/Int
   [character :- Character]
   ; TODO:
   ; one-turn effects like abusive sergeant
   ; aura effects like dire wolf alpha buff
-  (get-base-attack character))
+  (+ (get-base-attack character)
+     (sum-modifiers character :attack)))
 
 (s/defn has-taunt? :- s/Bool
   [character :- Character]

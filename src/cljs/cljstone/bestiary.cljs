@@ -45,7 +45,7 @@
                                :effect (fn [board target-minion]
                                 (add-modifier-to-character board
                                                            target-minion
-                                                           {:type :enchantment :name "Shattered Sun" :effect {:base-health 1 :base-attack 1}}))}}
+                                                           {:type :enchantment :name "Shattered Sun" :effect {:health 1 :attack 1}}))}}
    :magma-rager {:name "Magma Rager" :base-attack 5 :base-health 1 :mana-cost 3}
    :wolfrider {:name "Wolfrider", :base-attack 3, :base-health 1, :mana-cost 3, :modifiers [charge]}
    :chillwind-yeti {:name "Chillwind Yeti" :base-attack 4 :base-health 5 :mana-cost 4}

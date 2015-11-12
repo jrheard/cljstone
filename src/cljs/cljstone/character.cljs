@@ -8,16 +8,17 @@
 (s/defschema Player (s/enum :player-1 :player-2))
 
 (s/defschema CharacterEffect
-  {(s/optional-key :base-health) s/Int
-   (s/optional-key :base-attack) s/Int
-   (s/optional-key :health) s/Int
-   (s/optional-key :attack) s/Int
-   (s/optional-key :cant-attack) (s/enum true)
-   (s/optional-key :charge) (s/enum true)
-   (s/optional-key :divine-shield) (s/enum true)
-   (s/optional-key :frozen) (s/enum true) ; TODO
-   (s/optional-key :stealth) (s/enum true) ; TODO
-   (s/optional-key :taunt) (s/enum true)})
+  {(s/optional-key :base-health) s/Int ; sets the character's base health to %
+   (s/optional-key :base-attack) s/Int ; sets the character's base attack to %
+   (s/optional-key :health) s/Int ; increases or decreases the character's current health by %. if this is an :enchantment, can increase the character's maximum health.
+   (s/optional-key :attack) s/Int ; increases or decreases the character's current attack by %
+   (s/optional-key :cant-attack) (s/enum true) ; if true, the character cannot attack
+   (s/optional-key :charge) (s/enum true) ; if true, the character is not affected by summoning sickness
+   (s/optional-key :divine-shield) (s/enum true) ; if true, the next attack made to this character will do 0 damage
+   (s/optional-key :frozen) (s/enum true) ; TODO - if true, the character cannot attack [and is more vulnerable to certain spells]
+   (s/optional-key :stealth) (s/enum true) ; TODO - if true, enemy characters/spells/heropowers cannot target this character. overrides taunt.
+   (s/optional-key :taunt) (s/enum true)} ; if true, enemy characters cannot attack other friendly minions that do not have taunt. does not affect spells / hero powers.
+)
 
 (s/defschema CharacterModifier
   {:type (s/enum :attack :damage-spell :enchantment :mechanic :aura)

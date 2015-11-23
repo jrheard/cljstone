@@ -10,7 +10,7 @@
         [cljstone.board :only [Board BoardHalf end-turn play-card path-to-character run-continuation get-mana get-character-by-id toggle-mulligan-card-selected]]
         [cljstone.board-mode :only [DefaultMode MulliganCard]]
         [cljstone.card :only [Card card-is-playable?]]
-        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health has-summoning-sickness? has-taunt? has-divine-shield?]]
+        [cljstone.character :only [Character Player get-attack get-health can-attack? other-player get-base-health get-max-health has-summoning-sickness? has-taunt? has-divine-shield?]]
         [cljstone.combat :only [attack enter-targeting-mode-for-attack]]
         [cljstone.hero :only [Hero]]
         [cljstone.utils :only [in?]]
@@ -75,10 +75,11 @@
 
 (s/defn draw-character-health [character :- Character]
   (let [health (get-health character)
+        max-health (get-max-health character)
         base-health (get-base-health character)
         health-class (cond
-                       (and (= health base-health)
-                            (> base-health (character :base-health))) "buffed"
+                       (and (= health max-health)
+                            (> health (character :base-health))) "buffed"
                        (< health base-health) "damaged"
                        :else "")]
     [:div {:class (str "health " health-class)} health]))

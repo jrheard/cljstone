@@ -1,9 +1,9 @@
 (ns cljstone.spellbook
   (:require [schema.core :as s])
-  (:use [cljstone.board :only [Board draw-a-card]]
+  (:use [cljstone.board :only [Board draw-a-card path-to-character]]
         [cljstone.character :only [Player other-player]]
-        [cljstone.combat :only [all-characters cause-damage get-enemy-characters get-enemy-minions]]
-        [plumbing.core :only [safe-get-in]]))
+        [cljstone.combat :only [all-characters get-all-minions cause-damage get-enemy-characters get-enemy-minions]]
+        [plumbing.core :only [safe-get safe-get-in]]))
 
 (def all-spells
   {:moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
@@ -38,6 +38,17 @@
                                         {:type :damage-spell
                                          :name "Holy Smite"
                                          :effect {:health -2}}))}
+   :humility {:name "Humility", :class :paladin, :mana-cost 1,
+              :get-targets (fn [board caster]
+                             (get-all-minions board))
+              :effect (fn [board target-character caster]
+                        (update-in board
+                                   (conj (path-to-character board (safe-get target-character :id))
+                                         :modifiers)
+                                   conj
+                                   {:type :enchantment
+                                    :name "Humility"
+                                    :effect {:base-attack 1}}))}
   :flamecannon {:name "Flamecannon"
                 :mana-cost 2
                 :class :mage
@@ -126,7 +137,6 @@
  {:name "Holy Nova", :text "Deal $2 damage to all enemies. Restore #2 Health to all friendly characters.", :class :priest, :mana-cost 5}
  {:name "Holy Smite", :text "Deal $2 damage.", :class :priest, :mana-cost 1}
  {:name "Humility", :text "Change a minion's Attack to 1.", :class :paladin, :mana-cost 1}
- {:name "Hunter's Mark", :text "Change a minion's Health to 1.", :class :hunter, :mana-cost 0}
  {:name "Innervate", :text "Gain 2 Mana Crystals this turn only.", :class :druid, :mana-cost 0}
  {:name "Kill Command", :text "Deal $3 damage. If you have a Beast, deal $5 damage instead.", :class :hunter, :mana-cost 3}
  {:name "Mark of the Wild", :text "Give a minion <b>Taunt</b> and +2/+2.<i> (+2 Attack/+2 Health)</i>", :class :druid, :mana-cost 2}

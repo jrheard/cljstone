@@ -3,7 +3,7 @@
   (:use [schema.test :only [validate-schemas]]
         [cljstone.bestiary :only [all-minions]]
         [cljstone.board :only [make-board play-card run-continuation]]
-        [cljstone.character :only [get-health]]
+        [cljstone.character :only [get-attack get-health]]
         [cljstone.minion :only [make-minion]]
         [cljstone.spell :only [spell->card]]
         [cljstone.spellbook :only [all-spells]]
@@ -50,3 +50,18 @@
     (let [board (run-continuation board (safe-get-in board [:player-1 :hero]))]
       (is (= (get-health (safe-get-in board [:player-1 :hero]))
              24)))))
+
+(deftest humility
+  (let [board (-> fresh-board
+                  (assoc-in [:player-1 :hand 0] (spell->card (all-spells :humility)))
+                  (assoc-in [:player-1 :minions 0] (make-minion (:war-golem all-minions) 123))
+                  (play-card :player-1 0))]
+    (is (= (safe-get-in board [:mode :type])
+           :targeting))
+
+    (is (= (get-attack (safe-get-in board [:player-1 :minions 0]))
+           7))
+
+    (let [board (run-continuation board (safe-get-in board [:player-1 :minions 0]))]
+      (is (= (get-attack (safe-get-in board [:player-1 :minions 0]))
+             1)))))

@@ -6,18 +6,7 @@
         [plumbing.core :only [safe-get safe-get-in]]))
 
 (def all-spells
-  {:humility {:name "Humility", :class :paladin, :mana-cost 0,
-                  :get-targets (fn [board caster]
-                                 (get-all-minions board))
-                  :effect (fn [board target-character caster]
-                            (update-in board
-                                       (conj (path-to-character board (safe-get target-character :id))
-                                             :modifiers)
-                                       conj
-                                       {:type :enchantment
-                                        :name "Humility"
-                                        :effect {:base-attack 1}}))}
-   :moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
+  {:moonfire {:name "Moonfire", :class :druid, :mana-cost 0,
               :get-targets (fn [board caster]
                              (all-characters board))
               :effect (fn [board target-character caster]
@@ -49,6 +38,17 @@
                                         {:type :damage-spell
                                          :name "Holy Smite"
                                          :effect {:health -2}}))}
+   :humility {:name "Humility", :class :paladin, :mana-cost 1,
+              :get-targets (fn [board caster]
+                             (get-all-minions board))
+              :effect (fn [board target-character caster]
+                        (update-in board
+                                   (conj (path-to-character board (safe-get target-character :id))
+                                         :modifiers)
+                                   conj
+                                   {:type :enchantment
+                                    :name "Humility"
+                                    :effect {:base-attack 1}}))}
   :flamecannon {:name "Flamecannon"
                 :mana-cost 2
                 :class :mage

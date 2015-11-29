@@ -74,13 +74,9 @@
               :get-targets (fn [board caster]
                              (get-all-minions board))
               :effect (fn [board target-character caster]
-                        (update-in board
-                                   (conj (path-to-character board (safe-get target-character :id))
-                                         :modifiers)
-                                   conj
-                                   {:type :enchantment
-                                    :name "Humility"
-                                    :effect {:base-attack 1}}))}
+                        (add-modifier-to-character board target-character {:type :enchantment
+                                                                           :name "Humility"
+                                                                           :effect {:base-attack 1}}))}
   :flamecannon {:name "Flamecannon"
                 :mana-cost 2
                 :class :mage

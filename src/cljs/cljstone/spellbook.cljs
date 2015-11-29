@@ -74,6 +74,10 @@
               :get-targets (fn [board caster]
                              (get-all-minions board))
               :effect (fn [board target-character caster]
+                        ; XXX TODO will probably have to clear all preexisting attack modifiers.
+                        ; what's an example of a situation where this implementation of humility wouldn't behave correctly?
+                        ; what if the minion's been buffed by lance carrier? then we'd be fucked.
+                        ; so clear all preexisting attack modifiers first.
                         (add-modifier-to-character board target-character {:type :enchantment
                                                                            :name "Humility"
                                                                            :effect {:base-attack 1}}))}

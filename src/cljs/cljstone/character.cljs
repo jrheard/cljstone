@@ -66,8 +66,11 @@
 
 (s/defn get-base-health :- s/Int
   [character :- Character]
-  (+ (:base-health character)
-     (sum-modifiers character :base-health)))
+  (if-let [base-health-modifier (last (filter #(contains? (safe-get % :effect)
+                                                    :base-health)
+                                         (safe-get character :modifiers)))]
+    (safe-get-in base-health-modifier [:effect :base-health])
+    (:base-health character)))
 
 (s/defn get-health :- s/Int
   [character :- Character]

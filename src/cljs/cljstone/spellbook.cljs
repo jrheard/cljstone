@@ -102,7 +102,7 @@
                         (cause-damage target-character
                                       {:type :damage-spell
                                        :name "Shiv"
-                                       :effect {:health -2}})
+                                       :effect {:health -1}})
                         (draw-a-card caster)))}
    :arcane-intellect {:name "Arcane Intellect"
                       :mana-cost 3

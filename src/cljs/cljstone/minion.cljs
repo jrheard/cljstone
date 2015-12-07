@@ -41,9 +41,6 @@
 ; also: summoning sickness can be implemented as a one-turn modifier with effect :cant-attack true
 ; freezing will work similarly
 
-; Schematics
-
-
 ; TODO - on-before-attack for ogre brute, on-after-attack for mistress of pain
 
 (s/defn make-minion :- Minion
@@ -61,7 +58,7 @@
         (dissoc schematic :battlecry :mana-cost)))
 
 ; XXXX misnomer? takes a schematic, not a card
-(s/defn play-minion-card
+(s/defn summon-minion
   [board
    player :- Player
    schematic :- MinionSchematic]
@@ -106,10 +103,12 @@
                                                        (assoc :mode {:type :default})
                                                        (update-in [player :hand] remove-card-from-list card)
                                                        (#((battlecry :effect) % target-character-id))
-                                                       (play-minion-card player schematic)))})
+                                                       (summon-minion player schematic)))})
                (-> board
                    (update-in [player :hand] remove-card-from-list card)
-                   (play-minion-card player schematic))))})
+                   (summon-minion player schematic))))})
+
+
 
 
 ; dire wolf alpha only needs to care about on-summon-friendly-minion, on-friendly-minion-death - no other situations cause a dire wolf alpha buff/debuff

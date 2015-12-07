@@ -4,7 +4,7 @@
   (:use [cljstone.bestiary :only [all-minions]]
         [cljstone.card :only [Card]]
         [cljstone.character :only [get-health has-summoning-sickness? can-attack?]]
-        [cljstone.minion :only [Minion MinionSchematic make-minion play-minion-card]]
+        [cljstone.minion :only [Minion MinionSchematic make-minion]]
         [cljstone.test-helpers :only [get-minion-card fresh-board]]
         [plumbing.core :only [safe-get safe-get-in]]
         [schema.test :only [validate-schemas]]))

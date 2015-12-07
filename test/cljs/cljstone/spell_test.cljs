@@ -68,8 +68,6 @@
              1)))))
 
 (deftest hunters-mark
-  ; TODO - refactor testing code until the below code expresses this specification simply and clearly:
-  ; spawn two minions, make them attack each other and actually do damage, its remaining health must be >1, make at least one live, cast hunter's mark on one, confirm that its health is 1
   (let [board (-> fresh-board
                   (assoc-in [:player-1 :hand 0] (spell->card (all-spells :hunters-mark)))
                   (assoc-in [:player-1 :minions 0] (make-minion (:oasis-snapjaw all-minions) 123))
